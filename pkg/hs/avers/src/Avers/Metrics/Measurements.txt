@@ -1,0 +1,28 @@
+avers
+    storage
+
+        lookupObject
+            duration
+
+        lookupSnapshot
+            duration
+
+        lookupLatestSnapshot
+            duration
+
+        newestSnapshot
+            duration
+
+        patchesAfterRevision
+            duration
+
+        lookupPatch
+            duration
+
+        applyObjectUpdates
+            duration
+            numOperations
+            numPreviousPatches
+
+        exists
+            duration

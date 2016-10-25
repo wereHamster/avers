@@ -1,0 +1,24 @@
+{
+    "version": "1.7.5",
+    "compilerOptions": {
+        "target": "es6",
+        "module": "es6",
+        "moduleResolution": "node",
+        "declaration": true,
+        "noImplicitAny": false,
+        "removeComments": true,
+        "noLib": false,
+        "preserveConstEnums": true,
+        "suppressImplicitAnyIndexErrors": true,
+        "outDir": "dist/"
+    },
+    "files": [
+        "src/avers/core.ts",
+        "src/avers/shared.ts",
+        "src/avers/session.ts",
+        "src/avers/storage.ts",
+        "src/avers.ts",
+        "test/avers.test.ts",
+        "typings/main.d.ts"
+    ]
+}
