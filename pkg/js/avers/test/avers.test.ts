@@ -121,7 +121,14 @@ function mkHandle(json: any): Avers.Handle {
     }
 
     function createWebSocket(path: string) {
-        return <any> {};
+        return <any> {
+            addEventListener() {
+                // EMPTY
+            },
+            send() {
+                // EMPTY
+            },
+        };
     }
 
     let infoTable = new Map<string, Avers.ObjectConstructor<any>>();
@@ -451,7 +458,6 @@ describe('Avers.lookupItem', function() {
     it('should find the item in the collection', function() {
         var library = Avers.mk(Library, {});
         library.items.push(Avers.mk(Item, jsonBookItemWithId));
-        console.log('library', library.items);
         assert(!!Avers.lookupItem(library.items, jsonBookWithId.id));
     });
     it('should find non-existing in the collection', function() {

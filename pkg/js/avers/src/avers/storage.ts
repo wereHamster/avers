@@ -95,8 +95,6 @@ function mkAction<T>(label: string, payload: T, applyF: (h: Handle, payload: T) 
 }
 
 function modifyHandle<T>(h: Handle, act: Action<T>): void {
-    console.debug(act.label);
-
     act.applyF(h, act.payload);
     startNextGeneration(h);
 }
@@ -205,7 +203,7 @@ changeFeedSubscription(h: Handle, json: any): void {
         });
     }
 
-    if (h.feedSocket.readyState === WebSocket.OPEN) {
+    if (h.feedSocket.readyState === h.feedSocket.OPEN) {
         h.feedSocket.send(JSON.stringify(json));
     } else {
         h.feedSocket.addEventListener('open', function onOpen() {
