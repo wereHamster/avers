@@ -23,7 +23,7 @@
     "mocha": "^2.3.4",
     "serve": "*",
     "tslint": "^3.2.1",
-    "typescript": "^1.7.5",
+    "typescript": "^2.0.6",
     "typings": "^0.8.1"
   },
   "dependencies": {
