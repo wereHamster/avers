@@ -99,7 +99,7 @@ function withId<T>(json: any, obj: T): T {
 
 function descendInto(obj: any, key: string): any {
     if (Array.isArray(obj)) {
-        return obj.idMap[key];
+        return (<any>obj).idMap[key];
     } else if (obj === Object(obj) && aversProperties(obj) && aversProperties(obj)[key]) {
         return obj[key];
     }

@@ -417,6 +417,7 @@ export class NetworkRequest {
 
 
 export class Editable<T> {
+    [Symbol.species]: 'Editable';
 
     networkRequest : NetworkRequest = undefined;
 
@@ -513,7 +514,7 @@ type Entity = Editable<any> | StaticE<any> | EphemeralE<any>;
 // and apply changes to the Handle.
 
 function
-attachNetworkRequestF(h: Handle, { entity, nr }) {
+attachNetworkRequestF(h: Handle, { entity, nr }: { entity: string | Static<any> | Ephemeral<any>, nr: NetworkRequest }) {
     function f(e: { networkRequest: NetworkRequest}) {
         e.networkRequest = nr;
     }
@@ -528,7 +529,7 @@ attachNetworkRequestF(h: Handle, { entity, nr }) {
 }
 
 function
-reportNetworkFailureF(h: Handle, { entity, nr, err }) {
+reportNetworkFailureF(h: Handle, { entity, nr, err }: { entity: string | Static<any> | Ephemeral<any>, nr: NetworkRequest, err: Error }) {
     function f(e: { networkRequest: NetworkRequest, lastError: any }): void {
         if (e.networkRequest === nr) {
             e.networkRequest = undefined;
@@ -706,7 +707,7 @@ function initContent(obj: Editable<any>): void {
 // drop any local changes.
 
 function
-resolveEditableF<T>(h: Handle, { objId, json }) {
+resolveEditableF<T>(h: Handle, { objId, json }: { objId: string, json: any }) {
     // ASSERT objId === json.id
 
     updateEditable(h, objId, obj => {
@@ -752,7 +753,7 @@ resolveEditable<T>(h: Handle, objId: ObjId, json: any): void {
 
 
 function
-captureChangesF(h: Handle, { objId, ops }) {
+captureChangesF(h: Handle, { objId, ops }: { objId: string, ops: any }): void {
     withEditable(h, objId, obj => {
         obj.localChanges = obj.localChanges.concat(ops);
         initContent(obj);
@@ -786,7 +787,7 @@ prepareLocalChangesF(h: Handle, objId: ObjId) {
 }
 
 function
-applyServerResponseF(h: Handle, { objId, res, body }) {
+applyServerResponseF(h: Handle, { objId, res, body }: { objId: string, res: any, body: any }): void {
     withEditable(h, objId, obj => {
         if (obj.networkRequest === res.networkRequest) {
             obj.networkRequest = undefined;
@@ -1022,6 +1023,8 @@ resetKeyedObjectCollection(kc: KeyedObjectCollection<any>): void {
 // change when they are modified.
 
 export class Static<T> {
+    [Symbol.species]: 'Static';
+
     constructor
       ( public ns    : Symbol
       , public key   : string
@@ -1124,7 +1127,7 @@ refreshStatic<T>(h: Handle, s: Static<T>, ent: StaticE<T>): void {
 }
 
 function
-resolveStaticF(h: Handle, { s, value }) {
+resolveStaticF<T>(h: Handle, { s, value }: { s: Static<T>, value: T }): void {
     withStaticE(h, s.ns, s.key, e => {
         e.networkRequest = undefined;
         e.lastError      = undefined;
@@ -1152,6 +1155,8 @@ resolveStatic<T>(h: Handle, s: Static<T>, value: T): void {
 // re-fetched.
 
 export class Ephemeral<T> {
+    [Symbol.species]: 'Ephemeral';
+
     constructor
       ( public ns    : Symbol
       , public key   : string
@@ -1272,7 +1277,7 @@ refreshEphemeral<T>(h: Handle, e: Ephemeral<T>, ent: EphemeralE<T>): void {
 // without actually hitting the network.
 
 function
-resolveEphemeralF(h: Handle, { e, value, expiresAt }) {
+resolveEphemeralF<T>(h: Handle, { e, value, expiresAt }: { e: Ephemeral<T>, value: T, expiresAt: number }): void {
     withEphemeralE(h, e.ns, e.key, e => {
         e.networkRequest = undefined;
         e.lastError      = undefined;
@@ -1304,6 +1309,8 @@ resolveEphemeral<T>
 // Patches are read-only on the client.
 
 export class Patch {
+    [Symbol.species]: 'Patch';
+
     constructor
       ( public objectId   : ObjId
       , public revisionId : RevId
