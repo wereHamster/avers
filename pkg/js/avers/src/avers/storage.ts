@@ -52,7 +52,7 @@ export class Handle {
     staticCache    = new Map<Symbol, Map<string, StaticE<any>>>();
     ephemeralCache = new Map<Symbol, Map<string, EphemeralE<any>>>();
 
-    feedSocket : WebSocket = undefined;
+    feedSocket : undefined | WebSocket = undefined;
     // ^ A WebSocket connected to the feed through which the client receives
     // change notifications (eg. new patches).
 
@@ -207,8 +207,10 @@ changeFeedSubscription(h: Handle, json: any): void {
         h.feedSocket.send(JSON.stringify(json));
     } else {
         h.feedSocket.addEventListener('open', function onOpen() {
-            h.feedSocket.send(JSON.stringify(json));
-            h.feedSocket.removeEventListener('open', onOpen);
+            if (h.feedSocket !== undefined) {
+                h.feedSocket.send(JSON.stringify(json));
+                h.feedSocket.removeEventListener('open', onOpen);
+            }
         });
     }
 }
@@ -419,7 +421,7 @@ export class NetworkRequest {
 export class Editable<T> {
     [Symbol.species]: 'Editable';
 
-    networkRequest : NetworkRequest = undefined;
+    networkRequest : undefined | NetworkRequest = undefined;
 
     // ^ If we have a active network request at the moment (either to
     // fetch the object or saving changes etc) then this describes it. We
@@ -433,7 +435,7 @@ export class Editable<T> {
     // current, and if not it will simply abort.
 
 
-    lastError : Error = undefined;
+    lastError : undefined | Error = undefined;
 
 
     type             : string;
@@ -515,7 +517,7 @@ type Entity = Editable<any> | StaticE<any> | EphemeralE<any>;
 
 function
 attachNetworkRequestF(h: Handle, { entity, nr }: { entity: string | Static<any> | Ephemeral<any>, nr: NetworkRequest }) {
-    function f(e: { networkRequest: NetworkRequest}) {
+    function f(e: { networkRequest: undefined | NetworkRequest}) {
         e.networkRequest = nr;
     }
 
@@ -530,7 +532,7 @@ attachNetworkRequestF(h: Handle, { entity, nr }: { entity: string | Static<any> 
 
 function
 reportNetworkFailureF(h: Handle, { entity, nr, err }: { entity: string | Static<any> | Ephemeral<any>, nr: NetworkRequest, err: Error }) {
-    function f(e: { networkRequest: NetworkRequest, lastError: any }): void {
+    function f(e: { networkRequest: undefined | NetworkRequest, lastError: any }): void {
         if (e.networkRequest === nr) {
             e.networkRequest = undefined;
             e.lastError      = err;
@@ -553,6 +555,8 @@ function entityLabel(entity: string | Static<any> | Ephemeral<any>): string {
         return `Static(${entity.ns.toString()},${entity.key})`;
     } else if (entity instanceof Ephemeral) {
         return `Ephemeral(${entity.ns.toString()},${entity.key})`;
+    } else {
+        return ""; // XXX: EXHAUSTIVE
     }
 }
 
@@ -689,7 +693,7 @@ function initContent(obj: Editable<any>): void {
         detachChangeListener(obj.content, obj.changeListener);
     }
 
-    obj.content = [].concat(obj.submittedChanges, obj.localChanges).reduce((c, o) => {
+    obj.content = (<Operation[]>[]).concat(obj.submittedChanges, obj.localChanges).reduce((c: any, o: Operation) => {
         return applyOperation(c, o.path, o);
     }, obj.shadowContent);
 
@@ -720,7 +724,11 @@ resolveEditableF<T>(h: Handle, { objId, json }: { objId: string, json: any }) {
         obj.createdBy        = json.createdBy;
         obj.revisionId       = json.revisionId || 0;
 
-        obj.shadowContent    = parseJSON<T>(h.infoTable.get(obj.type), json.content);
+        const ctor = h.infoTable.get(obj.type);
+        if (ctor === undefined) {
+            throw new Error(`resolveEditable: unknown type ${obj.type}`);
+        }
+        obj.shadowContent    = parseJSON<T>(ctor, json.content);
 
         obj.submittedChanges = [];
         obj.localChanges     = [];
@@ -923,7 +931,7 @@ export class ObjectCollection {
 
     fetchedAt : number;
     url       : string;
-    objectIds : string[];
+    objectIds : undefined | string[];
 
     ids: Computation<string[]> = new Computation(() => {
         this.fetch();
@@ -947,7 +955,7 @@ export class ObjectCollection {
     private mergeIds(ids: string[]): void {
         let isChanged = this.objectIds === undefined || ids.length !== this.objectIds.length ||
             ids.reduce((a, id, index) => {
-                return a || id !== this.objectIds[index];
+                return a || (this.objectIds !== undefined && id !== this.objectIds[index]);
             }, false);
 
         if (isChanged) {
@@ -1033,13 +1041,13 @@ export class Static<T> {
 }
 
 export class StaticE<T> {
-    networkRequest : NetworkRequest = undefined;
-    lastError      : Error          = undefined;
-    value          : T              = undefined;
+    networkRequest : undefined | NetworkRequest = undefined;
+    lastError      : undefined | Error          = undefined;
+    value          : undefined | T              = undefined;
 }
 
 
-function lookupStaticE<T>(h: Handle, ns: Symbol, key: string): StaticE<T> {
+function lookupStaticE<T>(h: Handle, ns: Symbol, key: string): undefined | StaticE<T> {
     let n = h.staticCache.get(ns);
     if (n) { return n.get(key); }
 }
@@ -1175,14 +1183,14 @@ export class Ephemeral<T> {
 // through the 'ephemeralCache' in the Handle.
 
 export class EphemeralE<T> {
-    networkRequest : NetworkRequest = undefined;
-    lastError      : Error          = undefined;
-    value          : T              = undefined;
-    expiresAt      : number         = 0;
+    networkRequest : undefined | NetworkRequest = undefined;
+    lastError      : undefined | Error          = undefined;
+    value          : undefined | T              = undefined;
+    expiresAt      : number                     = 0;
 }
 
 
-function lookupEphemeralE<T>(h: Handle, ns: Symbol, key: string): EphemeralE<T> {
+function lookupEphemeralE<T>(h: Handle, ns: Symbol, key: string): undefined | EphemeralE<T> {
     let n = h.ephemeralCache.get(ns);
     if (n) { return n.get(key); }
 }

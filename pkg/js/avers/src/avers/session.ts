@@ -12,9 +12,9 @@ export class Session {
 
     constructor(public h: Handle) {}
 
-    objId      : string     = undefined;
-    transition : Transition = undefined;
-    lastError  : Error      = undefined;
+    objId      : undefined | string     = undefined;
+    transition : undefined | Transition = undefined;
+    lastError  : undefined | Error      = undefined;
 }
 
 
@@ -40,7 +40,7 @@ function beginTransition(session: Session, t: Transition) {
     startNextGeneration(session.h);
 }
 
-function finishTransition(session: Session, objId: string, err: Error) {
+function finishTransition(session: Session, objId: undefined | string, err: undefined | Error) {
     session.objId      = objId;
     session.transition = undefined;
     session.lastError  = err;

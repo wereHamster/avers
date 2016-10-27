@@ -13,12 +13,12 @@ var files        = require('./tsconfig.json').files;
 
 gulp.task('lint', function() {
     gulp.src(files)
-        .pipe(tslint())
-        .pipe(tslint.report('verbose'));
+        .pipe(tslint({ formatter: 'verbose' }))
+        .pipe(tslint.report());
 });
 
 gulp.task('build', function() {
-    var project = gulp.src(files).pipe(ts(aversLibrary));
+    var project = aversLibrary.src().pipe(aversLibrary());
 
     return merge([
         project.dts.pipe(gulp.dest('dist/')),

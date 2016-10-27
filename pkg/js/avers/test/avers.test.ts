@@ -583,7 +583,7 @@ describe('Avers.ephemeralValue', function() {
         let h = mkHandle({})
           , ne = new Avers.Ephemeral(testNamespace, 'test', () => {
               assert(false, 'fetch of a fresh Ephemeral was invoked');
-              return undefined;
+              return Promise.resolve({});
           });
 
         Avers.resolveEphemeral(h, ne, 42, h.now() + 99);

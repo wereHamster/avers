@@ -130,7 +130,9 @@ function setValueAtPath(root: any, path: string, value: any): any {
       , lastKey  = pathKeys.pop()
       , obj      = resolvePath<any>(root, pathKeys.join('.'));
 
-    obj[lastKey] = clone(value);
+    if (lastKey !== undefined) {
+        obj[lastKey] = clone(value);
+    }
 
     return root;
 }
@@ -146,7 +148,7 @@ function last<T>(xs: T[]): T {
 
 // Splice operations can currently not be applied to the root. This is
 // a restriction which may be lifted in the future.
-function applySpliceOperation(root: any, path: string, op: Operation): any {
+function applySpliceOperation(root: any, path: string, op: Splice): any {
     let obj    = resolvePath<any>(root, path)
       , parent = resolvePath<any>(root, parentPath(path))
       , prop   = aversProperties(parent)[last(path.split('.'))]
@@ -406,7 +408,7 @@ mk<T>(x: new() => T, json: any): T {
 }
 
 function concatPath(self: string, child: string): string {
-    if (child !== null) {
+    if (child !== "") {
         return [self, child].join('.');
     } else {
         return self;
@@ -438,6 +440,8 @@ typeName(typeMap: { [klass: string]: any }, klass: any): string {
             return type;
         }
     }
+
+    return `typeName: Unknown klass ${klass}`;
 }
 
 function objectJSON(x: any): any {
@@ -506,7 +510,7 @@ function resetCollection<T extends Item>(x: Collection<T>): void {
 }
 
 function mkCollection<T extends Item>(items: T[]): Collection<T> {
-    let collection = <Collection<T>> [];
+    let collection: Collection<T> = <any>[];
     resetCollection(collection);
 
 
@@ -538,7 +542,7 @@ function mkCollection<T extends Item>(items: T[]): Collection<T> {
         });
 
         emitChanges(collection, [
-            new Change(null, new Operation.Splice(collection, start, deletedItems, items))
+            new Change("", new Operation.Splice(collection, start, deletedItems, items))
         ]);
 
         return deletedItems;
@@ -590,21 +594,20 @@ lookupItem<T extends Item>(collection: Collection<T>, id: string): T {
 // Definition of a pure JavaScript object which describes a change at
 // a particular path. It can be converted directly to JSON.
 
-export interface Operation {
-    // The path at which the change happened.
-    path    : string;
+export type Operation = Set | Splice;
 
-    // Either 'set' or 'splice'. The remaining fields depend on the value
-    // of this.
-    type    : string;
+export interface Set {
+    type: 'set';
+    path: string;
+    value: any;
+}
 
-    // Set
-    value  ?: any;
-
-    // Splice
-    index  ?: number;
-    remove ?: number;
-    insert ?: any[];
+export interface Splice {
+    type: 'splice';
+    path: string;
+    index: number;
+    remove: number;
+    insert: any[];
 }
 
 
