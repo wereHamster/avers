@@ -2,4 +2,6 @@
 #!/bin/sh
 set -e
 
-stack --no-terminal test
+find . -not -path './scripts/*' -name cibuild -type f | while read p; do
+    (cd $(dirname $p)/.. && ./script/cibuild)
+done
