@@ -60,19 +60,21 @@ function stopListening(self: any, obj: any): void {
 const aversPropertiesSymbol = Symbol('aversProperties');
 
 interface AversProperties {
-    [name: string]: PropertyDescriptor;
+    [name: string]: PropertyDescriptor<any>;
 }
 
 enum PropertyType { Primitive, Object, Collection, Variant };
 
-interface PropertyDescriptor {
+interface PropertyDescriptor<T> {
     type       : PropertyType;
     parser    ?: any;
 
     typeField ?: any;
     typeMap   ?: any;
 
-    value     ?: any;
+    defaultValue: undefined | T;
+    // ^ The default value to use when migrating the object and the property
+    // is not present.
 }
 
 
@@ -167,7 +169,7 @@ applyOperation<T>(root: T, path: string, op: Operation): T {
 }
 
 function
-defineProperty(x: any, name: string, desc: PropertyDescriptor): void {
+defineProperty<T>(x: any, name: string, desc: PropertyDescriptor<T>): void {
     let proto      = x.prototype
       , aversProps = proto[aversPropertiesSymbol] || Object.create(null);
 
@@ -184,23 +186,25 @@ declareConstant(x: any): void {
 }
 
 export function
-definePrimitive<T>(x: any, name: string, defaultValue?: T) {
-    let desc = { type  : PropertyType.Primitive
-               , value : defaultValue
-               };
+definePrimitive<T>(x: any, name: string, defaultValue: undefined | T) {
+    let desc: PropertyDescriptor<T> =
+        { type: PropertyType.Primitive
+        , defaultValue
+        };
 
     defineProperty(x, name, desc);
 }
 
 export function
 defineObject<T>(x: any, name: string, klass: any, def?: T) {
-    let desc = { type   : PropertyType.Object
-               , parser : createObjectParser(klass)
-               , value  : <any> undefined
-               };
+    let desc: PropertyDescriptor<T> =
+        { type: PropertyType.Object
+        , parser : createObjectParser(klass)
+        , defaultValue: undefined
+        };
 
     if (def) {
-        desc.value = mk(klass, def);
+        desc.defaultValue = <any> mk(klass, def);
     }
 
     defineProperty(x, name, desc);
@@ -223,15 +227,16 @@ defineVariant<T>(x: any, name: string, typeField: string, typeMap: { [name: stri
         }
     }
 
-    let desc = { type      : PropertyType.Variant
-               , parser    : createVariantParser(name, typeField, typeMap)
-               , typeField : typeField
-               , typeMap   : typeMap
-               , value     : <any> undefined
-               };
+    let desc: PropertyDescriptor<T> = 
+        { type      : PropertyType.Variant
+        , parser    : createVariantParser(name, typeField, typeMap)
+        , typeField : typeField
+        , typeMap   : typeMap
+        , defaultValue: undefined
+        };
 
     if (def) {
-        desc.value = clone(def);
+        desc.defaultValue = clone(def);
     }
 
     defineProperty(x, name, desc);
@@ -239,9 +244,11 @@ defineVariant<T>(x: any, name: string, typeField: string, typeMap: { [name: stri
 
 export function
 defineCollection(x: any, name: string, klass: any) {
-    let desc = { type   : PropertyType.Collection
-               , parser : createObjectParser(klass)
-               };
+    let desc: PropertyDescriptor<any> =
+        { type: PropertyType.Collection
+        , parser: createObjectParser(klass)
+        , defaultValue: undefined
+        };
 
     defineProperty(x, name, desc);
 }
@@ -258,7 +265,7 @@ function createVariantParser<T>(name: string, typeField: string, typeMap: { [typ
 }
 
 function
-parseValue(desc: PropertyDescriptor, old: any, json: any, parent: any): any {
+parseValue(desc: PropertyDescriptor<any>, old: any, json: any, parent: any): any {
     switch (desc.type) {
     case PropertyType.Collection:
         if (json) {
@@ -319,7 +326,7 @@ migrateObject<T>(x: T): T {
             if (desc.type === PropertyType.Collection) {
                 x[name] = mkCollection([]);
             } else {
-                let value = desc.value;
+                let value = desc.defaultValue;
                 if (value != null && value !== prop) {
                     migrateObject(value);
                     x[name] = value;
@@ -408,7 +415,7 @@ function concatPath(self: string, child: string): string {
 
 // Return true if the property can generate change events and thus the
 // parent should listen to events.
-function isObservableProperty(propertyDescriptor: PropertyDescriptor): boolean {
+function isObservableProperty(propertyDescriptor: PropertyDescriptor<any>): boolean {
     let type = propertyDescriptor.type;
     return type === PropertyType.Object || type === PropertyType.Variant || type === PropertyType.Collection;
 }

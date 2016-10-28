@@ -45,7 +45,7 @@ var jsonBookWithId = {
     tags: ['violent', 'fantasy']
 };
 
-Avers.definePrimitive(Book, 'title');
+Avers.definePrimitive(Book, 'title', undefined);
 Avers.defineObject(Book, 'author', Author, unknownAuthor);
 Avers.defineCollection(Book, 'tags', String);
 
@@ -62,8 +62,8 @@ var jsonMagazine = {
 };
 */
 
-Avers.definePrimitive(Magazine, 'title');
-Avers.definePrimitive(Magazine, 'publisher');
+Avers.definePrimitive(Magazine, 'title', undefined);
+Avers.definePrimitive(Magazine, 'publisher', undefined);
 
 
 class Diary {}
