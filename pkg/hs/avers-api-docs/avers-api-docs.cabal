@@ -1,5 +1,5 @@
 name:                avers-api-docs
-version:             0.0.1
+version:             0.0.17.0
 synopsis:            Swagger documentation for the Avers API
 description:         See README.md
 homepage:            http://github.com/wereHamster/avers-api-docs

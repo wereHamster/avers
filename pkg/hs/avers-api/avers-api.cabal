@@ -1,5 +1,5 @@
 name:                avers-api
-version:             0.0.5
+version:             0.0.17.0
 synopsis:            Types describing the core and extended Avers APIs
 description:         See README
 homepage:            http://github.com/wereHamster/avers-api
