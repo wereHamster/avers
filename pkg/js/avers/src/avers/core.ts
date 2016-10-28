@@ -1,16 +1,7 @@
+import { last } from './shared';
+
+
 const splice = Array.prototype.splice;
-
-function result(object: any, property: string) {
-    if (object != null) {
-        let value = object[property];
-        if (typeof value === 'function') {
-            return value.call(object);
-        } else {
-            return value;
-        }
-    }
-}
-
 
 
 // changeListenersSymbol
@@ -28,7 +19,7 @@ const changeListenersSymbol = Symbol('aversChangeListeners');
 // childListenersSymbol
 // -----------------------------------------------------------------------
 //
-// If an object has listeners set up on any of its children, it'll keep
+// If an object has listeners set up on c of its children, it'll keep
 // a map from child to callback in a Map stored under this symbol.
 
 const childListenersSymbol = Symbol('aversChildListeners');
@@ -80,6 +71,8 @@ interface PropertyDescriptor {
 
     typeField ?: any;
     typeMap   ?: any;
+
+    value     ?: () => any;
 }
 
 
@@ -142,9 +135,6 @@ function parentPath(path: string): string {
     return pathKeys.slice(0, pathKeys.length - 1).join('.');
 }
 
-function last<T>(xs: T[]): T {
-    return xs[xs.length - 1];
-}
 
 // Splice operations can currently not be applied to the root. This is
 // a restriction which may be lifted in the future.
@@ -196,7 +186,7 @@ declareConstant(x: any): void {
 export function
 definePrimitive<T>(x: any, name: string, defaultValue?: T) {
     let desc = { type  : PropertyType.Primitive
-               , value : defaultValue
+               , value : () => defaultValue
                };
 
     defineProperty(x, name, desc);
@@ -329,7 +319,7 @@ migrateObject<T>(x: T): T {
             if (desc.type === PropertyType.Collection) {
                 x[name] = mkCollection([]);
             } else {
-                let value = result(desc, 'value');
+                let value = desc.value === undefined ? undefined : desc.value();
                 if (value != null && value !== prop) {
                     migrateObject(value);
                     x[name] = value;
