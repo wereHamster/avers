@@ -72,7 +72,7 @@ interface PropertyDescriptor {
     typeField ?: any;
     typeMap   ?: any;
 
-    value     ?: () => any;
+    value     ?: any;
 }
 
 
@@ -186,7 +186,7 @@ declareConstant(x: any): void {
 export function
 definePrimitive<T>(x: any, name: string, defaultValue?: T) {
     let desc = { type  : PropertyType.Primitive
-               , value : () => defaultValue
+               , value : defaultValue
                };
 
     defineProperty(x, name, desc);
@@ -200,7 +200,7 @@ defineObject<T>(x: any, name: string, klass: any, def?: T) {
                };
 
     if (def) {
-        desc.value = () => mk(klass, def);
+        desc.value = mk(klass, def);
     }
 
     defineProperty(x, name, desc);
@@ -231,7 +231,7 @@ defineVariant<T>(x: any, name: string, typeField: string, typeMap: { [name: stri
                };
 
     if (def) {
-        desc.value = () => clone(def);
+        desc.value = clone(def);
     }
 
     defineProperty(x, name, desc);
@@ -319,7 +319,7 @@ migrateObject<T>(x: T): T {
             if (desc.type === PropertyType.Collection) {
                 x[name] = mkCollection([]);
             } else {
-                let value = desc.value === undefined ? undefined : desc.value();
+                let value = desc.value;
                 if (value != null && value !== prop) {
                     migrateObject(value);
                     x[name] = value;
