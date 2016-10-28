@@ -59,24 +59,40 @@ function stopListening(self: any, obj: any): void {
 
 const aversPropertiesSymbol = Symbol('aversProperties');
 
+type PropertyDescriptor<T>
+    = PrimitivePropertyDescriptor<T>
+    | ObjectPropertyDescriptor<T>
+    | CollectionPropertyDescriptor<T>
+    | VariantPropertyDescriptor<T>
+
+interface PrimitivePropertyDescriptor<T> {
+    type: 'PrimitivePropertyDescriptor';
+    defaultValue: undefined | T;
+}
+
+interface ObjectPropertyDescriptor<T> {
+    type: 'ObjectPropertyDescriptor';
+    parser: (json: any, parent: any) => T;
+    defaultValue: undefined | T;
+}
+
+interface CollectionPropertyDescriptor<T> {
+    type: 'CollectionPropertyDescriptor';
+    parser: (json: any, parent: any) => T;
+}
+
+interface VariantPropertyDescriptor<T> {
+    type: 'VariantPropertyDescriptor';
+    parser: (json: any, parent: any) => T;
+    typeField: any;
+    typeMap: any;
+    defaultValue: undefined | T;
+}
+
+
 interface AversProperties {
     [name: string]: PropertyDescriptor<any>;
 }
-
-enum PropertyType { Primitive, Object, Collection, Variant };
-
-interface PropertyDescriptor<T> {
-    type       : PropertyType;
-    parser    ?: any;
-
-    typeField ?: any;
-    typeMap   ?: any;
-
-    defaultValue: undefined | T;
-    // ^ The default value to use when migrating the object and the property
-    // is not present.
-}
-
 
 // Return the property descriptors for the given object. Returns undefined
 // if the object has no properties defined on it.
@@ -143,8 +159,14 @@ function parentPath(path: string): string {
 function applySpliceOperation(root: any, path: string, op: Splice): any {
     let obj    = resolvePath<any>(root, path)
       , parent = resolvePath<any>(root, parentPath(path))
-      , prop   = aversProperties(parent)[last(path.split('.'))]
-      , insert = op.insert.map(json => { return prop.parser(json); })
+      , prop   = aversProperties(parent)[last(path.split('.'))];
+
+    if (prop.type !== 'CollectionPropertyDescriptor') {
+        return;
+    }
+
+    let parser = prop.parser
+      , insert = op.insert.map(json => parser(json, parent))
       , args   = [ op.index, op.remove ].concat(insert);
 
     splice.apply(obj, args);
@@ -187,8 +209,8 @@ declareConstant(x: any): void {
 
 export function
 definePrimitive<T>(x: any, name: string, defaultValue: undefined | T) {
-    let desc: PropertyDescriptor<T> =
-        { type: PropertyType.Primitive
+    let desc: PrimitivePropertyDescriptor<T> =
+        { type: 'PrimitivePropertyDescriptor'
         , defaultValue
         };
 
@@ -197,9 +219,9 @@ definePrimitive<T>(x: any, name: string, defaultValue: undefined | T) {
 
 export function
 defineObject<T>(x: any, name: string, klass: any, def?: T) {
-    let desc: PropertyDescriptor<T> =
-        { type: PropertyType.Object
-        , parser : createObjectParser(klass)
+    let desc: ObjectPropertyDescriptor<T> =
+        { type: 'ObjectPropertyDescriptor'
+        , parser : createObjectParser<T>(klass)
         , defaultValue: undefined
         };
 
@@ -227,27 +249,22 @@ defineVariant<T>(x: any, name: string, typeField: string, typeMap: { [name: stri
         }
     }
 
-    let desc: PropertyDescriptor<T> = 
-        { type      : PropertyType.Variant
-        , parser    : createVariantParser(name, typeField, typeMap)
+    let desc: VariantPropertyDescriptor<T> =
+        { type      : 'VariantPropertyDescriptor'
+        , parser    : createVariantParser<T>(name, typeField, typeMap)
         , typeField : typeField
         , typeMap   : typeMap
-        , defaultValue: undefined
+        , defaultValue: def === undefined ? undefined : clone(def)
         };
-
-    if (def) {
-        desc.defaultValue = clone(def);
-    }
 
     defineProperty(x, name, desc);
 }
 
 export function
 defineCollection(x: any, name: string, klass: any) {
-    let desc: PropertyDescriptor<any> =
-        { type: PropertyType.Collection
+    let desc: CollectionPropertyDescriptor<any> =
+        { type: 'CollectionPropertyDescriptor'
         , parser: createObjectParser(klass)
-        , defaultValue: undefined
         };
 
     defineProperty(x, name, desc);
@@ -267,7 +284,7 @@ function createVariantParser<T>(name: string, typeField: string, typeMap: { [typ
 function
 parseValue(desc: PropertyDescriptor<any>, old: any, json: any, parent: any): any {
     switch (desc.type) {
-    case PropertyType.Collection:
+    case 'CollectionPropertyDescriptor':
         if (json) {
             if (!old) {
                 old = mkCollection([]);
@@ -283,8 +300,8 @@ parseValue(desc: PropertyDescriptor<any>, old: any, json: any, parent: any): any
         }
         break;
 
-    case PropertyType.Object:
-    case PropertyType.Variant:
+    case 'ObjectPropertyDescriptor':
+    case 'VariantPropertyDescriptor':
         if (json) {
             if (old) {
                 return withId(json, updateObject(old, json));
@@ -294,7 +311,7 @@ parseValue(desc: PropertyDescriptor<any>, old: any, json: any, parent: any): any
         }
         break;
 
-    case PropertyType.Primitive:
+    case 'PrimitivePropertyDescriptor':
         return json;
     }
 }
@@ -323,7 +340,7 @@ migrateObject<T>(x: T): T {
           , prop = x[name];
 
         if (prop == null) {
-            if (desc.type === PropertyType.Collection) {
+            if (desc.type === 'CollectionPropertyDescriptor') {
                 x[name] = mkCollection([]);
             } else {
                 let value = desc.defaultValue;
@@ -332,9 +349,9 @@ migrateObject<T>(x: T): T {
                     x[name] = value;
                 }
             }
-        } else if (desc.type === PropertyType.Object || desc.type === PropertyType.Variant) {
+        } else if (desc.type === 'ObjectPropertyDescriptor' || desc.type === 'VariantPropertyDescriptor') {
             migrateObject(prop);
-        } else if (desc.type === PropertyType.Collection) {
+        } else if (desc.type === 'CollectionPropertyDescriptor') {
             prop.forEach(migrateObject);
         }
     }
@@ -405,11 +422,7 @@ mk<T>(x: new() => T, json: any): T {
 }
 
 function concatPath(self: string, child: string): string {
-    if (child !== "") {
-        return [self, child].join('.');
-    } else {
-        return self;
-    }
+    return child === '' ? self : self + '.' + child;
 }
 
 
@@ -417,7 +430,7 @@ function concatPath(self: string, child: string): string {
 // parent should listen to events.
 function isObservableProperty(propertyDescriptor: PropertyDescriptor<any>): boolean {
     let type = propertyDescriptor.type;
-    return type === PropertyType.Object || type === PropertyType.Variant || type === PropertyType.Collection;
+    return type === 'ObjectPropertyDescriptor' || type === 'VariantPropertyDescriptor' || type === 'CollectionPropertyDescriptor';
 }
 
 interface ChangeRecord {
@@ -449,15 +462,15 @@ function objectJSON(x: any): any {
         let desc = aversProps[name];
 
         switch (desc.type) {
-        case PropertyType.Primitive:
+        case 'PrimitivePropertyDescriptor':
             json[name] = x[name];
             break;
 
-        case PropertyType.Object:
+        case 'ObjectPropertyDescriptor':
             json[name] = x[name] ? toJSON(x[name]) : null;
             break;
 
-        case PropertyType.Variant:
+        case 'VariantPropertyDescriptor':
             let value = x[name];
 
             if (value) {
@@ -466,7 +479,7 @@ function objectJSON(x: any): any {
             }
             break;
 
-        case PropertyType.Collection:
+        case 'CollectionPropertyDescriptor':
             json[name] = toJSON(x[name]);
             break;
         }
