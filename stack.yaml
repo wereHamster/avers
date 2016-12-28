@@ -4,3 +4,5 @@ packages:
 - pkg/hs/avers-api/
 - pkg/hs/avers-api-docs/
 - pkg/hs/avers-server/
+extra-deps:
+- inflections-0.3.0.0

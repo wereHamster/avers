@@ -50,9 +50,9 @@ deriveJSONOptions prefix = defaultOptions
     }
 
 dasherizeTag :: String -> String
-dasherizeTag x = case parseCamelCase [] x of
+dasherizeTag x = case parseCamelCase [] (T.pack x) of
     Left  err -> error $ show err
-    Right res -> map toLower $ dasherize res
+    Right res -> map toLower $ T.unpack $ dasherize res
 
 variantOptions :: String -> String -> String -> Options
 variantOptions tagField contentsField prefix = defaultOptions

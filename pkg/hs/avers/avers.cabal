@@ -71,7 +71,7 @@ library
         MonadRandom
       , cryptonite
       , memory
-      , inflections
+      , inflections >= 0.3.0.0
       , resource-pool
       , rethinkdb-client-driver
       , scrypt
