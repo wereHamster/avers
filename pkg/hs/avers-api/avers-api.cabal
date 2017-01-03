@@ -14,7 +14,7 @@ cabal-version:       >=1.10
 
 source-repository head
   type:     git
-  location: https://github.com/wereHamster/avers-api
+  location: https://github.com/wereHamster/avers
 
 library
   default-language:    Haskell2010
