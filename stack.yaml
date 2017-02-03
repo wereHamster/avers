@@ -4,7 +4,3 @@ packages:
 - pkg/hs/avers-api/
 - pkg/hs/avers-api-docs/
 - pkg/hs/avers-server/
-extra-deps:
-- servant-0.10
-- servant-server-0.10
-- servant-swagger-1.1.2.1

@@ -45,8 +45,8 @@ library
    , mtl
    , resource-pool
    , rethinkdb-client-driver
-   , servant >= 0.10
-   , servant-server >= 0.10
+   , servant
+   , servant-server
    , stm
    , text
    , time
