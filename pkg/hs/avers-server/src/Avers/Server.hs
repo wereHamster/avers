@@ -65,7 +65,7 @@ etagVersion = "v0"
 
 -- | Convert the 'Credentials' into an 'ObjId' to which the ceredentials refer.
 -- That's the object the client is authenticated as.
-credentialsObjId :: Handle -> Credentials -> ExceptT ServantErr IO ObjId
+credentialsObjId :: Handle -> Credentials -> Handler ObjId
 credentialsObjId aversH cred = do
     errOrObjId <- case cred of
         SessionIdCredential sId -> liftIO $ evalAvers aversH $
@@ -76,12 +76,12 @@ credentialsObjId aversH cred = do
         Right s -> pure s
 
 
-failWith :: Text -> ExceptT ServantErr IO b
+failWith :: Text -> Handler b
 failWith e = throwError $ err500
     { errBody = LBS.fromChunks [T.encodeUtf8 e] }
 
 
-aversResult :: Either AversError a -> ExceptT ServantErr IO a
+aversResult :: Either AversError a -> Handler a
 aversResult res = case res of
     Left e -> case e of
         DatabaseError detail                  -> failWith $ "database " <> detail
@@ -96,11 +96,11 @@ aversResult res = case res of
     Right r -> pure r
 
 
-reqAvers :: Handle -> Avers a -> ExceptT ServantErr IO a
+reqAvers :: Handle -> Avers a -> Handler a
 reqAvers aversH m = liftIO (evalAvers aversH m) >>= aversResult
 
 
-cacheableResponse :: (ToJSON a) => Maybe Text -> a -> ExceptT ServantErr IO (Cacheable a)
+cacheableResponse :: (ToJSON a) => Maybe Text -> a -> Handler (Cacheable a)
 cacheableResponse mbValidationToken a = do
     let etag = T.decodeUtf8 $ convertToBase Base64 $ (hashlazy (encode a) :: Digest SHA3_256)
     if mbValidationToken == Just (etagVersion <> ":" <> etag)
@@ -302,7 +302,7 @@ serveAversAPI aversH auth =
     sessionCookieName     = "session"
     sessionExpirationTime = 2 * 365 * 24 * 60 * 60
 
-    mkSetCookie :: SessionId -> ExceptT ServantErr IO SetCookie
+    mkSetCookie :: SessionId -> Handler SetCookie
     mkSetCookie sId = do
         now <- liftIO $ getCurrentTime
         pure $ def

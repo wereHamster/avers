@@ -36,7 +36,7 @@ library
    , bytestring
    , cookie
    , http-api-data
-   , servant
+   , servant >= 0.10
    , text
    , time
    , vector

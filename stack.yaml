@@ -1,8 +1,10 @@
-resolver: nightly-2016-12-28
+resolver: nightly-2017-02-01
 packages:
 - pkg/hs/avers/
 - pkg/hs/avers-api/
 - pkg/hs/avers-api-docs/
 - pkg/hs/avers-server/
 extra-deps:
-- inflections-0.3.0.0
+- servant-0.10
+- servant-server-0.10
+- servant-swagger-1.1.2.1

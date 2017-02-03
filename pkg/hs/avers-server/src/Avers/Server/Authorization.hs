@@ -92,7 +92,7 @@ data AuthzR = ContinueR | AllowR | RejectR
 --------------------------------------------------------------------------------
 -- | Run the authorization logic inside of the Servant monad.
 
-runAuthorization :: Handle -> Authz -> ExceptT ServantErr IO ()
+runAuthorization :: Handle -> Authz -> Handler ()
 runAuthorization _      []     = pure ()
 runAuthorization aversH (x:xs) = do
     res <- liftIO $ evalAvers aversH x

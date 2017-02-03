@@ -31,8 +31,8 @@ library
    , avers-api
    , cookie
    , lens
-   , servant
-   , servant-swagger
+   , servant >= 0.10
+   , servant-swagger >= 1.1.2.1
    , swagger2
    , text
    , unordered-containers
