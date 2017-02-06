@@ -23,7 +23,6 @@ module Avers.API
     , UploadBlob
     , LookupBlob
     , LookupBlobContent
-    , Signup
 
     , CacheValidationToken, Cacheable
 
@@ -174,15 +173,6 @@ type LookupBlobContent
     :> Credentials
     :> Get '[OctetStream] (Headers '[Header "Content-Type" Text] BlobContent)
 
--- | Similar to CreateObject but no authorization is required. Instead,
--- a different mechanism is used to ensure that the client is allowed
--- to execute the action (eg. an captcha).
-type Signup
-    = "signup"
-    :> ReqBody '[JSON] SignupBody
-    :> Post '[JSON] SignupResponse
-
-
 
 --------------------------------------------------------------------------------
 -- | The complete Avers API as a data type.
@@ -205,4 +195,3 @@ type AversAPI
     :<|> UploadBlob
     :<|> LookupBlob
     :<|> LookupBlobContent
-    :<|> Signup

@@ -128,7 +128,6 @@ serveAversAPI aversH auth =
     :<|> serveUploadBlob
     :<|> serveLookupBlob
     :<|> serveLookupBlobContent
-    :<|> serveSignup
 
   where
 
@@ -389,10 +388,4 @@ serveAversAPI aversH auth =
         runAuthorization aversH $
             lookupBlobContentAuthz auth cred blobId
 
-        throwError err501
-
-
-    ----------------------------------------------------------------------------
-    serveSignup :: Server Signup
-    serveSignup _body = do
         throwError err501

@@ -293,22 +293,3 @@ instance ToJSON LookupBlobResponse where
         , "size" .= lbrSize x
         , "contentType" .= lbrContentType x
         ]
-
-
-
---------------------------------------------------------------------------------
--- Signup
-
-data SignupBody = SignupBody
-    {
-    } deriving (Generic)
-
-instance FromJSON SignupBody where
-    parseJSON = undefined
-
-data SignupResponse = SignupResponse
-    {
-    } deriving (Generic)
-
-instance ToJSON SignupResponse where
-    toJSON = undefined

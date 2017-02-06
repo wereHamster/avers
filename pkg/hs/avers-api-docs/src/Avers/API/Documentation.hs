@@ -194,13 +194,6 @@ instance ToSchema LookupBlobResponse where
     declareNamedSchema = genericDeclareNamedSchema (schemaOptions "")
 
 
-instance ToSchema SignupBody where
-    declareNamedSchema = genericDeclareNamedSchema (schemaOptions "")
-
-instance ToSchema SignupResponse where
-    declareNamedSchema = genericDeclareNamedSchema (schemaOptions "")
-
-
 
 --------------------------------------------------------------------------------
 
