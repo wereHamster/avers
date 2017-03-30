@@ -8,8 +8,14 @@ category:            Avers
 build-type:          Simple
 cabal-version:       >= 1.10
 
-synopsis:            empty
-description:         empty
+synopsis:            Server-side implementation of the Avers storage model
+description:
+  This is the server-side implementation of the Avers storage model. It is a
+  Haskell library, intended to be used by your application. The library provides
+  you with everything you need to write your own Avers server. You can create and
+  patch objects and collections thereof. It has builtin support for sessions,
+  authentication and managing blobs. The database is not configurable. Avers is
+  currently hardcoded to use RethinkDB.
 
 
 extra-source-files:
