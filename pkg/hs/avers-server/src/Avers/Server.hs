@@ -293,8 +293,12 @@ serveAversAPI aversH auth =
 
     ----------------------------------------------------------------------------
     serveChangeSecret :: Server ChangeSecret
-    serveChangeSecret _ _ = do
-        throwError err501
+    serveChangeSecret cred ChangeSecretBody{..} = do
+        reqAvers aversH $ do
+            Session{..} <- case cred of
+                SessionIdCredential sId -> lookupSession sId
+
+            updateSecret (SecretId $ unObjId sessionObjId) csbNewSecret
 
 
     ----------------------------------------------------------------------------
