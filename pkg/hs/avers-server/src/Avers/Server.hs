@@ -218,7 +218,7 @@ serveAversAPI aversH auth =
 
     ----------------------------------------------------------------------------
     serveObjectChanges :: Server ObjectChanges
-    serveObjectChanges objId _cred req respond = respond $
+    serveObjectChanges objId _cred = Tagged $ \req respond -> respond $
         case websocketsApp WS.defaultConnectionOptions wsApp req of
             Nothing  -> responseLBS status500 [] "Failed"
             Just res -> res
@@ -260,7 +260,7 @@ serveAversAPI aversH auth =
 
     ----------------------------------------------------------------------------
     serveFeed :: Server Feed
-    serveFeed _cred req respond = respond $
+    serveFeed _cred = Tagged $ \req respond -> respond $
         case websocketsApp WS.defaultConnectionOptions wsApp req of
             Nothing  -> responseLBS status500 [] "This is a WebSocket endpoint"
             Just res -> res
