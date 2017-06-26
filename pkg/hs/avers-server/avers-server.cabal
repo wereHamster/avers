@@ -1,5 +1,5 @@
 name:                avers-server
-version:             0.0.18.0
+version:             0.0.19.0
 synopsis:            Server implementation of the Avers API
 description:         Server implementation of the Avers API
 homepage:            http://github.com/wereHamster/avers-server
