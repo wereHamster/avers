@@ -39,7 +39,6 @@ library
    , containers
    , cookie
    , cryptonite
-   , either
    , http-types
    , memory
    , mtl

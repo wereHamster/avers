@@ -118,10 +118,8 @@ test-suite spec
       , attoparsec
       , avers
       , base
-      , base16-bytestring
       , bytestring
       , containers
-      , cryptohash
       , hspec
       , mtl
       , resource-pool
