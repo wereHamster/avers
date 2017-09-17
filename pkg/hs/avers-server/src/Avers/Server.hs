@@ -68,7 +68,8 @@ etagVersion = "v0"
 credentialsObjId :: Handle -> Credentials -> Handler ObjId
 credentialsObjId aversH cred = do
     errOrObjId <- case cred of
-        SessionIdCredential sId -> liftIO $ evalAvers aversH $
+        CredAnonymous -> throwError err401
+        CredSessionId sId -> liftIO $ evalAvers aversH $
             sessionObjId <$> lookupSession sId
 
     case errOrObjId of
@@ -296,7 +297,8 @@ serveAversAPI aversH auth =
     serveChangeSecret cred ChangeSecretBody{..} = do
         reqAvers aversH $ do
             Session{..} <- case cred of
-                SessionIdCredential sId -> lookupSession sId
+                CredAnonymous -> throwError NotAuthorized
+                CredSessionId sId -> lookupSession sId
 
             updateSecret (SecretId $ unObjId sessionObjId) csbNewSecret
 

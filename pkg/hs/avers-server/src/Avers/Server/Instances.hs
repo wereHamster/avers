@@ -43,10 +43,10 @@ instance (HasServer sublayout context) => HasServer (Credentials :> sublayout) c
                 mbSessionIdText = lookup "session" =<< fmap parseCookiesText mbCookieHeaders
 
             case mbSessionIdText of
-                Nothing -> delayedFailFatal err401
+                Nothing -> pure CredAnonymous
                 Just sessionIdText -> case parseQueryParam sessionIdText of
-                    Left _ -> delayedFailFatal err401
-                    Right sId -> pure $ SessionIdCredential $ SessionId sId
+                    Left _ -> delayedFailFatal err400
+                    Right sId -> pure $ CredSessionId $ SessionId sId
 
 
 

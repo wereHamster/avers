@@ -47,19 +47,22 @@ defaultAuthorizations = Authorizations
     , lookupObjectAuthz = \cred objId ->
         [ sufficient $ do
             session <- case cred of
-                SessionIdCredential sId -> lookupSession sId
+                CredAnonymous -> throwError NotAuthorized
+                CredSessionId sId -> lookupSession sId
             sessionCreatedObject session objId
         ]
     , patchObjectAuthz = \cred objId _ ->
         [ sufficient $ do
             session <- case cred of
-                SessionIdCredential sId -> lookupSession sId
+                CredAnonymous -> throwError NotAuthorized
+                CredSessionId sId -> lookupSession sId
             sessionCreatedObject session objId
         ]
     , deleteObjectAuthz = \cred objId ->
         [ sufficient $ do
             session <- case cred of
-                SessionIdCredential sId -> lookupSession sId
+                CredAnonymous -> throwError NotAuthorized
+                CredSessionId sId -> lookupSession sId
             sessionCreatedObject session objId
         ]
     , uploadBlobAuthz = \_ _ -> [pure AllowR]

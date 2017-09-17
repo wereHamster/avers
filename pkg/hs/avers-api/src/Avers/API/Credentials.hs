@@ -13,5 +13,6 @@ import Avers
 -- passed along with the request.
 
 data Credentials
-    = SessionIdCredential !SessionId
+    = CredAnonymous
+    | CredSessionId !SessionId
     -- AccessTokenCredential !AccessToken
