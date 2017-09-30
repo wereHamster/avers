@@ -20,7 +20,7 @@ import           Control.Lens
 
 import           Data.Proxy
 import           Data.Swagger     hiding (Operation, Header)
-import           Data.Aeson
+import           Data.Aeson       hiding (Options(..))
 import           Data.Monoid
 import           Data.Text        (Text)
 import qualified Data.Text        as Text
