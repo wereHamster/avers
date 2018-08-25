@@ -167,5 +167,6 @@ changeSecret(h: Handle, newSecret: string): Promise<void> {
     let url = endpointUrl(h, '/secret');
     return h.fetch(url, assign({ credentials: 'include' } as RequestInit, { method: 'POST' }))
         .then(guardStatus('changeSecret', 200))
+        // tslint:disable-next-line:no-empty
         .then(() => {});
 }

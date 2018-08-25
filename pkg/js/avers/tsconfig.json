@@ -5,7 +5,7 @@
         "module": "es6",
         "moduleResolution": "node",
         "declaration": true,
-        "removeComments": true,
+        "removeComments": false,
         "noLib": false,
         "noImplicitAny": true,
         "strictNullChecks": true,
@@ -13,13 +13,8 @@
         "suppressImplicitAnyIndexErrors": true,
         "outDir": "dist/"
     },
-    "files": [
-        "src/avers/core.ts",
-        "src/avers/shared.ts",
-        "src/avers/session.ts",
-        "src/avers/storage.ts",
-        "src/avers.ts",
-        "test/avers.test.ts",
-        "typings/main.d.ts"
+    "include": [
+        "src/**/*.ts",
+        "test/**/*.ts"
     ]
 }

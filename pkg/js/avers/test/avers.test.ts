@@ -1,3 +1,5 @@
+import 'mocha';
+
 import * as Avers from '../src/avers';
 import {assert} from "chai";
 
@@ -135,7 +137,7 @@ function mkHandle(json: any): Avers.Handle {
     infoTable.set('library', Library);
     infoTable.set('book', Book);
 
-    return new Avers.Handle('/api', fetch, createWebSocket, now, infoTable);
+    return new Avers.Handle('/api', fetch as any, createWebSocket, now, infoTable);
 }
 
 function mkObjectCollection() {
@@ -160,7 +162,7 @@ const bookObjectResponse =
     };
 
 
-function unresolvedPromiseF() {
+function unresolvedPromiseF(): Promise<any> {
     return new Promise(function() { /* empty */ });
 }
 
@@ -245,28 +247,28 @@ describe('Change event propagation', function() {
         });
     }
 
-    it('should deliver changes of primitive values on the root object', function(done) {
+    it('should deliver changes of primitive values on the root object', function(done: MochaDone) {
         var book = Avers.parseJSON(Book, jsonBook);
 
         expectChangeAtPath(book, 'title', done);
         book.title = 'GAME OF THRONES';
     });
 
-    it('should deliver changes of embedded objects', function(done) {
+    it('should deliver changes of embedded objects', function(done: MochaDone) {
         var book = Avers.parseJSON(Book, jsonBook);
 
         expectChangeAtPath(book, 'author.firstName', done);
         book.author.firstName = 'TOMAS';
     });
 
-    it('should deliver changes inside variant properties', function(done) {
+    it('should deliver changes inside variant properties', function(done: MochaDone) {
         var item = Avers.mk(Item, jsonItem);
 
         expectChangeAtPath(item, 'content.author.firstName', done);
         (<Book>item.content).author.firstName = 'TOMAS';
     });
 
-    it('should deliver changes when adding elments to a collection', function(done) {
+    it('should deliver changes when adding elments to a collection', function(done: MochaDone) {
         var library = Avers.mk(Library, {});
 
         expectChangeAtPath(library, 'items', done);
@@ -468,7 +470,7 @@ describe('Avers.lookupItem', function() {
 });
 
 describe('Avers.attachGenerationListener', function() {
-    it('should invoke the listener when the data cahnges', function(done) {
+    it('should invoke the listener when the data changes', function(done: MochaDone) {
         let h = mkHandle({});
         Avers.attachGenerationListener(h, () => { done(); });
         Avers.startNextGeneration(h);
@@ -481,7 +483,7 @@ describe('Avers.lookupEditable', function() {
     it('should return a Computation in Pending status', function() {
         assert.equal(sentinel, Avers.lookupEditable(mkHandle(libraryObjectResponse), 'id').get(sentinel));
     });
-    it('should resolve to the object after it is loaded', function(done) {
+    it('should resolve to the object after it is loaded', function(done: MochaDone) {
         let h = mkHandle(libraryObjectResponse);
 
         Avers.lookupEditable(h, 'id').get(sentinel);
@@ -541,7 +543,7 @@ describe('Avers.ObjectCollection', function() {
             var col = mkObjectCollection();
             assert.equal(sentinel, col.ids.get(sentinel));
         });
-        it('should resolve to the object after it is loaded', function(done) {
+        it('should resolve to the object after it is loaded', function(done: MochaDone) {
             var col = mkObjectCollection();
             col.ids.get(sentinel);
 
@@ -572,18 +574,18 @@ describe('Avers.ephemeralValue', function() {
         Avers.resolveEphemeral(h, e, 42, h.now() - 99);
         assert.equal(42, Avers.ephemeralValue(h, e).get(sentinel));
     });
-    it('should invoke the fetch function when the value is stale', function(done) {
+    it('should invoke the fetch function when the value is stale', function(done: MochaDone) {
         let h = mkHandle({})
-          , ne = new Avers.Ephemeral(testNamespace, 'test', done);
+          , ne = new Avers.Ephemeral(testNamespace, 'test', done as any);
 
         Avers.resolveEphemeral(h, ne, 42, h.now() - 99);
         Avers.ephemeralValue(h, ne).get(sentinel);
     });
-    it('should not invoke the fetch function when the value is fresh', function(done) {
+    it('should not invoke the fetch function when the value is fresh', function(done: MochaDone) {
         let h = mkHandle({})
           , ne = new Avers.Ephemeral(testNamespace, 'test', () => {
               assert(false, 'fetch of a fresh Ephemeral was invoked');
-              return Promise.resolve({});
+              throw new Error('fetch of a fresh Ephemeral was invoked');
           });
 
         Avers.resolveEphemeral(h, ne, 42, h.now() + 99);

@@ -296,7 +296,7 @@ mkEditable<T>(h: Handle, id: string): Editable<T> {
         obj = new Editable<T>(id);
         obj.changeListener = mkChangeListener(h, id);
 
-        h.objectCache.set(id, Object.freeze(obj));
+        h.objectCache.set(id, Object.freeze(obj) as any);
 
         changeFeedSubscription(h, ['+', id]);
     }
