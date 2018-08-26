@@ -336,7 +336,7 @@ export function fetchEditable<T>(h: Handle, id: string): Promise<Editable<T>> {
 }
 
 function debounce<T extends Function>(func: T, wait: any, immediate: any = undefined): T {
-  let timeout: any, args: any, context: any, timestamp: any, result: any;
+  let timeout: any, args: any, timestamp: any, result: any;
 
   let later = function() {
     let last = Date.now() - timestamp;
@@ -348,14 +348,13 @@ function debounce<T extends Function>(func: T, wait: any, immediate: any = undef
       if (!immediate) {
         result = func.apply(context, args);
         if (!timeout) {
-          context = args = null;
+          args = null;
         }
       }
     }
   };
 
   return <any>function() {
-    context = this;
     args = arguments;
     timestamp = Date.now();
     let callNow = immediate && !timeout;
@@ -363,8 +362,8 @@ function debounce<T extends Function>(func: T, wait: any, immediate: any = undef
       timeout = setTimeout(later, wait);
     }
     if (callNow) {
-      result = func.apply(context, args);
-      context = args = null;
+      result = func.apply(null, args);
+      args = null;
     }
 
     return result;
@@ -393,22 +392,22 @@ export class Editable<T> {
 
   lastError: undefined | Error = undefined;
 
-  type: string;
+  type!: string;
 
-  createdAt: Date;
+  createdAt!: Date;
 
-  createdBy: string;
+  createdBy!: string;
   // ^ The primary author who created this object.
 
-  revisionId: RevId;
+  revisionId!: RevId;
   // ^ The RevId as we think is the latest on the server. Local changes
   // are submitted against this RevId.
 
-  shadowContent: T;
+  shadowContent!: T;
   // ^ The content of the object at 'revisionId'.
 
-  content: T;
-  changeListener: ChangeCallback;
+  content!: T;
+  changeListener!: ChangeCallback;
 
   submittedChanges: Operation[] = [];
   localChanges: Operation[] = [];
@@ -433,8 +432,8 @@ function withEditable<T>(h: Handle, objId: ObjId, f: (obj: Editable<T>) => void)
 // If the 'Editable' doesn't exist in the cache then it is created.
 
 function updateEditable<T>(h: Handle, objId: ObjId, f: (obj: Editable<T>) => void): void {
-  let obj = mkEditable(h, objId);
-  applyEditableChanges(h, obj, f);
+  let obj = mkEditable<T>(h, objId);
+  applyEditableChanges<T>(h, obj, f);
 }
 
 // applyEditableChanges
@@ -444,7 +443,7 @@ function updateEditable<T>(h: Handle, objId: ObjId, f: (obj: Editable<T>) => voi
 // the new copy into the cache, overwriting the previous object.
 
 function applyEditableChanges<T>(h: Handle, obj: Editable<T>, f: (obj: Editable<T>) => void): void {
-  h.objectCache.set(obj.objectId, immutableClone(Editable, obj, f));
+  h.objectCache.set(obj.objectId, immutableClone<Editable<T>>(Editable, obj, f));
 }
 
 // All the entity types which are managed by the Avers Handle.
@@ -971,7 +970,7 @@ function insertStaticE<T>(h: Handle, ns: Symbol, key: string, e: StaticE<T>): vo
 }
 
 function applyStaticChanges<T>(h: Handle, ns: Symbol, key: string, s: StaticE<T>, f: (s: StaticE<T>) => void): void {
-  insertStaticE(h, ns, key, immutableClone(StaticE, s, f));
+  insertStaticE(h, ns, key, immutableClone<StaticE<T>>(StaticE, s, f));
 }
 
 function withStaticE<T>(h: Handle, ns: Symbol, key: string, f: (s: StaticE<T>) => void): void {
@@ -1094,7 +1093,7 @@ function applyEphemeralChanges<T>(
   s: EphemeralE<T>,
   f: (s: EphemeralE<T>) => void
 ): void {
-  insertEphemeralE(h, ns, key, immutableClone(EphemeralE, s, f));
+  insertEphemeralE(h, ns, key, immutableClone<EphemeralE<T>>(EphemeralE, s, f));
 }
 
 function withEphemeralE<T>(h: Handle, ns: Symbol, key: string, f: (s: EphemeralE<T>) => void): void {

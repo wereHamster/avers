@@ -317,7 +317,7 @@ export function updateObject<T>(x: T, json: any): T {
     let desc = aversProps[name];
 
     if (json[name] != null) {
-      x[name] = parseValue(desc, x[name], json[name], json);
+      (x as any)[name] = parseValue(desc, (x as any)[name], json[name], json);
     }
   }
 
@@ -329,16 +329,16 @@ export function migrateObject<T>(x: T): T {
 
   for (let name in aversProps) {
     let desc = aversProps[name],
-      prop = x[name];
+      prop = (x as any)[name];
 
     if (prop == null) {
       if (desc.type === "CollectionPropertyDescriptor") {
-        x[name] = mkCollection([]);
+        (x as any)[name] = mkCollection([]);
       } else {
         let value = desc.defaultValue;
         if (value != null && value !== prop) {
           migrateObject(value);
-          x[name] = value;
+          (x as any)[name] = value;
         }
       }
     } else if (desc.type === "ObjectPropertyDescriptor" || desc.type === "VariantPropertyDescriptor") {

@@ -1,13 +1,11 @@
 {
     "compilerOptions": {
-        "target": "es2017",
+        "target": "es2018",
         "module": "commonjs",
-        "moduleResolution": "node",
         "declaration": true,
         "noImplicitAny": true,
-        "strictNullChecks": true,
+        "strict": true,
         "preserveConstEnums": true,
-        "suppressImplicitAnyIndexErrors": true,
         "rootDir": "src",
         "outDir": "dist"
     },

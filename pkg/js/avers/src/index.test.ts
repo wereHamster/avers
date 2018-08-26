@@ -9,8 +9,8 @@ const sentinel: any = new Sentinel();
 const testNamespace = Symbol("testNamespace");
 
 class Author {
-  firstName: string;
-  lastName: string;
+  firstName!: string;
+  lastName!: string;
 }
 
 var jsonAuthor = {
@@ -27,9 +27,9 @@ var unknownAuthor = Avers.mk(Author, {
 });
 
 class Book {
-  title: string;
-  author: Author;
-  tags: string[];
+  title!: string;
+  author!: Author;
+  tags!: string[];
 }
 
 var jsonBook = {
@@ -50,8 +50,8 @@ Avers.defineObject(Book, "author", Author, unknownAuthor);
 Avers.defineCollection(Book, "tags", String);
 
 class Magazine {
-  title: string;
-  publisher: string;
+  title!: string;
+  publisher!: string;
 }
 
 /*
@@ -68,8 +68,8 @@ class Diary {}
 Avers.declareConstant(Diary);
 
 class Item {
-  id: string;
-  content: Book | Magazine | Diary;
+  id!: string;
+  content!: Book | Magazine | Diary;
 }
 
 var jsonItem = {
@@ -87,15 +87,15 @@ var def = Avers.mk(Book, jsonBook);
 Avers.defineVariant(Item, "content", "type", { book: Book, magazine: Magazine, diary: Diary }, def);
 
 class NullableTest {
-  obj: Diary;
-  variant: Book | Magazine;
+  obj!: Diary;
+  variant!: Book | Magazine;
 }
 
 Avers.defineObject(NullableTest, "obj", Diary);
 Avers.defineVariant(NullableTest, "variant", "type", { book: Book, magazine: Magazine });
 
 class Library {
-  items: Avers.Collection<Item>;
+  items!: Avers.Collection<Item>;
 }
 
 Avers.defineCollection(Library, "items", Item);

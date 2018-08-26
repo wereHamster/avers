@@ -49,7 +49,7 @@ export function assign<T>(target: T, ...source: Object[]): T {
       keys = ownEnumerableKeys(Object(from));
 
     for (let i = 0; i < keys.length; i++) {
-      to[keys[i]] = from[keys[i]];
+      (to as any)[keys[i]] = from[keys[i]];
     }
   }
 
