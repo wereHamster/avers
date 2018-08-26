@@ -1,8 +1,6 @@
-import { last } from './shared';
-
+import { last } from "./shared";
 
 const splice = Array.prototype.splice;
-
 
 // changeListenersSymbol
 // -----------------------------------------------------------------------
@@ -13,8 +11,7 @@ const splice = Array.prototype.splice;
 // object (ie by using 'attachChangeListener') then it will be called only
 // once.
 
-const changeListenersSymbol = Symbol('aversChangeListeners');
-
+const changeListenersSymbol = Symbol("aversChangeListeners");
 
 // childListenersSymbol
 // -----------------------------------------------------------------------
@@ -22,158 +19,153 @@ const changeListenersSymbol = Symbol('aversChangeListeners');
 // If an object has listeners set up on c of its children, it'll keep
 // a map from child to callback in a Map stored under this symbol.
 
-const childListenersSymbol = Symbol('aversChildListeners');
-
+const childListenersSymbol = Symbol("aversChildListeners");
 
 function emitChanges(self: any, changes: Change<any>[]): void {
-    let listeners = self[changeListenersSymbol];
-    if (listeners) {
-        listeners.forEach((fn: any) => { fn(changes); });
-    }
+  let listeners = self[changeListenersSymbol];
+  if (listeners) {
+    listeners.forEach((fn: any) => {
+      fn(changes);
+    });
+  }
 }
 
 function listenTo(self: any, obj: any, callback: ChangeCallback): void {
-    let listeners = self[childListenersSymbol];
-    if (!listeners) {
-        listeners = self[childListenersSymbol] = new Map();
-    }
+  let listeners = self[childListenersSymbol];
+  if (!listeners) {
+    listeners = self[childListenersSymbol] = new Map();
+  }
 
-    listeners.set(obj, callback);
-    attachChangeListener(obj, callback);
+  listeners.set(obj, callback);
+  attachChangeListener(obj, callback);
 }
 
 function stopListening(self: any, obj: any): void {
-    let listeners = self[childListenersSymbol];
-    if (listeners) {
-        let fn = listeners.get(obj);
-        if (fn) {
-            detachChangeListener(obj, fn);
-            listeners.delete(obj);
-        }
+  let listeners = self[childListenersSymbol];
+  if (listeners) {
+    let fn = listeners.get(obj);
+    if (fn) {
+      detachChangeListener(obj, fn);
+      listeners.delete(obj);
     }
+  }
 }
-
 
 // Symbol used as the key for the avers property descriptor object. It is
 // kept private so only the Avers module has access to the descriptors.
 
-const aversPropertiesSymbol = Symbol('aversProperties');
+const aversPropertiesSymbol = Symbol("aversProperties");
 
-type PropertyDescriptor<T>
-    = PrimitivePropertyDescriptor<T>
-    | ObjectPropertyDescriptor<T>
-    | CollectionPropertyDescriptor<T>
-    | VariantPropertyDescriptor<T>
+type PropertyDescriptor<T> =
+  | PrimitivePropertyDescriptor<T>
+  | ObjectPropertyDescriptor<T>
+  | CollectionPropertyDescriptor<T>
+  | VariantPropertyDescriptor<T>;
 
 interface PrimitivePropertyDescriptor<T> {
-    type: 'PrimitivePropertyDescriptor';
-    defaultValue: undefined | T;
+  type: "PrimitivePropertyDescriptor";
+  defaultValue: undefined | T;
 }
 
 interface ObjectPropertyDescriptor<T> {
-    type: 'ObjectPropertyDescriptor';
-    parser: (json: any, parent: any) => T;
-    defaultValue: undefined | T;
+  type: "ObjectPropertyDescriptor";
+  parser: (json: any, parent: any) => T;
+  defaultValue: undefined | T;
 }
 
 interface CollectionPropertyDescriptor<T> {
-    type: 'CollectionPropertyDescriptor';
-    parser: (json: any, parent: any) => T;
+  type: "CollectionPropertyDescriptor";
+  parser: (json: any, parent: any) => T;
 }
 
 interface VariantPropertyDescriptor<T> {
-    type: 'VariantPropertyDescriptor';
-    parser: (json: any, parent: any) => T;
-    typeField: any;
-    typeMap: any;
-    defaultValue: undefined | T;
+  type: "VariantPropertyDescriptor";
+  parser: (json: any, parent: any) => T;
+  typeField: any;
+  typeMap: any;
+  defaultValue: undefined | T;
 }
 
-
 interface AversProperties {
-    [name: string]: PropertyDescriptor<any>;
+  [name: string]: PropertyDescriptor<any>;
 }
 
 // Return the property descriptors for the given object. Returns undefined
 // if the object has no properties defined on it.
 function aversProperties(obj: any): AversProperties {
-    return Object.getPrototypeOf(obj)[aversPropertiesSymbol];
+  return Object.getPrototypeOf(obj)[aversPropertiesSymbol];
 }
 
 function withId<T>(json: any, obj: T): T {
-    if (json.id !== undefined) {
-        (<any>obj).id = json.id;
-    }
+  if (json.id !== undefined) {
+    (<any>obj).id = json.id;
+  }
 
-    return obj;
+  return obj;
 }
 
 function descendInto(obj: any, key: string): any {
-    if (Array.isArray(obj)) {
-        return (<any>obj).idMap[key];
-    } else if (obj === Object(obj) && aversProperties(obj) && aversProperties(obj)[key]) {
-        return obj[key];
-    }
+  if (Array.isArray(obj)) {
+    return (<any>obj).idMap[key];
+  } else if (obj === Object(obj) && aversProperties(obj) && aversProperties(obj)[key]) {
+    return obj[key];
+  }
 }
 
-export function
-resolvePath<T>(obj: any, path: string): T {
-    if (path === '') {
-        return obj;
-    } else {
-        return path.split('.').reduce(descendInto, obj);
-    }
+export function resolvePath<T>(obj: any, path: string): T {
+  if (path === "") {
+    return obj;
+  } else {
+    return path.split(".").reduce(descendInto, obj);
+  }
 }
 
-export function
-clone(x: any): any {
-    if (Array.isArray(x)) {
-        return mkCollection(x.map(clone));
-    } else if (x === Object(x) && aversProperties(x)) {
-        return parseJSON(x.constructor, toJSON(x));
-    } else {
-        return x;
-    }
+export function clone(x: any): any {
+  if (Array.isArray(x)) {
+    return mkCollection(x.map(clone));
+  } else if (x === Object(x) && aversProperties(x)) {
+    return parseJSON(x.constructor, toJSON(x));
+  } else {
+    return x;
+  }
 }
 
 function setValueAtPath(root: any, path: string, value: any): any {
-    let pathKeys = path.split('.')
-      , lastKey  = pathKeys.pop()
-      , obj      = resolvePath<any>(root, pathKeys.join('.'));
+  let pathKeys = path.split("."),
+    lastKey = pathKeys.pop(),
+    obj = resolvePath<any>(root, pathKeys.join("."));
 
-    if (lastKey !== undefined) {
-        obj[lastKey] = clone(value);
-    }
+  if (lastKey !== undefined) {
+    obj[lastKey] = clone(value);
+  }
 
-    return root;
+  return root;
 }
 
 function parentPath(path: string): string {
-    let pathKeys = path.split('.');
-    return pathKeys.slice(0, pathKeys.length - 1).join('.');
+  let pathKeys = path.split(".");
+  return pathKeys.slice(0, pathKeys.length - 1).join(".");
 }
-
 
 // Splice operations can currently not be applied to the root. This is
 // a restriction which may be lifted in the future.
 function applySpliceOperation(root: any, path: string, op: Splice): any {
-    let obj    = resolvePath<any>(root, path)
-      , parent = resolvePath<any>(root, parentPath(path))
-      , prop   = aversProperties(parent)[last(path.split('.'))];
+  let obj = resolvePath<any>(root, path),
+    parent = resolvePath<any>(root, parentPath(path)),
+    prop = aversProperties(parent)[last(path.split("."))];
 
-    if (prop.type !== 'CollectionPropertyDescriptor') {
-        return;
-    }
+  if (prop.type !== "CollectionPropertyDescriptor") {
+    return;
+  }
 
-    let parser = prop.parser
-      , insert = op.insert.map(json => parser(json, parent))
-      , args   = [ op.index, op.remove ].concat(insert);
+  let parser = prop.parser,
+    insert = op.insert.map(json => parser(json, parent)),
+    args = [op.index, op.remove].concat(insert);
 
-    splice.apply(obj, args);
+  splice.apply(obj, args);
 
-    return root;
+  return root;
 }
-
 
 // applyOperation
 // -----------------------------------------------------------------------
@@ -182,409 +174,395 @@ function applySpliceOperation(root: any, path: string, op: Splice): any {
 // a local change (be sure to convert the change to an 'Operation' first)
 // or loaded from the server.
 
-export function
-applyOperation<T>(root: T, path: string, op: Operation): T {
-    switch (op.type) {
-    case 'set'    : return setValueAtPath(clone(root), path, op.value);
-    case 'splice' : return applySpliceOperation(clone(root), path, op);
+export function applyOperation<T>(root: T, path: string, op: Operation): T {
+  switch (op.type) {
+    case "set":
+      return setValueAtPath(clone(root), path, op.value);
+    case "splice":
+      return applySpliceOperation(clone(root), path, op);
+  }
+}
+
+function defineProperty<T>(x: any, name: string, desc: PropertyDescriptor<T>): void {
+  let proto = x.prototype,
+    aversProps = proto[aversPropertiesSymbol] || Object.create(null);
+
+  aversProps[name] = desc;
+  proto[aversPropertiesSymbol] = aversProps;
+}
+
+export function declareConstant(x: any): void {
+  let proto = x.prototype,
+    aversProps = proto[aversPropertiesSymbol] || Object.create(null);
+
+  proto[aversPropertiesSymbol] = aversProps;
+}
+
+export function definePrimitive<T>(x: any, name: string, defaultValue: undefined | T) {
+  let desc: PrimitivePropertyDescriptor<T> = {
+    type: "PrimitivePropertyDescriptor",
+    defaultValue
+  };
+
+  defineProperty(x, name, desc);
+}
+
+export function defineObject<T>(x: any, name: string, klass: any, def?: T) {
+  let desc: ObjectPropertyDescriptor<T> = {
+    type: "ObjectPropertyDescriptor",
+    parser: createObjectParser<T>(klass),
+    defaultValue: undefined
+  };
+
+  if (def) {
+    desc.defaultValue = <any>mk(klass, def);
+  }
+
+  defineProperty(x, name, desc);
+}
+
+export function defineVariant<T>(
+  x: any,
+  name: string,
+  typeField: string,
+  typeMap: { [name: string]: any },
+  def?: T
+): void {
+  // Check that all constructors are valid Avers objects. This is an
+  // invariant which we can't express in the type system, but want to
+  // ensure it nonetheless.
+  //
+  // This is something which can be removed from the production builds.
+
+  for (let k in typeMap) {
+    let aversProps = typeMap[k].prototype[aversPropertiesSymbol];
+    if (aversProps === undefined) {
+      throw new Error('Variant constructor of "' + k + '" is not an Avers object');
     }
+  }
+
+  let desc: VariantPropertyDescriptor<T> = {
+    type: "VariantPropertyDescriptor",
+    parser: createVariantParser<T>(name, typeField, typeMap),
+    typeField: typeField,
+    typeMap: typeMap,
+    defaultValue: def === undefined ? undefined : clone(def)
+  };
+
+  defineProperty(x, name, desc);
 }
 
-function
-defineProperty<T>(x: any, name: string, desc: PropertyDescriptor<T>): void {
-    let proto      = x.prototype
-      , aversProps = proto[aversPropertiesSymbol] || Object.create(null);
+export function defineCollection(x: any, name: string, klass: any) {
+  let desc: CollectionPropertyDescriptor<any> = {
+    type: "CollectionPropertyDescriptor",
+    parser: createObjectParser(klass)
+  };
 
-    aversProps[name] = desc;
-    proto[aversPropertiesSymbol] = aversProps;
-}
-
-export function
-declareConstant(x: any): void {
-    let proto      = x.prototype
-      , aversProps = proto[aversPropertiesSymbol] || Object.create(null);
-
-    proto[aversPropertiesSymbol] = aversProps;
-}
-
-export function
-definePrimitive<T>(x: any, name: string, defaultValue: undefined | T) {
-    let desc: PrimitivePropertyDescriptor<T> =
-        { type: 'PrimitivePropertyDescriptor'
-        , defaultValue
-        };
-
-    defineProperty(x, name, desc);
-}
-
-export function
-defineObject<T>(x: any, name: string, klass: any, def?: T) {
-    let desc: ObjectPropertyDescriptor<T> =
-        { type: 'ObjectPropertyDescriptor'
-        , parser : createObjectParser<T>(klass)
-        , defaultValue: undefined
-        };
-
-    if (def) {
-        desc.defaultValue = <any> mk(klass, def);
-    }
-
-    defineProperty(x, name, desc);
-}
-
-export function
-defineVariant<T>(x: any, name: string, typeField: string, typeMap: { [name: string]: any }, def?: T): void {
-
-    // Check that all constructors are valid Avers objects. This is an
-    // invariant which we can't express in the type system, but want to
-    // ensure it nonetheless.
-    //
-    // This is something which can be removed from the production builds.
-
-    for (let k in typeMap) {
-        let aversProps = typeMap[k].prototype[aversPropertiesSymbol];
-        if (aversProps === undefined) {
-            throw new Error('Variant constructor of "' +
-                k + '" is not an Avers object');
-        }
-    }
-
-    let desc: VariantPropertyDescriptor<T> =
-        { type      : 'VariantPropertyDescriptor'
-        , parser    : createVariantParser<T>(name, typeField, typeMap)
-        , typeField : typeField
-        , typeMap   : typeMap
-        , defaultValue: def === undefined ? undefined : clone(def)
-        };
-
-    defineProperty(x, name, desc);
-}
-
-export function
-defineCollection(x: any, name: string, klass: any) {
-    let desc: CollectionPropertyDescriptor<any> =
-        { type: 'CollectionPropertyDescriptor'
-        , parser: createObjectParser(klass)
-        };
-
-    defineProperty(x, name, desc);
+  defineProperty(x, name, desc);
 }
 
 function createObjectParser<T>(klass: any): (json: any) => T {
-    return (json) => parseJSON<T>(klass, json);
+  return json => parseJSON<T>(klass, json);
 }
 
-function createVariantParser<T>(name: string, typeField: string, typeMap: { [typeField: string]: any }): (json: any, parent: any) => T {
-    return function(json: any, parent: any): T {
-        let type = parent[typeField] || parent[name][typeField];
-        return parseJSON<T>(typeMap[type], json);
-    };
+function createVariantParser<T>(
+  name: string,
+  typeField: string,
+  typeMap: { [typeField: string]: any }
+): (json: any, parent: any) => T {
+  return function(json: any, parent: any): T {
+    let type = parent[typeField] || parent[name][typeField];
+    return parseJSON<T>(typeMap[type], json);
+  };
 }
 
-function
-parseValue(desc: PropertyDescriptor<any>, old: any, json: any, parent: any): any {
-    switch (desc.type) {
-    case 'CollectionPropertyDescriptor':
-        if (json) {
-            if (!old) {
-                old = mkCollection([]);
-            } else {
-                resetCollection(old);
-            }
-
-            json.forEach((x: any) => {
-                old.push(withId(json, desc.parser(x, parent)));
-            });
-
-            return old;
+function parseValue(desc: PropertyDescriptor<any>, old: any, json: any, parent: any): any {
+  switch (desc.type) {
+    case "CollectionPropertyDescriptor":
+      if (json) {
+        if (!old) {
+          old = mkCollection([]);
+        } else {
+          resetCollection(old);
         }
-        break;
 
-    case 'ObjectPropertyDescriptor':
-    case 'VariantPropertyDescriptor':
-        if (json) {
-            if (old) {
-                return withId(json, updateObject(old, json));
-            } else {
-                return withId(json, desc.parser(json, parent));
-            }
+        json.forEach((x: any) => {
+          old.push(withId(json, desc.parser(x, parent)));
+        });
+
+        return old;
+      }
+      break;
+
+    case "ObjectPropertyDescriptor":
+    case "VariantPropertyDescriptor":
+      if (json) {
+        if (old) {
+          return withId(json, updateObject(old, json));
+        } else {
+          return withId(json, desc.parser(json, parent));
         }
-        break;
+      }
+      break;
 
-    case 'PrimitivePropertyDescriptor':
-        return json;
+    case "PrimitivePropertyDescriptor":
+      return json;
+  }
+}
+
+export function updateObject<T>(x: T, json: any): T {
+  let aversProps = aversProperties(x);
+
+  for (let name in aversProps) {
+    let desc = aversProps[name];
+
+    if (json[name] != null) {
+      x[name] = parseValue(desc, x[name], json[name], json);
     }
+  }
+
+  return x;
 }
 
-export function
-updateObject<T>(x: T, json: any): T {
-    let aversProps = aversProperties(x);
+export function migrateObject<T>(x: T): T {
+  let aversProps = aversProperties(x);
 
-    for (let name in aversProps) {
-        let desc = aversProps[name];
+  for (let name in aversProps) {
+    let desc = aversProps[name],
+      prop = x[name];
 
-        if (json[name] != null) {
-            x[name] = parseValue(desc, x[name], json[name], json);
+    if (prop == null) {
+      if (desc.type === "CollectionPropertyDescriptor") {
+        x[name] = mkCollection([]);
+      } else {
+        let value = desc.defaultValue;
+        if (value != null && value !== prop) {
+          migrateObject(value);
+          x[name] = value;
         }
+      }
+    } else if (desc.type === "ObjectPropertyDescriptor" || desc.type === "VariantPropertyDescriptor") {
+      migrateObject(prop);
+    } else if (desc.type === "CollectionPropertyDescriptor") {
+      prop.forEach(migrateObject);
     }
+  }
 
-    return x;
-}
-
-export function
-migrateObject<T>(x: T): T {
-    let aversProps = aversProperties(x);
-
-    for (let name in aversProps) {
-        let desc = aversProps[name]
-          , prop = x[name];
-
-        if (prop == null) {
-            if (desc.type === 'CollectionPropertyDescriptor') {
-                x[name] = mkCollection([]);
-            } else {
-                let value = desc.defaultValue;
-                if (value != null && value !== prop) {
-                    migrateObject(value);
-                    x[name] = value;
-                }
-            }
-        } else if (desc.type === 'ObjectPropertyDescriptor' || desc.type === 'VariantPropertyDescriptor') {
-            migrateObject(prop);
-        } else if (desc.type === 'CollectionPropertyDescriptor') {
-            prop.forEach(migrateObject);
-        }
-    }
-
-    return x;
+  return x;
 }
 
 let objectProxyHandler = {
-    set: (target: any, property: string, value: any, receiver: any): boolean => {
-        let oldValue           = target[property]
-          , propertyDescriptor = aversProperties(target)[property];
+  set: (target: any, property: string, value: any, receiver: any): boolean => {
+    let oldValue = target[property],
+      propertyDescriptor = aversProperties(target)[property];
 
-        target[property] = value;
+    target[property] = value;
 
-        if (propertyDescriptor) {
-            if (isObservableProperty(propertyDescriptor)) {
-                if (oldValue) {
-                    stopListening(target, oldValue);
-                }
-
-                if (value) {
-                    // FIXME: Is this 'stopListening' needed?
-                    stopListening(target, value);
-                    forwardChanges(target, value, property);
-                }
-            }
-
-            emitChanges(target, [
-                new Change(property, new Operation.Set(target, value, oldValue))
-            ]);
+    if (propertyDescriptor) {
+      if (isObservableProperty(propertyDescriptor)) {
+        if (oldValue) {
+          stopListening(target, oldValue);
         }
 
-        return true;
-    },
-
-    deleteProperty: (target: any, property: string): boolean => {
-        let oldValue           = target[property]
-          , propertyDescriptor = aversProperties(target)[property];
-
-        if (propertyDescriptor && isObservableProperty(propertyDescriptor) && oldValue) {
-            stopListening(target, oldValue);
+        if (value) {
+          // FIXME: Is this 'stopListening' needed?
+          stopListening(target, value);
+          forwardChanges(target, value, property);
         }
+      }
 
-        emitChanges(target, [
-            new Change(property, new Operation.Set(target, undefined, oldValue))
-        ]);
+      emitChanges(target, [new Change(property, new Operation.Set(target, value, oldValue))]);
+    }
 
-        return true;
-    },
+    return true;
+  },
+
+  deleteProperty: (target: any, property: string): boolean => {
+    let oldValue = target[property],
+      propertyDescriptor = aversProperties(target)[property];
+
+    if (propertyDescriptor && isObservableProperty(propertyDescriptor) && oldValue) {
+      stopListening(target, oldValue);
+    }
+
+    emitChanges(target, [new Change(property, new Operation.Set(target, undefined, oldValue))]);
+
+    return true;
+  }
 };
 
-function createObject<T>(x: new() => T): T {
-    return new Proxy(new x, objectProxyHandler);
+function createObject<T>(x: new () => T): T {
+  return new Proxy(new x(), objectProxyHandler);
 }
 
-export function
-parseJSON<T>(x: new() => T, json: any): T {
-    if ((<any>x) === String || (<any>x) === Number) {
-        return new (<any>x)(json).valueOf();
-    } else {
-        return withId(json, updateObject(createObject(x), json));
-    }
+export function parseJSON<T>(x: new () => T, json: any): T {
+  if (<any>x === String || <any>x === Number) {
+    return new (<any>x)(json).valueOf();
+  } else {
+    return withId(json, updateObject(createObject(x), json));
+  }
 }
 
-export function
-mk<T>(x: new() => T, json: any): T {
-    return migrateObject(parseJSON(x, json));
+export function mk<T>(x: new () => T, json: any): T {
+  return migrateObject(parseJSON(x, json));
 }
 
 function concatPath(self: string, child: string): string {
-    return child === '' ? self : self + '.' + child;
+  return child === "" ? self : self + "." + child;
 }
-
 
 // Return true if the property can generate change events and thus the
 // parent should listen to events.
 function isObservableProperty(propertyDescriptor: PropertyDescriptor<any>): boolean {
-    let type = propertyDescriptor.type;
-    return type === 'ObjectPropertyDescriptor' || type === 'VariantPropertyDescriptor' || type === 'CollectionPropertyDescriptor';
+  let type = propertyDescriptor.type;
+  return (
+    type === "ObjectPropertyDescriptor" ||
+    type === "VariantPropertyDescriptor" ||
+    type === "CollectionPropertyDescriptor"
+  );
 }
 
 interface ChangeRecord {
-    type       : string;
-    name       : string;
-    object     : any;
-    oldValue   : any;
-    index      : number;
-    addedCount : number;
-    removed    : any[];
+  type: string;
+  name: string;
+  object: any;
+  oldValue: any;
+  index: number;
+  addedCount: number;
+  removed: any[];
 }
 
-export function
-typeName(typeMap: { [klass: string]: any }, klass: any): string {
-    for (let type in typeMap) {
-        if (typeMap[type] === klass) {
-            return type;
-        }
+export function typeName(typeMap: { [klass: string]: any }, klass: any): string {
+  for (let type in typeMap) {
+    if (typeMap[type] === klass) {
+      return type;
     }
+  }
 
-    return `typeName: Unknown klass ${klass}`;
+  return `typeName: Unknown klass ${klass}`;
 }
 
 function objectJSON(x: any): any {
-    let json       = Object.create(null)
-      , aversProps = aversProperties(x);
+  let json = Object.create(null),
+    aversProps = aversProperties(x);
 
-    for (let name in aversProps) {
-        let desc = aversProps[name];
+  for (let name in aversProps) {
+    let desc = aversProps[name];
 
-        switch (desc.type) {
-        case 'PrimitivePropertyDescriptor':
-            json[name] = x[name];
-            break;
+    switch (desc.type) {
+      case "PrimitivePropertyDescriptor":
+        json[name] = x[name];
+        break;
 
-        case 'ObjectPropertyDescriptor':
-            json[name] = x[name] ? toJSON(x[name]) : null;
-            break;
+      case "ObjectPropertyDescriptor":
+        json[name] = x[name] ? toJSON(x[name]) : null;
+        break;
 
-        case 'VariantPropertyDescriptor':
-            let value = x[name];
+      case "VariantPropertyDescriptor":
+        let value = x[name];
 
-            if (value) {
-                json[name]           = toJSON(value);
-                json[desc.typeField] = typeName(desc.typeMap, value.constructor);
-            }
-            break;
-
-        case 'CollectionPropertyDescriptor':
-            json[name] = toJSON(x[name]);
-            break;
+        if (value) {
+          json[name] = toJSON(value);
+          json[desc.typeField] = typeName(desc.typeMap, value.constructor);
         }
-    }
+        break;
 
-    return json;
+      case "CollectionPropertyDescriptor":
+        json[name] = toJSON(x[name]);
+        break;
+    }
+  }
+
+  return json;
 }
 
-export function
-toJSON(x: any): any {
-    if (x === Object(x) && aversProperties(x)) {
-        return objectJSON(x);
-    } else if (Array.isArray(x)) {
-        return x.map((item: any) => withId(item, toJSON(item)));
-    } else {
-        return x;
-    }
+export function toJSON(x: any): any {
+  if (x === Object(x) && aversProperties(x)) {
+    return objectJSON(x);
+  } else if (Array.isArray(x)) {
+    return x.map((item: any) => withId(item, toJSON(item)));
+  } else {
+    return x;
+  }
 }
-
 
 export interface Item {
-    id : string;
+  id: string;
 }
 
-export function
-itemId<T extends Item>(collection: Collection<T>, item: T): string {
-    // ASSERT: collection.idMap[item.id] === item
-    return item.id;
+export function itemId<T extends Item>(collection: Collection<T>, item: T): string {
+  // ASSERT: collection.idMap[item.id] === item
+  return item.id;
 }
 
 export interface Collection<T extends Item> extends Array<T> {
-    idMap : { [id: string]: T };
+  idMap: { [id: string]: T };
 }
 
 function resetCollection<T extends Item>(x: Collection<T>): void {
-    x.splice(0, x.length);
-    x.idMap = Object.create(null);
+  x.splice(0, x.length);
+  x.idMap = Object.create(null);
 }
 
 function mkCollection<T extends Item>(items: T[]): Collection<T> {
-    let collection: Collection<T> = <any>[];
-    resetCollection(collection);
+  let collection: Collection<T> = <any>[];
+  resetCollection(collection);
 
+  if (items.length > 0) {
+    let args = (<any>[0, 0]).concat(items);
+    splice.apply(collection, args);
+  }
 
-    if (items.length > 0) {
-        let args = (<any>[0,0]).concat(items);
-        splice.apply(collection, args);
-    }
+  function _splice(start: number, deleteCount: number, ...items: T[]): T[] {
+    let deletedItems = collection.slice(start, start + deleteCount);
 
+    splice.call(collection, start, deleteCount, ...items);
 
-    function _splice(start: number, deleteCount: number, ...items: T[]): T[] {
-        let deletedItems = collection.slice(start, start + deleteCount);
-
-        splice.call(collection, start, deleteCount, ...items);
-
-        deletedItems.forEach(item => {
-            stopListening(collection, item);
-            delete collection.idMap[item.id];
-        });
-
-        items.forEach(item => {
-            if (Object(item) === item) {
-                collection.idMap[item.id] = item;
-
-                listenTo(collection, item, changes => {
-                    let id = itemId(collection, item);
-                    emitChanges(collection, changes.map(change => embedChange(change, id)));
-                });
-            }
-        });
-
-        emitChanges(collection, [
-            new Change("", new Operation.Splice(collection, start, deletedItems, items))
-        ]);
-
-        return deletedItems;
-    }
-
-
-    collection.push = (...items) => {
-        _splice(collection.length, 0, ...items);
-        return collection.length;
-    };
-
-    collection.pop = () => {
-        return _splice(collection.length - 1, 1)[0];
-    };
-
-    collection.splice = <any> ((start: number, deleteCount: number, ...items: T[]): T[] => {
-        return _splice(start, deleteCount, ...items);
+    deletedItems.forEach(item => {
+      stopListening(collection, item);
+      delete collection.idMap[item.id];
     });
 
-    collection.shift = () => {
-        return _splice(0, 1)[0];
-    };
+    items.forEach(item => {
+      if (Object(item) === item) {
+        collection.idMap[item.id] = item;
 
-    collection.unshift = (...items) => {
-        _splice(0, 0, ...items);
-        return collection.length;
-    };
+        listenTo(collection, item, changes => {
+          let id = itemId(collection, item);
+          emitChanges(collection, changes.map(change => embedChange(change, id)));
+        });
+      }
+    });
 
+    emitChanges(collection, [new Change("", new Operation.Splice(collection, start, deletedItems, items))]);
 
-    return collection;
+    return deletedItems;
+  }
+
+  collection.push = (...items) => {
+    _splice(collection.length, 0, ...items);
+    return collection.length;
+  };
+
+  collection.pop = () => {
+    return _splice(collection.length - 1, 1)[0];
+  };
+
+  collection.splice = <any>((start: number, deleteCount: number, ...items: T[]): T[] => {
+    return _splice(start, deleteCount, ...items);
+  });
+
+  collection.shift = () => {
+    return _splice(0, 1)[0];
+  };
+
+  collection.unshift = (...items) => {
+    _splice(0, 0, ...items);
+    return collection.length;
+  };
+
+  return collection;
 }
-
 
 // lookupItem
 // -----------------------------------------------------------------------
@@ -592,11 +570,9 @@ function mkCollection<T extends Item>(items: T[]): Collection<T> {
 // Return the item in the collection which has the given id. May return
 // undefined if no such item exists.
 
-export function
-lookupItem<T extends Item>(collection: Collection<T>, id: string): T {
-    return collection.idMap[id];
+export function lookupItem<T extends Item>(collection: Collection<T>, id: string): T {
+  return collection.idMap[id];
 }
-
 
 // Operation
 // -----------------------------------------------------------------------
@@ -607,20 +583,18 @@ lookupItem<T extends Item>(collection: Collection<T>, id: string): T {
 export type Operation = Set | Splice;
 
 export interface Set {
-    type: 'set';
-    path: string;
-    value: any;
+  type: "set";
+  path: string;
+  value: any;
 }
 
 export interface Splice {
-    type: 'splice';
-    path: string;
-    index: number;
-    remove: number;
-    insert: any[];
+  type: "splice";
+  path: string;
+  index: number;
+  remove: number;
+  insert: any[];
 }
-
-
 
 // Change
 // -----------------------------------------------------------------------
@@ -629,44 +603,28 @@ export interface Splice {
 // happened at a particular path.
 
 export class Change<T> {
-    constructor
-      ( public path   : string
-      , public record : T
-      ) {}
+  constructor(public path: string, public record: T) {}
 }
 
-export module Operation {
+export namespace Operation {
+  export class Set {
+    constructor(public object: any, public value: any, public oldValue: any) {}
+  }
 
-    export class Set {
-        constructor
-          ( public object   : any
-          , public value    : any
-          , public oldValue : any
-          ) {}
-    }
-
-    export class Splice {
-        constructor
-          ( public object : any
-          , public index  : number
-          , public remove : any[]
-          , public insert : any[]
-          ) {}
-    }
-
+  export class Splice {
+    constructor(public object: any, public index: number, public remove: any[], public insert: any[]) {}
+  }
 }
-
 
 function embedChange<T>(change: Change<T>, key: string): Change<T> {
-    return new Change(concatPath(key, change.path), change.record);
+  return new Change(concatPath(key, change.path), change.record);
 }
 
 function forwardChanges(obj: any, prop: string, key: string): void {
-    listenTo(obj, prop, changes => {
-        emitChanges(obj, changes.map(change => embedChange(change, key)));
-    });
+  listenTo(obj, prop, changes => {
+    emitChanges(obj, changes.map(change => embedChange(change, key)));
+  });
 }
-
 
 // changeOperation
 // -----------------------------------------------------------------------
@@ -674,33 +632,31 @@ function forwardChanges(obj: any, prop: string, key: string): void {
 // Convert a 'Change' to an 'Operation' which is a pure JS object and can
 // be directly converted to JSON and sent over network.
 
-export function
-changeOperation(change: Change<any>): Operation {
-    const record = change.record;
+export function changeOperation(change: Change<any>): Operation {
+  const record = change.record;
 
-    if (record instanceof Operation.Set) {
-        return { path   : change.path
-               , type   : 'set'
-               , value  : toJSON(record.value)
-               };
-
-    } else if (record instanceof Operation.Splice) {
-        return { path   : change.path
-               , type   : 'splice'
-               , index  : record.index
-               , remove : record.remove.length
-               , insert : toJSON(record.insert)
-               };
-
-    } else {
-        throw new Error('Unknown change record: ' + record);
-    }
+  if (record instanceof Operation.Set) {
+    return {
+      path: change.path,
+      type: "set",
+      value: toJSON(record.value)
+    };
+  } else if (record instanceof Operation.Splice) {
+    return {
+      path: change.path,
+      type: "splice",
+      index: record.index,
+      remove: record.remove.length,
+      insert: toJSON(record.insert)
+    };
+  } else {
+    throw new Error("Unknown change record: " + record);
+  }
 }
 
 export interface ChangeCallback {
-    (changes: Change<any>[]): void;
+  (changes: Change<any>[]): void;
 }
-
 
 // attachChangeListener
 // -----------------------------------------------------------------------
@@ -708,24 +664,21 @@ export interface ChangeCallback {
 // Attach a change callback to the object. It will be called each time the
 // object or any of its properties change.
 
-export function
-attachChangeListener(obj: any, fn: ChangeCallback): void {
-    let listeners = obj[changeListenersSymbol] || new Set();
-    obj[changeListenersSymbol] = listeners;
+export function attachChangeListener(obj: any, fn: ChangeCallback): void {
+  let listeners = obj[changeListenersSymbol] || new Set();
+  obj[changeListenersSymbol] = listeners;
 
-    listeners.add(fn);
+  listeners.add(fn);
 }
-
 
 // detachChangeListener
 // -----------------------------------------------------------------------
 //
 // Detach a given change listener callback from an object.
 
-export function
-detachChangeListener(obj: any, fn: ChangeCallback): void {
-    let listeners = obj[changeListenersSymbol];
-    if (listeners) {
-        listeners.delete(fn);
-    }
+export function detachChangeListener(obj: any, fn: ChangeCallback): void {
+  let listeners = obj[changeListenersSymbol];
+  if (listeners) {
+    listeners.delete(fn);
+  }
 }
