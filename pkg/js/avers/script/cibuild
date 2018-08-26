@@ -5,6 +5,6 @@ cd "$(dirname "$0")/.."
 script/bootstrap
 
 
-./node_modules/.bin/gulp lint
-./node_modules/.bin/gulp build
-./node_modules/.bin/mocha dist/test/avers.test.js
+./node_modules/.bin/tslint --project tsconfig.json
+./node_modules/.bin/tsc
+./node_modules/.bin/mocha dist

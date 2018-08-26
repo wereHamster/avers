@@ -1,20 +1,17 @@
 {
-    "version": "2.0.6",
     "compilerOptions": {
-        "target": "es6",
-        "module": "es6",
+        "target": "es2017",
+        "module": "commonjs",
         "moduleResolution": "node",
         "declaration": true,
-        "removeComments": false,
-        "noLib": false,
         "noImplicitAny": true,
         "strictNullChecks": true,
         "preserveConstEnums": true,
         "suppressImplicitAnyIndexErrors": true,
-        "outDir": "dist/"
+        "rootDir": "src",
+        "outDir": "dist"
     },
     "include": [
-        "src/**/*.ts",
-        "test/**/*.ts"
+        "src/**/*.ts"
     ]
 }

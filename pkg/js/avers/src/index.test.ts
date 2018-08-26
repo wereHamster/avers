@@ -1,6 +1,6 @@
 import 'mocha';
 
-import * as Avers from '../src/avers';
+import * as Avers from './index';
 import {assert} from "chai";
 
 
