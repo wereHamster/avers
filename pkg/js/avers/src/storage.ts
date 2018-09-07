@@ -27,7 +27,9 @@ import {
   detachChangeListener
 } from "./core";
 
-const aversNamespace = Symbol("aversNamespace");
+import { Static, StaticE, withStaticE } from './storage/static';
+import { Ephemeral, EphemeralE, withEphemeralE } from './storage/ephemeral';
+import { Patch, parsePatch } from './storage/patch';
 
 // Helpful type synonyms
 // -----------------------------------------------------------------------------
@@ -83,11 +85,11 @@ interface Action<T> {
   applyF: (h: Handle, payload: T) => void;
 }
 
-function mkAction<T>(label: string, payload: T, applyF: (h: Handle, payload: T) => void): Action<T> {
+export function mkAction<T>(label: string, payload: T, applyF: (h: Handle, payload: T) => void): Action<T> {
   return { label, payload, applyF };
 }
 
-function modifyHandle<T>(h: Handle, act: Action<T>): void {
+export function modifyHandle<T>(h: Handle, act: Action<T>): void {
   act.applyF(h, act.payload);
   startNextGeneration(h);
 }
@@ -457,7 +459,7 @@ type Entity = Editable<any> | StaticE<any> | EphemeralE<any>;
 // when the request is still valid. That is when you can handle the response
 // and apply changes to the Handle.
 
-function attachNetworkRequestF(
+export function attachNetworkRequestF(
   h: Handle,
   { entity, nr }: { entity: string | Static<any> | Ephemeral<any>; nr: NetworkRequest }
 ) {
@@ -514,7 +516,7 @@ function entityLabel(entity: string | Static<any> | Ephemeral<any>): string {
   }
 }
 
-function runNetworkRequest<T, R>(
+export function runNetworkRequest<T, R>(
   h: Handle,
   entity: string | Static<any> | Ephemeral<any>,
   label: string,
@@ -930,296 +932,4 @@ export function resetKeyedObjectCollection(kc: KeyedObjectCollection<any>): void
   kc.cache.forEach(c => {
     resetObjectCollection(c);
   });
-}
-
-// Static<T>
-// -----------------------------------------------------------------------
-//
-// A static value which is read-only. Is loaded from the server when
-// required, then cached indefinitely (or until pruned from the cache).
-// The objects are managed by the Avers Handle, they trigger a generation
-// change when they are modified.
-
-export class Static<T> {
-  [Symbol.species]: "Static";
-
-  constructor(public ns: Symbol, public key: string, public fetch: () => Promise<T>) {}
-}
-
-export class StaticE<T> {
-  networkRequest: undefined | NetworkRequest = undefined;
-  lastError: undefined | Error = undefined;
-  value: undefined | T = undefined;
-}
-
-function lookupStaticE<T>(h: Handle, ns: Symbol, key: string): undefined | StaticE<T> {
-  let n = h.staticCache.get(ns);
-  if (n) {
-    return n.get(key);
-  }
-}
-
-function insertStaticE<T>(h: Handle, ns: Symbol, key: string, e: StaticE<T>): void {
-  let n = h.staticCache.get(ns);
-  if (!n) {
-    n = new Map<string, StaticE<T>>();
-    h.staticCache.set(ns, n);
-  }
-
-  n.set(key, Object.freeze(e));
-}
-
-function applyStaticChanges<T>(h: Handle, ns: Symbol, key: string, s: StaticE<T>, f: (s: StaticE<T>) => void): void {
-  insertStaticE(h, ns, key, immutableClone<StaticE<T>>(StaticE, s, f));
-}
-
-function withStaticE<T>(h: Handle, ns: Symbol, key: string, f: (s: StaticE<T>) => void): void {
-  applyStaticChanges(h, ns, key, mkStaticE<T>(h, ns, key), f);
-}
-
-// mkStatic
-// -----------------------------------------------------------------------
-//
-// Even though this function has access to the 'Handle' and indeed modifies
-// it, the changes have has no externally observable effect.
-
-function mkStaticE<T>(h: Handle, ns: Symbol, key: string): StaticE<T> {
-  let s = lookupStaticE<T>(h, ns, key);
-  if (!s) {
-    s = new StaticE<T>();
-    insertStaticE(h, ns, key, s);
-  }
-
-  return s;
-}
-
-// staticValue
-// -----------------------------------------------------------------------
-//
-// Extract the value from the Static as a Computation. If the value is not
-// loaded yet, then a request will be sent to the server to fetch it.
-
-export function staticValue<T>(h: Handle, s: Static<T>): Computation<T> {
-  return new Computation(() => {
-    let ent = mkStaticE<T>(h, s.ns, s.key);
-
-    refreshStatic(h, s, ent);
-
-    if (ent.value === undefined) {
-      return Computation.Pending;
-    } else {
-      return ent.value;
-    }
-  });
-}
-
-// refreshStatic
-// -----------------------------------------------------------------------
-//
-// Internal function which is used to initiate the fetch if required.
-//
-// FIXME: Retry the request if the promise failed.
-
-function refreshStatic<T>(h: Handle, s: Static<T>, ent: StaticE<T>): void {
-  if (ent.value === undefined && ent.networkRequest === undefined) {
-    runNetworkRequest(h, s, "fetchStatic", s.fetch()).then(res => {
-      resolveStatic(h, s, res.res);
-    });
-  }
-}
-
-function resolveStaticF<T>(h: Handle, { s, value }: { s: Static<T>; value: T }): void {
-  withStaticE(h, s.ns, s.key, e => {
-    e.networkRequest = undefined;
-    e.lastError = undefined;
-    e.value = value;
-  });
-}
-
-export function resolveStatic<T>(h: Handle, s: Static<T>, value: T): void {
-  modifyHandle(h, mkAction(`resolveStatic(${s.ns.toString()}, ${s.key})`, { s, value }, resolveStaticF));
-}
-
-// Ephemeral<T>
-// -----------------------------------------------------------------------
-//
-// Ephemeral<T> objects are similar to Static<T> in that they can't be
-// modified, but they can expire and become stale. Once stale they are
-// re-fetched.
-
-export class Ephemeral<T> {
-  [Symbol.species]: "Ephemeral";
-
-  constructor(public ns: Symbol, public key: string, public fetch: () => Promise<{ value: T; expiresAt: number }>) {}
-}
-
-// EphemeralE<T>
-// ------------------------------------------------------------------------
-//
-// The internal object for an Ephemeral<T> which stores the actual value and
-// keeps track of the network interaction.
-//
-// This is an internal class. It is not exposed through any public API, except
-// through the 'ephemeralCache' in the Handle.
-
-export class EphemeralE<T> {
-  networkRequest: undefined | NetworkRequest = undefined;
-  lastError: undefined | Error = undefined;
-  value: undefined | T = undefined;
-  expiresAt: number = 0;
-}
-
-function lookupEphemeralE<T>(h: Handle, ns: Symbol, key: string): undefined | EphemeralE<T> {
-  let n = h.ephemeralCache.get(ns);
-  if (n) {
-    return n.get(key);
-  }
-}
-
-function insertEphemeralE<T>(h: Handle, ns: Symbol, key: string, e: EphemeralE<T>): void {
-  let n = h.ephemeralCache.get(ns);
-  if (!n) {
-    n = new Map<string, EphemeralE<T>>();
-    h.ephemeralCache.set(ns, n);
-  }
-
-  n.set(key, Object.freeze(e));
-}
-
-function applyEphemeralChanges<T>(
-  h: Handle,
-  ns: Symbol,
-  key: string,
-  s: EphemeralE<T>,
-  f: (s: EphemeralE<T>) => void
-): void {
-  insertEphemeralE(h, ns, key, immutableClone<EphemeralE<T>>(EphemeralE, s, f));
-}
-
-function withEphemeralE<T>(h: Handle, ns: Symbol, key: string, f: (s: EphemeralE<T>) => void): void {
-  applyEphemeralChanges(h, ns, key, mkEphemeralE<T>(h, ns, key), f);
-}
-
-// mkEphemeralE
-// -----------------------------------------------------------------------
-
-function mkEphemeralE<T>(h: Handle, ns: Symbol, key: string): EphemeralE<T> {
-  let e = lookupEphemeralE<T>(h, ns, key);
-  if (!e) {
-    e = new EphemeralE<T>();
-    insertEphemeralE(h, ns, key, e);
-  }
-
-  return e;
-}
-
-// ephemeralValue
-// -----------------------------------------------------------------------
-//
-// Extract the value from the Static as a Computation. If the value is not
-// loaded yet, then a request will be sent to the server to fetch it.
-
-export function ephemeralValue<T>(h: Handle, e: Ephemeral<T>): Computation<T> {
-  return new Computation(() => {
-    let ent = mkEphemeralE<T>(h, e.ns, e.key);
-
-    refreshEphemeral<T>(h, e, ent);
-
-    if (ent.value === undefined) {
-      return Computation.Pending;
-    } else {
-      return ent.value;
-    }
-  });
-}
-
-// refreshEphemeral
-// -----------------------------------------------------------------------
-//
-// Internal function which is used to initiate the fetch if required.
-//
-// FIXME: Retry the request if the promise failed.
-
-function refreshEphemeral<T>(h: Handle, e: Ephemeral<T>, ent: EphemeralE<T>): void {
-  let now = h.now();
-  if ((ent.value === undefined || now > ent.expiresAt) && ent.networkRequest === undefined) {
-    runNetworkRequest(h, e, "fetchEphemeral", e.fetch()).then(res => {
-      resolveEphemeral(h, e, res.res.value, res.res.expiresAt);
-    });
-  }
-}
-
-// resolveEphemeral<T>
-// -----------------------------------------------------------------------
-//
-// This function is used when we receive the response from the Ephemeral<T>
-// fetch function. This is exported to allow users to simulate these responses
-// without actually hitting the network.
-
-function resolveEphemeralF<T>(
-  h: Handle,
-  { e, value, expiresAt }: { e: Ephemeral<T>; value: T; expiresAt: number }
-): void {
-  withEphemeralE(h, e.ns, e.key, e => {
-    e.networkRequest = undefined;
-    e.lastError = undefined;
-    e.value = value;
-    e.expiresAt = expiresAt;
-  });
-}
-
-export function resolveEphemeral<T>(h: Handle, e: Ephemeral<T>, value: T, expiresAt: number): void {
-  modifyHandle(
-    h,
-    mkAction(`resolveEphemeral(${e.ns.toString()}, ${e.key})`, { e, value, expiresAt }, resolveEphemeralF)
-  );
-}
-
-// Patch
-// -----------------------------------------------------------------------
-//
-// Patches are read-only on the client.
-
-export class Patch {
-  [Symbol.species]: "Patch";
-
-  constructor(
-    public objectId: ObjId,
-    public revisionId: RevId,
-    public authorId: ObjId,
-    public createdAt: string,
-    public operation: Operation
-  ) {}
-}
-
-function parsePatch(json: any): Patch {
-  return new Patch(json.objectId, json.revisionId, json.authorId, json.createdAt, json.operation);
-}
-
-export async function fetchPatch(h: Handle, objectId: ObjId, revId: RevId): Promise<Patch> {
-  const url = endpointUrl(h, "/objects/" + objectId + "/patches/" + revId);
-  const requestInit: RequestInit = {
-    credentials: "include",
-    headers: { accept: "application/json" }
-  };
-
-  const res = await h.fetch(url, requestInit);
-  await guardStatus("fetchPatch", 200)(res);
-
-  return parsePatch(await res.json());
-}
-
-function mkPatch(h: Handle, objectId: ObjId, revId: RevId): Static<Patch> {
-  const key = objectId + "@" + revId;
-  return new Static<Patch>(aversNamespace, key, () => fetchPatch(h, objectId, revId));
-}
-
-// lookupPatch
-// -----------------------------------------------------------------------
-//
-// Get an patch by its identifier (objectId + revId). This computation is
-// pending until the patch has been fetched from the server.
-
-export function lookupPatch(h: Handle, objectId: ObjId, revId: RevId): Computation<Patch> {
-  return staticValue(h, mkPatch(h, objectId, revId));
 }
