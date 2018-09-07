@@ -27,13 +27,13 @@ import {
   detachChangeListener
 } from "./core";
 
-export * from './storage/static';
-export * from './storage/ephemeral';
-export * from './storage/patch';
+export * from "./storage/static";
+export * from "./storage/ephemeral";
+export * from "./storage/patch";
 
-import { Static, StaticE, withStaticE } from './storage/static';
-import { Ephemeral, EphemeralE, withEphemeralE } from './storage/ephemeral';
-import { Patch, parsePatch } from './storage/patch';
+import { Static, StaticE, withStaticE } from "./storage/static";
+import { Ephemeral, EphemeralE, withEphemeralE } from "./storage/ephemeral";
+import { Patch, parsePatch } from "./storage/patch";
 
 // Helpful type synonyms
 // -----------------------------------------------------------------------------
@@ -101,7 +101,7 @@ export function modifyHandle<T>(h: Handle, act: Action<T>): void {
 export function startNextGeneration(h: Handle): void {
   h.generationNumber++;
 
-  for (let f of h.generationChangeCallbacks.values()) {
+  for (const f of h.generationChangeCallbacks.values()) {
     f();
   }
 }
@@ -116,7 +116,7 @@ export function startNextGeneration(h: Handle): void {
 // and pass that to 'detachGenerationListener'.
 
 export function attachGenerationListener(h: Handle, f: () => void): Function {
-  let generationChangeCallback = f.bind(null);
+  const generationChangeCallback = f.bind(null);
   h.generationChangeCallbacks.add(generationChangeCallback);
   return generationChangeCallback;
 }
@@ -141,10 +141,10 @@ export function endpointUrl(h: Handle, path: string): string {
 // Array of all network requests which are currently active on the handle.
 
 export function networkRequests(h: Handle): NetworkRequest[] {
-  let ret: NetworkRequest[] = [];
+  const ret: NetworkRequest[] = [];
 
-  for (let obj of h.objectCache.values()) {
-    let nr = obj.networkRequest;
+  for (const obj of h.objectCache.values()) {
+    const nr = obj.networkRequest;
     if (nr !== undefined) {
       ret.push(nr);
     }
@@ -160,9 +160,9 @@ export function networkRequests(h: Handle): NetworkRequest[] {
 // submitted to the server.
 
 export function localChanges(h: Handle): { obj: Editable<any>; changes: Operation[] }[] {
-  let ret: { obj: Editable<any>; changes: Operation[] }[] = [];
+  const ret: { obj: Editable<any>; changes: Operation[] }[] = [];
 
-  for (let obj of h.objectCache.values()) {
+  for (const obj of h.objectCache.values()) {
     if (obj.localChanges.length > 0) {
       ret.push({ obj: obj, changes: obj.localChanges });
     }
@@ -202,10 +202,10 @@ function changeFeedSubscription(h: Handle, json: any): void {
 }
 
 function applyChangeF(h: Handle, change: { type: string; content: any }): void {
-  let { type, content } = change;
+  const { type, content } = change;
 
   if (type === "patch") {
-    let patch = parsePatch(content);
+    const patch = parsePatch(content);
     updateEditable(h, patch.objectId, obj => {
       applyPatches(obj, [patch]);
       initContent(obj);
@@ -237,7 +237,7 @@ function applyPatches(obj: Editable<any>, patches: Patch[]): void {
     return;
   }
 
-  let applicablePatches = patches.filter(p => p.revisionId > obj.revisionId);
+  const applicablePatches = patches.filter(p => p.revisionId > obj.revisionId);
   if (applicablePatches.length === 0 || applicablePatches[0].revisionId !== obj.revisionId + 1) {
     // The first patch is not one that can be applied directly on the
     // Editable. This means there is a gap between the first patche we have
@@ -252,7 +252,7 @@ function applyPatches(obj: Editable<any>, patches: Patch[]): void {
 
   obj.revisionId += applicablePatches.length;
   obj.shadowContent = applicablePatches.reduce((c, patch) => {
-    let op = patch.operation;
+    const op = patch.operation;
     return applyOperation(c, op.path, op);
   }, obj.shadowContent);
 }
@@ -287,13 +287,13 @@ export function mkEditable<T>(h: Handle, id: string): Editable<T> {
 export function lookupEditable<T>(h: Handle, id: string): Computation<Editable<T>> {
   return new Computation(() => {
     if (id) {
-      let obj = mkEditable<T>(h, id);
+      const obj = mkEditable<T>(h, id);
       if (!obj.content) {
         if (obj.networkRequest === undefined) {
           loadEditable(h, obj);
         }
 
-        return <Editable<T>>Computation.Pending;
+        return Computation.Pending;
       } else {
         return obj;
       }
@@ -310,9 +310,7 @@ export function lookupEditable<T>(h: Handle, id: string): Computation<Editable<T
 // it. This is a convenience function to get just that.
 
 export function lookupContent<T>(h: Handle, id: string): Computation<T> {
-  return lookupEditable<T>(h, id).fmap(x => {
-    return x.content;
-  });
+  return lookupEditable<T>(h, id).fmap(x => x.content);
 }
 
 // fetchEditable
@@ -332,7 +330,7 @@ export function fetchEditable<T>(h: Handle, id: string): Promise<Editable<T>> {
       } else if (obj.lastError !== undefined) {
         reject();
       } else {
-        let nr = obj.networkRequest,
+        const nr = obj.networkRequest,
           req = nr ? nr.promise : loadEditable(h, obj);
 
         req.then(check).catch(check);
@@ -422,7 +420,7 @@ export class Editable<T> {
 }
 
 function withEditable<T>(h: Handle, objId: ObjId, f: (obj: Editable<T>) => void): void {
-  let obj = h.objectCache.get(objId);
+  const obj = h.objectCache.get(objId);
   if (obj) {
     applyEditableChanges(h, obj, f);
   }
@@ -438,7 +436,7 @@ function withEditable<T>(h: Handle, objId: ObjId, f: (obj: Editable<T>) => void)
 // If the 'Editable' doesn't exist in the cache then it is created.
 
 function updateEditable<T>(h: Handle, objId: ObjId, f: (obj: Editable<T>) => void): void {
-  let obj = mkEditable<T>(h, objId);
+  const obj = mkEditable<T>(h, objId);
   applyEditableChanges<T>(h, obj, f);
 }
 
@@ -526,7 +524,7 @@ export function runNetworkRequest<T, R>(
   label: string,
   req: Promise<R>
 ): Promise<{ networkRequest: NetworkRequest; res: R }> {
-  let nr = new NetworkRequest(h.now(), req);
+  const nr = new NetworkRequest(h.now(), req);
 
   modifyHandle(
     h,
@@ -554,10 +552,10 @@ export function runNetworkRequest<T, R>(
 // response.
 
 export function loadEditable<T>(h: Handle, obj: Editable<T>): Promise<void> {
-  let objId = obj.objectId;
+  const objId = obj.objectId;
 
   return runNetworkRequest(h, objId, "fetchEditable", fetchObject(h, objId)).then(res => {
-    let e = h.objectCache.get(objId);
+    const e = h.objectCache.get(objId);
     if (e && e.networkRequest === res.networkRequest) {
       // FIXME: Clearing the networkRequest from the entity maybe should
       // be a separate action, eg. 'finishNetworkRequest'. Currently it's
@@ -575,8 +573,8 @@ export function loadEditable<T>(h: Handle, obj: Editable<T>): Promise<void> {
 // Fetch the raw JSON of an object from the server.
 
 export function fetchObject(h: Handle, id: string): Promise<any> {
-  let url = endpointUrl(h, "/objects/" + id);
-  let requestInit: RequestInit = {
+  const url = endpointUrl(h, "/objects/" + id);
+  const requestInit: RequestInit = {
     credentials: "include",
     headers: { accept: "application/json" }
   };
@@ -588,8 +586,8 @@ export function fetchObject(h: Handle, id: string): Promise<any> {
 }
 
 export function createObject(h: Handle, type: string, content: any): Promise<string> {
-  let url = endpointUrl(h, "/objects");
-  let requestInit: RequestInit = {
+  const url = endpointUrl(h, "/objects");
+  const requestInit: RequestInit = {
     credentials: "include",
     method: "POST",
     body: JSON.stringify({ type: type, content: content }),
@@ -607,8 +605,8 @@ export function createObject(h: Handle, type: string, content: any): Promise<str
 }
 
 export function createObjectId(h: Handle, objId: ObjId, type: string, content: any): Promise<{}> {
-  let url = endpointUrl(h, "/objects/" + objId);
-  let requestInit: RequestInit = {
+  const url = endpointUrl(h, "/objects/" + objId);
+  const requestInit: RequestInit = {
     credentials: "include",
     method: "POST",
     body: JSON.stringify({ type: type, content: content }),
@@ -625,7 +623,7 @@ export function createObjectId(h: Handle, objId: ObjId, type: string, content: a
 }
 
 export function deleteObject(h: Handle, id: string): Promise<void> {
-  let url = endpointUrl(h, "/objects/" + id);
+  const url = endpointUrl(h, "/objects/" + id);
   return h.fetch(url, { credentials: "include", method: "DELETE" }).then(res => {
     console.log("Deleted", id, res.status);
     startNextGeneration(h);
@@ -693,7 +691,7 @@ export function resolveEditable<T>(h: Handle, objId: ObjId, json: any): void {
   // to exist. But we can't encode that in the type system so we should do
   // the check.
 
-  let obj = h.objectCache.get(objId);
+  const obj = h.objectCache.get(objId);
   if (obj !== undefined) {
     migrateObject(obj.content);
   }
@@ -707,10 +705,10 @@ function captureChangesF(h: Handle, { objId, ops }: { objId: string; ops: any })
 }
 
 function mkChangeListener<T>(h: Handle, objId: ObjId): ChangeCallback {
-  let save: any = debounce(saveEditable, 1500);
+  const save: any = debounce(saveEditable, 1500);
 
   return function onChange(changes: Change<any>[]): void {
-    let ops = changes.map(changeOperation);
+    const ops = changes.map(changeOperation);
 
     modifyHandle(h, mkAction(`captureChanges(${objId},${ops.length})`, { objId, ops }, captureChangesF));
 
@@ -748,7 +746,7 @@ function restoreLocalChangesF(h: Handle, objId: ObjId) {
 }
 
 function saveEditable(h: Handle, objId: ObjId): void {
-  let obj = h.objectCache.get(objId);
+  const obj = h.objectCache.get(objId);
   if (!obj) {
     return;
   }
@@ -766,7 +764,7 @@ function saveEditable(h: Handle, objId: ObjId): void {
     return;
   }
 
-  let data = JSON.stringify({
+  const data = JSON.stringify({
     objectId: obj.objectId,
     revisionId: obj.revisionId,
     operations: filterOps(obj.localChanges)
@@ -776,15 +774,15 @@ function saveEditable(h: Handle, objId: ObjId): void {
   // any future attempts to save the editable are skipped.
   modifyHandle(h, mkAction(`prepareLocalChanges(${objId})`, objId, prepareLocalChangesF));
 
-  let url = endpointUrl(h, "/objects/" + objId);
-  let requestInit: RequestInit = {
+  const url = endpointUrl(h, "/objects/" + objId);
+  const requestInit: RequestInit = {
     credentials: "include",
     method: "PATCH",
     body: data,
     headers: { accept: "application/json", "content-type": "application/json" }
   };
 
-  let req = h
+  const req = h
     .fetch(url, requestInit)
     .then(guardStatus("saveEditable", 200))
     .then(res => res.json());
@@ -797,7 +795,7 @@ function saveEditable(h: Handle, objId: ObjId): void {
       // and there is no way back. We have no choice than to accept the
       // changes and apply to the local state.
 
-      let body = res.res;
+      const body = res.res;
 
       console.log(
         [
@@ -832,7 +830,7 @@ function saveEditable(h: Handle, objId: ObjId): void {
 // Filter out subsequent operations which touch the same path.
 function filterOps(ops: Operation[]): Operation[] {
   return ops.reduce((a: Operation[], op: Operation): Operation[] => {
-    let lastOp = a[a.length - 1];
+    const lastOp = a[a.length - 1];
 
     if (lastOp && lastOp.path === op.path && lastOp.type === "set") {
       a[a.length - 1] = op;
@@ -866,7 +864,7 @@ export class ObjectCollection {
   }
 
   private mergeIds(ids: string[]): void {
-    let isChanged =
+    const isChanged =
       this.objectIds === undefined ||
       ids.length !== this.objectIds.length ||
       ids.reduce((a, id, index) => {
@@ -884,7 +882,7 @@ export class ObjectCollection {
   }
 
   private fetch(): void {
-    let now = Date.now();
+    const now = Date.now();
     if (now - this.fetchedAt > 10 * 1000) {
       this.fetchedAt = now;
 
