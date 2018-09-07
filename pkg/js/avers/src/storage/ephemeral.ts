@@ -28,12 +28,12 @@ export class Ephemeral<T> {
 export class EphemeralE<T> {
   networkRequest: undefined | NetworkRequest = undefined;
   lastError: undefined | Error = undefined;
-  value: undefined | T = undefined;
+  value: T = Computation.Pending;
   expiresAt: number = 0;
 }
 
 function lookupEphemeralE<T>(h: Handle, ns: Symbol, key: string): undefined | EphemeralE<T> {
-  let n = h.ephemeralCache.get(ns);
+  const n = h.ephemeralCache.get(ns);
   if (n) {
     return n.get(key);
   }
@@ -84,15 +84,9 @@ function mkEphemeralE<T>(h: Handle, ns: Symbol, key: string): EphemeralE<T> {
 
 export function ephemeralValue<T>(h: Handle, e: Ephemeral<T>): Computation<T> {
   return new Computation(() => {
-    let ent = mkEphemeralE<T>(h, e.ns, e.key);
-
+    const ent = mkEphemeralE<T>(h, e.ns, e.key);
     refreshEphemeral<T>(h, e, ent);
-
-    if (ent.value === undefined) {
-      return Computation.Pending;
-    } else {
-      return ent.value;
-    }
+    return ent.value;
   });
 }
 
@@ -103,12 +97,16 @@ export function ephemeralValue<T>(h: Handle, e: Ephemeral<T>): Computation<T> {
 //
 // FIXME: Retry the request if the promise failed.
 
-function refreshEphemeral<T>(h: Handle, e: Ephemeral<T>, ent: EphemeralE<T>): void {
-  let now = h.now();
+async function refreshEphemeral<T>(h: Handle, e: Ephemeral<T>, ent: EphemeralE<T>): Promise<void> {
+  const now = h.now();
   if ((ent.value === undefined || now > ent.expiresAt) && ent.networkRequest === undefined) {
-    runNetworkRequest(h, e, "fetchEphemeral", e.fetch()).then(res => {
+    try {
+      const res = await runNetworkRequest(h, e, "fetchEphemeral", e.fetch());
       resolveEphemeral(h, e, res.res.value, res.res.expiresAt);
-    });
+    } catch (e) {
+      // TODO: Set 'lastError' instead of just clearing 'value'.
+      resolveEphemeral(h, e, Computation.Pending, now);
+    }
   }
 }
 

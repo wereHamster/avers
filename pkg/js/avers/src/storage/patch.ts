@@ -27,7 +27,7 @@ export function parsePatch(json: any): Patch {
   return new Patch(json.objectId, json.revisionId, json.authorId, json.createdAt, json.operation);
 }
 
-export async function fetchPatch(h: Handle, objectId: ObjId, revId: RevId): Promise<Patch> {
+async function fetchPatch(h: Handle, objectId: ObjId, revId: RevId): Promise<Patch> {
   const url = endpointUrl(h, "/objects/" + objectId + "/patches/" + revId);
   const requestInit: RequestInit = {
     credentials: "include",
