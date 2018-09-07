@@ -20,7 +20,7 @@ export class Static<T> {
 export class StaticE<T> {
   networkRequest: undefined | NetworkRequest = undefined;
   lastError: undefined | Error = undefined;
-  value: undefined | T = undefined;
+  value: T = Computation.Pending;
 }
 
 function lookupStaticE<T>(h: Handle, ns: Symbol, key: string): undefined | StaticE<T> {
@@ -73,14 +73,8 @@ function mkStaticE<T>(h: Handle, ns: Symbol, key: string): StaticE<T> {
 export function staticValue<T>(h: Handle, s: Static<T>): Computation<T> {
   return new Computation(() => {
     const ent = mkStaticE<T>(h, s.ns, s.key);
-
     refreshStatic(h, s, ent);
-
-    if (ent.value === undefined) {
-      return Computation.Pending;
-    } else {
-      return ent.value;
-    }
+    return ent.value;
   });
 }
 
@@ -98,7 +92,7 @@ async function refreshStatic<T>(h: Handle, s: Static<T>, ent: StaticE<T>): Promi
       resolveStatic(h, s, res.res);
     } catch (e) {
       // TODO: Set 'lastError' instead of just clearing 'value'.
-      resolveStatic(h, s, undefined);
+      resolveStatic(h, s, Computation.Pending);
     }
   }
 }
