@@ -345,38 +345,28 @@ export function fetchEditable<T>(h: Handle, id: string): Promise<Editable<T>> {
   });
 }
 
-function debounce<T extends Function>(func: T, wait: any, immediate: any = undefined): T {
-  let timeout: any, args: any, timestamp: any, result: any;
+function debounce<T extends any[]>(func: (...args: T) => void, wait: any): (...args: T) => void {
+  let timeout: void | number, args: any, timestamp: number;
 
-  let later = function() {
-    let last = Date.now() - timestamp;
+  const later = function() {
+    const last = Date.now() - timestamp;
 
     if (last < wait && last >= 0) {
       timeout = setTimeout(later, wait - last);
     } else {
-      timeout = null;
-      if (!immediate) {
-        result = func.apply(context, args);
-        if (!timeout) {
-          args = null;
-        }
-      }
+      timeout = undefined;
+      func.apply(context, args);
+      args = undefined;
     }
   };
 
   return <any>function() {
     args = arguments;
     timestamp = Date.now();
-    let callNow = immediate && !timeout;
+
     if (!timeout) {
       timeout = setTimeout(later, wait);
     }
-    if (callNow) {
-      result = func.apply(null, args);
-      args = null;
-    }
-
-    return result;
   };
 }
 
@@ -710,7 +700,7 @@ function captureChangesF(h: Handle, { objId, ops }: { objId: string; ops: any })
 }
 
 function mkChangeListener<T>(h: Handle, objId: ObjId): ChangeCallback {
-  const save: any = debounce(saveEditable, 1500);
+  const save = debounce(saveEditable, 1500);
 
   return function onChange(changes: Change<any>[]): void {
     const ops = changes.map(changeOperation);
