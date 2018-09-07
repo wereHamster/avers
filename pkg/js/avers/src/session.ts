@@ -17,13 +17,13 @@ export class Session {
 }
 
 function runReq(session: Session, path: string, opts: RequestInit): Promise<Response> {
-  let url = endpointUrl(session.h, path);
-  return session.h.fetch(url, assign({ credentials: "include" } as RequestInit, opts));
+  const url = endpointUrl(session.h, path);
+  return session.h.fetch(url, assign<RequestInit>({ credentials: "include" }, opts));
 }
 
-function jsonOk<T>(res: Response): Promise<T> {
+async function jsonOk<T>(res: Response): Promise<T> {
   if (res.status >= 200 && res.status < 300) {
-    return res.json();
+    return await res.json();
   } else {
     throw new Error("Status " + res.status);
   }
@@ -51,27 +51,26 @@ function finishTransition(session: Session, objId: undefined | string, err: unde
 // server returns either 404 if no session exists, or 200 and includes
 // the session ObjId in the response.
 
-export function restoreSession(session: Session): Promise<void> {
+export async function restoreSession(session: Session): Promise<void> {
   beginTransition(session, Transition.Restore);
-  return runReq(session, "/session", {})
-    .then(res => {
-      // We allow both 200 and 404 to be valid responses and don't set the
-      // last error in these cases.
 
-      if (res.status === 200) {
-        return res.json().then(json => {
-          finishTransition(session, json.objId, undefined);
-        });
-      } else if (res.status === 404) {
-        finishTransition(session, undefined, undefined);
-      } else {
-        throw new Error("Status " + res.status);
-      }
-    })
-    .catch(err => {
-      finishTransition(session, undefined, err);
-      throw err;
-    });
+  try {
+    const res = await runReq(session, "/session", {});
+
+    // We allow both 200 and 404 to be valid responses and don't set the
+    // last error in these cases.
+
+    if (res.status === 200) {
+      finishTransition(session, (await res.json()).objId, undefined);
+    } else if (res.status === 404) {
+      finishTransition(session, undefined, undefined);
+    } else {
+      throw new Error("Status " + res.status);
+    }
+  } catch (err) {
+    finishTransition(session, undefined, err);
+    throw err;
+  }
 }
 
 // signup
@@ -85,27 +84,28 @@ export function restoreSession(session: Session): Promise<void> {
 //
 // Also, creating a new account will not invalidate an existing session.
 
-export function signup(session: Session, login: string): Promise<string> {
-  let requestInit: RequestInit = {
+export async function signup(session: Session, login: string): Promise<string> {
+  const requestInit: RequestInit = {
     method: "POST",
-    body: JSON.stringify({ login: login }),
+    body: JSON.stringify({ login }),
     headers: { accept: "application/json", "content-type": "application/json" }
   };
 
   beginTransition(session, Transition.Signup);
-  return runReq(session, "/signup", requestInit)
-    .then(jsonOk)
-    .then((json: any) => {
-      // Signup doesn't authenticate the client. Therefore we preserve
-      // the existing objId in the session.
-      finishTransition(session, session.objId, undefined);
 
-      return json.objId;
-    })
-    .catch(err => {
-      finishTransition(session, session.objId, err);
-      throw err;
-    });
+  try {
+    const res = await runReq(session, "/signup", requestInit);
+    const json = await jsonOk<any>(res);
+
+    // Signup doesn't authenticate the client. Therefore we preserve
+    // the existing objId in the session.
+    finishTransition(session, session.objId, undefined);
+
+    return json.objId;
+  } catch (err) {
+    finishTransition(session, session.objId, err);
+    throw err;
+  }
 }
 
 // signin
@@ -114,23 +114,23 @@ export function signup(session: Session, login: string): Promise<string> {
 // Sign in with an identifier of an object against which one can
 // authenticate.
 
-export function signin(session: Session, login: string, secret: string): Promise<void> {
-  let requestInit: RequestInit = {
+export async function signin(session: Session, login: string, secret: string): Promise<void> {
+  const requestInit: RequestInit = {
     method: "POST",
     body: JSON.stringify({ login: login, secret: secret }),
     headers: { accept: "application/json", "content-type": "application/json" }
   };
 
   beginTransition(session, Transition.Signin);
-  return runReq(session, "/session", requestInit)
-    .then(jsonOk)
-    .then((json: any) => {
-      finishTransition(session, json.objId, undefined);
-    })
-    .catch(err => {
-      finishTransition(session, undefined, err);
-      throw err;
-    });
+
+  try {
+    const res = await runReq(session, "/session", requestInit);
+    const json = await jsonOk<any>(res);
+    finishTransition(session, json.objId, undefined);
+  } catch (err) {
+    finishTransition(session, undefined, err);
+    throw err;
+  }
 }
 
 // signout
@@ -138,29 +138,24 @@ export function signin(session: Session, login: string, secret: string): Promise
 //
 // Delete the session and revert the session to the Anynomous state.
 
-export function signout(session: Session): Promise<void> {
+export async function signout(session: Session): Promise<void> {
   beginTransition(session, Transition.Signout);
-  return runReq(session, "/session", { method: "DELETE" })
-    .then(guardStatus("signout", 200, 204))
-    .then(() => {
-      finishTransition(session, undefined, undefined);
-    })
-    .catch(err => {
-      finishTransition(session, session.objId, err);
-      throw err;
-    });
+
+  try {
+    const res = await runReq(session, "/session", { method: "DELETE" });
+    await guardStatus("signout", 200, 204)(res);
+    finishTransition(session, undefined, undefined);
+  } catch (err) {
+    finishTransition(session, session.objId, err);
+    throw err;
+  }
 }
 
 // changeSecret
 // -----------------------------------------------------------------------
 
-export function changeSecret(h: Handle, newSecret: string): Promise<void> {
-  let url = endpointUrl(h, "/secret");
-  return (
-    h
-      .fetch(url, assign({ credentials: "include" } as RequestInit, { method: "POST" }))
-      .then(guardStatus("changeSecret", 200))
-      // tslint:disable-next-line:no-empty
-      .then(() => {})
-  );
+export async function changeSecret(h: Handle, newSecret: string): Promise<void> {
+  const url = endpointUrl(h, "/secret");
+  const res = await h.fetch(url, assign<RequestInit>({ credentials: "include" }, { method: "POST" }));
+  await guardStatus("changeSecret", 200)(res);
 }
