@@ -85,6 +85,10 @@ export class Handle {
   constructor(public config: Config) {}
 }
 
+export function newHandle(config: Config): Handle {
+  return new Handle(config);
+}
+
 interface Action<T> {
   label: string;
   payload: T;
@@ -95,15 +99,15 @@ export function mkAction<T>(label: string, payload: T, applyF: (h: Handle, paylo
   return { label, payload, applyF };
 }
 
-export function modifyHandle<T>(h: Handle, act: Action<T>): void {
-  act.applyF(h, act.payload);
+export function modifyHandle<T>(h: Handle, { applyF, payload }: Action<T>): void {
+  applyF(h, payload);
   startNextGeneration(h);
 }
 
 export function startNextGeneration(h: Handle): void {
   h.generationNumber++;
 
-  for (const f of h.generationChangeCallbacks.values()) {
+  for (const f of h.generationChangeCallbacks) {
     f();
   }
 }
@@ -520,7 +524,7 @@ function entityLabel(entity: string | Static<any> | Ephemeral<any>): string {
   }
 }
 
-export function runNetworkRequest<T, R>(
+export async function runNetworkRequest<T, R>(
   h: Handle,
   entity: string | Static<any> | Ephemeral<any>,
   label: string,
@@ -533,18 +537,17 @@ export function runNetworkRequest<T, R>(
     mkAction(`attachNetworkRequest(${entityLabel(entity)},${label})`, { entity, nr }, attachNetworkRequestF)
   );
 
-  return req
-    .then(res => {
-      return { networkRequest: nr, res };
-    })
-    .catch(err => {
-      modifyHandle(
-        h,
-        mkAction(`reportNetworkFailure(${entityLabel(entity)},${err})`, { entity, nr, err }, reportNetworkFailureF)
-      );
+  try {
+    const res = await req;
+    return { networkRequest: nr, res };
+  } catch (err) {
+    modifyHandle(
+      h,
+      mkAction(`reportNetworkFailure(${entityLabel(entity)},${err})`, { entity, nr, err }, reportNetworkFailureF)
+    );
 
-      return err;
-    });
+    throw err;
+  }
 }
 
 // loadEditable
@@ -553,20 +556,20 @@ export function runNetworkRequest<T, R>(
 // Fetch an object from the server and initialize the Editable with the
 // response.
 
-export function loadEditable<T>(h: Handle, obj: Editable<T>): Promise<void> {
+export async function loadEditable<T>(h: Handle, obj: Editable<T>): Promise<void> {
   const objId = obj.objectId;
 
-  return runNetworkRequest(h, objId, "fetchEditable", fetchObject(h, objId)).then(res => {
-    const e = h.objectCache.get(objId);
-    if (e && e.networkRequest === res.networkRequest) {
-      // FIXME: Clearing the networkRequest from the entity maybe should
-      // be a separate action, eg. 'finishNetworkRequest'. Currently it's
-      // part of resolveEditable. But that function may be called from
-      // somebody else, outside of the context of a network request.
+  const res = await runNetworkRequest(h, objId, "fetchEditable", fetchObject(h, objId));
+  const e = h.objectCache.get(objId);
 
-      resolveEditable<T>(h, objId, res.res);
-    }
-  });
+  if (e && e.networkRequest === res.networkRequest) {
+    // FIXME: Clearing the networkRequest from the entity maybe should
+    // be a separate action, eg. 'finishNetworkRequest'. Currently it's
+    // part of resolveEditable. But that function may be called from
+    // somebody else, outside of the context of a network request.
+
+    resolveEditable<T>(h, objId, res.res);
+  }
 }
 
 // fetchObject
@@ -641,7 +644,7 @@ function initContent(obj: Editable<any>): void {
     detachChangeListener(obj.content, obj.changeListener);
   }
 
-  obj.content = (<Operation[]>[]).concat(obj.submittedChanges, obj.localChanges).reduce((c: any, o: Operation) => {
+  obj.content = (<Operation[]>[]).concat(obj.submittedChanges, obj.localChanges).reduce((c, o) => {
     return applyOperation(c, o.path, o);
   }, obj.shadowContent);
 
@@ -747,7 +750,7 @@ function restoreLocalChangesF(h: Handle, objId: ObjId) {
   });
 }
 
-function saveEditable(h: Handle, objId: ObjId): void {
+async function saveEditable(h: Handle, objId: ObjId): Promise<void> {
   const obj = h.objectCache.get(objId);
   if (!obj) {
     return;
@@ -776,57 +779,57 @@ function saveEditable(h: Handle, objId: ObjId): void {
   // any future attempts to save the editable are skipped.
   modifyHandle(h, mkAction(`prepareLocalChanges(${objId})`, objId, prepareLocalChangesF));
 
-  const url = endpointUrl(h, "/objects/" + objId);
-  const requestInit: RequestInit = {
-    credentials: "include",
-    method: "PATCH",
-    body: data,
-    headers: { accept: "application/json", "content-type": "application/json" }
-  };
+  try {
+    const url = endpointUrl(h, "/objects/" + objId);
+    const requestInit: RequestInit = {
+      credentials: "include",
+      method: "PATCH",
+      body: data,
+      headers: { accept: "application/json", "content-type": "application/json" }
+    };
 
-  const req = h.config
-    .fetch(url, requestInit)
-    .then(guardStatus("saveEditable", 200))
-    .then(res => res.json());
+    const req = h.config
+      .fetch(url, requestInit)
+      .then(guardStatus("saveEditable", 200))
+      .then(res => res.json());
 
-  runNetworkRequest(h, objId, "saveEditable", req)
-    .then(res => {
-      // We ignore whether the response is from the current NetworkRequest
-      // or not. It's irrelevant, upon receeiving a successful response
-      // from the server the changes have been stored in the database,
-      // and there is no way back. We have no choice than to accept the
-      // changes and apply to the local state.
+    const res = await runNetworkRequest(h, objId, "saveEditable", req);
 
-      const body = res.res;
+    // We ignore whether the response is from the current NetworkRequest
+    // or not. It's irrelevant, upon receeiving a successful response
+    // from the server the changes have been stored in the database,
+    // and there is no way back. We have no choice than to accept the
+    // changes and apply to the local state.
 
-      console.log(
-        [
-          "Saved ",
-          body.resultingPatches.length,
-          " operations on ",
-          objId,
-          " (",
-          body.previousPatches.length,
-          " previous patches)"
-        ].join("")
-      );
+    const body = res.res;
 
-      // Apply all server patches to the shadow content, to bring it up
-      // to date WRT the server version. Also bump the revisionId to
-      // reflect what the server has.
+    console.log(
+      [
+        "Saved ",
+        body.resultingPatches.length,
+        " operations on ",
+        objId,
+        " (",
+        body.previousPatches.length,
+        " previous patches)"
+      ].join("")
+    );
 
-      modifyHandle(h, mkAction(`applyServerResponse(${objId})`, { objId, res, body }, applyServerResponseF));
+    // Apply all server patches to the shadow content, to bring it up
+    // to date WRT the server version. Also bump the revisionId to
+    // reflect what the server has.
 
-      // See if we have any more local changes which we need to save.
-      saveEditable(h, objId);
-    })
-    .catch(err => {
-      // The server would presumably respond with changes which
-      // were submitted before us, and we'd have to rebase our
-      // changes on top of that.
+    modifyHandle(h, mkAction(`applyServerResponse(${objId})`, { objId, res, body }, applyServerResponseF));
 
-      modifyHandle(h, mkAction(`restoreLocalChanges(${objId})`, objId, restoreLocalChangesF));
-    });
+    // See if we have any more local changes which we need to save.
+    await saveEditable(h, objId);
+  } catch (err) {
+    // The server would presumably respond with changes which
+    // were submitted before us, and we'd have to rebase our
+    // changes on top of that.
+
+    modifyHandle(h, mkAction(`restoreLocalChanges(${objId})`, objId, restoreLocalChangesF));
+  }
 }
 
 // Filter out subsequent operations which touch the same path.
