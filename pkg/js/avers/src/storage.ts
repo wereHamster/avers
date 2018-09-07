@@ -1171,12 +1171,7 @@ function resolveEphemeralF<T>(
 export function resolveEphemeral<T>(h: Handle, e: Ephemeral<T>, value: T, expiresAt: number): void {
   modifyHandle(
     h,
-    mkAction(
-      `
-        resolveEphemeral(${e.ns.toString()}, ${e.key})`,
-      { e, value, expiresAt },
-      resolveEphemeralF
-    )
+    mkAction(`resolveEphemeral(${e.ns.toString()}, ${e.key})`, { e, value, expiresAt }, resolveEphemeralF)
   );
 }
 
@@ -1201,26 +1196,22 @@ function parsePatch(json: any): Patch {
   return new Patch(json.objectId, json.revisionId, json.authorId, json.createdAt, json.operation);
 }
 
-export function fetchPatch(h: Handle, objectId: ObjId, revId: RevId): Promise<Patch> {
-  let url = endpointUrl(h, "/objects/" + objectId + "/patches/" + revId);
-  let requestInit: RequestInit = {
+export async function fetchPatch(h: Handle, objectId: ObjId, revId: RevId): Promise<Patch> {
+  const url = endpointUrl(h, "/objects/" + objectId + "/patches/" + revId);
+  const requestInit: RequestInit = {
     credentials: "include",
     headers: { accept: "application/json" }
   };
 
-  return h
-    .fetch(url, requestInit)
-    .then(guardStatus("fetchPatch", 200))
-    .then(res => res.json())
-    .then(json => parsePatch(json));
+  const res = await h.fetch(url, requestInit);
+  await guardStatus("fetchPatch", 200)(res);
+
+  return parsePatch(await res.json());
 }
 
 function mkPatch(h: Handle, objectId: ObjId, revId: RevId): Static<Patch> {
-  let key = objectId + "@" + revId;
-
-  return new Static<Patch>(aversNamespace, key, () => {
-    return fetchPatch(h, objectId, revId);
-  });
+  const key = objectId + "@" + revId;
+  return new Static<Patch>(aversNamespace, key, () => fetchPatch(h, objectId, revId));
 }
 
 // lookupPatch
