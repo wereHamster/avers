@@ -221,8 +221,11 @@ function applyChangeF(h: Handle, change: { type: string; content: any }): void {
   }
 }
 
+const applyChangeA = (change: { type: string; content: any }) =>
+  mkAction(`applyChange(${change.type})`, change, applyChangeF);
+
 function applyChange(h: Handle, change: { type: string; content: any }): void {
-  modifyHandle(h, mkAction(`applyChange(${change.type})`, change, applyChangeF));
+  modifyHandle(h, applyChangeA(change));
 }
 
 // applyPatches
@@ -446,9 +449,6 @@ function applyEditableChanges<T>(h: Handle, obj: Editable<T>, f: (obj: Editable<
   h.objectCache.set(obj.objectId, immutableClone<Editable<T>>(Editable, obj, f));
 }
 
-// All the entity types which are managed by the Avers Handle.
-type Entity = Editable<any> | StaticE<any> | EphemeralE<any>;
-
 // runNetworkRequest
 // -----------------------------------------------------------------------
 //
@@ -473,6 +473,9 @@ export function attachNetworkRequestF(
     withEphemeralE(h, entity.ns, entity.key, f);
   }
 }
+
+const attachNetworkRequestA = (entity: string | Static<any> | Ephemeral<any>, label: string, nr: NetworkRequest) =>
+  mkAction(`attachNetworkRequest(${entityLabel(entity)},${label})`, { entity, nr }, attachNetworkRequestF);
 
 function reportNetworkFailureF(
   h: Handle,
@@ -502,6 +505,9 @@ function reportNetworkFailureF(
   }
 }
 
+const reportNetworkFailureA = (entity: string | Static<any> | Ephemeral<any>, nr: NetworkRequest, err: Error) =>
+  mkAction(`reportNetworkFailure(${entityLabel(entity)},${err})`, { entity, nr, err }, reportNetworkFailureF);
+
 function entityLabel(entity: string | Static<any> | Ephemeral<any>): string {
   if (typeof entity === "string") {
     return `Editable(${entity})`;
@@ -514,28 +520,20 @@ function entityLabel(entity: string | Static<any> | Ephemeral<any>): string {
   }
 }
 
-export async function runNetworkRequest<T, R>(
+export async function runNetworkRequest<R>(
   h: Handle,
   entity: string | Static<any> | Ephemeral<any>,
   label: string,
   req: Promise<R>
 ): Promise<{ networkRequest: NetworkRequest; res: R }> {
-  const nr = new NetworkRequest(h.config.now(), req);
-
-  modifyHandle(
-    h,
-    mkAction(`attachNetworkRequest(${entityLabel(entity)},${label})`, { entity, nr }, attachNetworkRequestF)
-  );
+  const networkRequest = new NetworkRequest(h.config.now(), req);
+  modifyHandle(h, attachNetworkRequestA(entity, label, networkRequest));
 
   try {
     const res = await req;
-    return { networkRequest: nr, res };
+    return { networkRequest, res };
   } catch (err) {
-    modifyHandle(
-      h,
-      mkAction(`reportNetworkFailure(${entityLabel(entity)},${err})`, { entity, nr, err }, reportNetworkFailureF)
-    );
-
+    modifyHandle(h, reportNetworkFailureA(entity, networkRequest, err));
     throw err;
   }
 }
@@ -675,8 +673,11 @@ function resolveEditableF<T>(h: Handle, { objId, json }: { objId: string; json: 
   });
 }
 
+const resolveEditableA = (objId: ObjId, json: any) =>
+  mkAction(`resolveEditable(${objId})`, { objId, json }, resolveEditableF);
+
 export function resolveEditable<T>(h: Handle, objId: ObjId, json: any): void {
-  modifyHandle(h, mkAction(`resolveEditable(${objId})`, { objId, json }, resolveEditableF));
+  modifyHandle(h, resolveEditableA(objId, json));
 
   // The migration must be done outside of the 'modifyHandle' block, because
   // migration may dispatch actions which modify the handle. Even though
@@ -699,17 +700,20 @@ function captureChangesF(h: Handle, { objId, ops }: { objId: string; ops: any })
   });
 }
 
+const captureChangesA = (objId: ObjId, ops: Operation[]) =>
+  mkAction(`captureChanges(${objId},${ops.length})`, { objId, ops }, captureChangesF);
+
 function mkChangeListener<T>(h: Handle, objId: ObjId): ChangeCallback {
   const save = debounce(saveEditable, 1500);
 
   return function onChange(changes: Change<any>[]): void {
-    const ops = changes.map(changeOperation);
-
-    modifyHandle(h, mkAction(`captureChanges(${objId},${ops.length})`, { objId, ops }, captureChangesF));
-
+    modifyHandle(h, captureChangesA(objId, changes.map(changeOperation)));
     save(h, objId);
   };
 }
+
+// --------------------------------------------------------------------------
+// prepareLocalChanges
 
 function prepareLocalChangesF(h: Handle, objId: ObjId) {
   withEditable(h, objId, obj => {
@@ -717,6 +721,11 @@ function prepareLocalChangesF(h: Handle, objId: ObjId) {
     obj.localChanges = [];
   });
 }
+
+const prepareLocalChangesA = (objId: ObjId) => mkAction(`prepareLocalChanges(${objId})`, objId, prepareLocalChangesF);
+
+// --------------------------------------------------------------------------
+// applyServerResponse
 
 function applyServerResponseF(h: Handle, { objId, res, body }: { objId: string; res: any; body: any }): void {
   withEditable(h, objId, obj => {
@@ -733,12 +742,20 @@ function applyServerResponseF(h: Handle, { objId, res, body }: { objId: string; 
   });
 }
 
+const applyServerResponseA = (objId: ObjId, res: { networkRequest: NetworkRequest; res: any }, body: any) =>
+  mkAction(`applyServerResponse(${objId})`, { objId, res, body }, applyServerResponseF);
+
+// --------------------------------------------------------------------------
+// restoreLocalChanges
+
 function restoreLocalChangesF(h: Handle, objId: ObjId) {
   withEditable(h, objId, obj => {
     obj.localChanges = obj.submittedChanges.concat(obj.localChanges);
     obj.submittedChanges = [];
   });
 }
+
+const restoreLocalChangesA = (objId: ObjId) => mkAction(`restoreLocalChanges(${objId})`, objId, restoreLocalChangesF);
 
 async function saveEditable(h: Handle, objId: ObjId): Promise<void> {
   const obj = h.objectCache.get(objId);
@@ -767,7 +784,7 @@ async function saveEditable(h: Handle, objId: ObjId): Promise<void> {
 
   // We immeadiately mark the Editable as being saved. This ensures that
   // any future attempts to save the editable are skipped.
-  modifyHandle(h, mkAction(`prepareLocalChanges(${objId})`, objId, prepareLocalChangesF));
+  modifyHandle(h, prepareLocalChangesA(objId));
 
   try {
     const url = endpointUrl(h, "/objects/" + objId);
@@ -809,7 +826,7 @@ async function saveEditable(h: Handle, objId: ObjId): Promise<void> {
     // to date WRT the server version. Also bump the revisionId to
     // reflect what the server has.
 
-    modifyHandle(h, mkAction(`applyServerResponse(${objId})`, { objId, res, body }, applyServerResponseF));
+    modifyHandle(h, applyServerResponseA(objId, res, body));
 
     // See if we have any more local changes which we need to save.
     await saveEditable(h, objId);
@@ -818,7 +835,7 @@ async function saveEditable(h: Handle, objId: ObjId): Promise<void> {
     // were submitted before us, and we'd have to rebase our
     // changes on top of that.
 
-    modifyHandle(h, mkAction(`restoreLocalChanges(${objId})`, objId, restoreLocalChangesF));
+    modifyHandle(h, restoreLocalChangesA(objId));
   }
 }
 
