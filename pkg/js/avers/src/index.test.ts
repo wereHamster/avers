@@ -105,14 +105,14 @@ function now(): number {
 }
 
 function mkHandle(json: any): Avers.Handle {
-  function fetch(url: string) {
+  const fetch: any = (url: string) => {
     return Promise.resolve({
       status: 200,
       json: () => {
         return Promise.resolve(json);
       }
     });
-  }
+  };
 
   function createWebSocket(path: string) {
     return <any>{
@@ -129,7 +129,7 @@ function mkHandle(json: any): Avers.Handle {
   infoTable.set("library", Library);
   infoTable.set("book", Book);
 
-  return new Avers.Handle("/api", fetch as any, createWebSocket, now, infoTable);
+  return new Avers.Handle({ apiHost: "/api", fetch, createWebSocket, now, infoTable });
 }
 
 function mkObjectCollection() {
@@ -556,19 +556,19 @@ describe("Avers.ephemeralValue", function() {
   });
   it("should return the value when the object is resolved", function() {
     let h = mkHandle({});
-    Avers.resolveEphemeral(h, e, 42, h.now() + 99);
+    Avers.resolveEphemeral(h, e, 42, h.config.now() + 99);
     assert.equal(42, Avers.ephemeralValue(h, e).get(sentinel));
   });
   it("should return the value even if it is stale", function() {
     let h = mkHandle({});
-    Avers.resolveEphemeral(h, e, 42, h.now() - 99);
+    Avers.resolveEphemeral(h, e, 42, h.config.now() - 99);
     assert.equal(42, Avers.ephemeralValue(h, e).get(sentinel));
   });
   it("should invoke the fetch function when the value is stale", function(done: MochaDone) {
     let h = mkHandle({}),
       ne = new Avers.Ephemeral(testNamespace, "test", done as any);
 
-    Avers.resolveEphemeral(h, ne, 42, h.now() - 99);
+    Avers.resolveEphemeral(h, ne, 42, h.config.now() - 99);
     Avers.ephemeralValue(h, ne).get(sentinel);
   });
   it("should not invoke the fetch function when the value is fresh", function(done: MochaDone) {
@@ -578,7 +578,7 @@ describe("Avers.ephemeralValue", function() {
         throw new Error("fetch of a fresh Ephemeral was invoked");
       });
 
-    Avers.resolveEphemeral(h, ne, 42, h.now() + 99);
+    Avers.resolveEphemeral(h, ne, 42, h.config.now() + 99);
     Avers.ephemeralValue(h, ne).get(sentinel);
 
     done();

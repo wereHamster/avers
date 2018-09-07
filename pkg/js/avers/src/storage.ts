@@ -45,6 +45,28 @@ export interface ObjectConstructor<T> {
   new (): T;
 }
 
+export interface Config {
+  apiHost: string;
+  // ^ The hostname where we can reach the Avers API server. Leave
+  // out the trailing slash.
+  //
+  // Example: "//localhost:8000"
+
+  fetch: typeof window.fetch;
+  // ^ API to send network requests. If you use this extension in
+  // a web browser, you can pass in the 'fetch' function directly.
+
+  createWebSocket: (path: string) => WebSocket;
+  // ^ Create a WebSocket connection to the given path.
+
+  now: () => number;
+  // ^ Function which returns the current time. You can use 'Date.now'
+  // or 'window.performance.now', depending on how accurate time
+  // resolution you need.
+
+  infoTable: Map<string, ObjectConstructor<any>>; // ^ All object types which the client can parse.
+}
+
 export class Handle {
   generationNumber = 0;
   // ^ Incremented everytime something managed by this handle changes.
@@ -60,27 +82,7 @@ export class Handle {
   // ^ A WebSocket connected to the feed through which the client receives
   // change notifications (eg. new patches).
 
-  constructor(
-    public apiHost: string,
-    // ^ The hostname where we can reach the Avers API server. Leave
-    // out the trailing slash.
-    //
-    // Example: "//localhost:8000"
-
-    public fetch: typeof window.fetch,
-    // ^ API to send network requests. If you use this extension in
-    // a web browser, you can pass in the 'fetch' function directly.
-
-    public createWebSocket: (path: string) => WebSocket,
-    // ^ Create a WebSocket connection to the given path.
-
-    public now: () => number,
-    // ^ Function which returns the current time. You can use 'Date.now'
-    // or 'window.performance.now', depending on how accurate time
-    // resolution you need.
-
-    public infoTable: Map<string, ObjectConstructor<any>> // ^ All object types which the client can parse.
-  ) {}
+  constructor(public config: Config) {}
 }
 
 interface Action<T> {
@@ -132,7 +134,7 @@ export function detachGenerationListener(h: Handle, listener: Function): void {
 }
 
 export function endpointUrl(h: Handle, path: string): string {
-  return h.apiHost + path;
+  return h.config.apiHost + path;
 }
 
 // networkRequests
@@ -178,7 +180,7 @@ export function localChanges(h: Handle): { obj: Editable<any>; changes: Operatio
 
 function changeFeedSubscription(h: Handle, json: any): void {
   if (h.feedSocket === undefined) {
-    h.feedSocket = h.createWebSocket("/feed");
+    h.feedSocket = h.config.createWebSocket("/feed");
 
     h.feedSocket.addEventListener("message", msg => {
       try {
@@ -524,7 +526,7 @@ export function runNetworkRequest<T, R>(
   label: string,
   req: Promise<R>
 ): Promise<{ networkRequest: NetworkRequest; res: R }> {
-  const nr = new NetworkRequest(h.now(), req);
+  const nr = new NetworkRequest(h.config.now(), req);
 
   modifyHandle(
     h,
@@ -579,7 +581,7 @@ export function fetchObject(h: Handle, id: string): Promise<any> {
     headers: { accept: "application/json" }
   };
 
-  return h
+  return h.config
     .fetch(url, requestInit)
     .then(guardStatus("fetchObject", 200))
     .then(res => res.json());
@@ -594,7 +596,7 @@ export function createObject(h: Handle, type: string, content: any): Promise<str
     headers: { accept: "application/json", "content-type": "application/json" }
   };
 
-  return h
+  return h.config
     .fetch(url, requestInit)
     .then(guardStatus("createObject", 200))
     .then(res => res.json())
@@ -613,7 +615,7 @@ export function createObjectId(h: Handle, objId: ObjId, type: string, content: a
     headers: { accept: "application/json", "content-type": "application/json" }
   };
 
-  return h
+  return h.config
     .fetch(url, requestInit)
     .then(res => res.json())
     .then(json => {
@@ -624,7 +626,7 @@ export function createObjectId(h: Handle, objId: ObjId, type: string, content: a
 
 export function deleteObject(h: Handle, id: string): Promise<void> {
   const url = endpointUrl(h, "/objects/" + id);
-  return h.fetch(url, { credentials: "include", method: "DELETE" }).then(res => {
+  return h.config.fetch(url, { credentials: "include", method: "DELETE" }).then(res => {
     console.log("Deleted", id, res.status);
     startNextGeneration(h);
   });
@@ -667,7 +669,7 @@ function resolveEditableF<T>(h: Handle, { objId, json }: { objId: string; json: 
     obj.createdBy = json.createdBy;
     obj.revisionId = json.revisionId || 0;
 
-    const ctor = h.infoTable.get(obj.type);
+    const ctor = h.config.infoTable.get(obj.type);
     if (ctor === undefined) {
       throw new Error(`resolveEditable: unknown type ${obj.type}`);
     }
@@ -782,7 +784,7 @@ function saveEditable(h: Handle, objId: ObjId): void {
     headers: { accept: "application/json", "content-type": "application/json" }
   };
 
-  const req = h
+  const req = h.config
     .fetch(url, requestInit)
     .then(guardStatus("saveEditable", 200))
     .then(res => res.json());
@@ -886,7 +888,7 @@ export class ObjectCollection {
     if (now - this.fetchedAt > 10 * 1000) {
       this.fetchedAt = now;
 
-      this.h
+      this.h.config
         .fetch(this.url, {
           credentials: "include",
           headers: { accept: "application/json" }

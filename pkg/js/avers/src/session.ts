@@ -18,7 +18,7 @@ export class Session {
 
 function runReq(session: Session, path: string, opts: RequestInit): Promise<Response> {
   const url = endpointUrl(session.h, path);
-  return session.h.fetch(url, { credentials: "include", ...opts });
+  return session.h.config.fetch(url, { credentials: "include", ...opts });
 }
 
 async function jsonOk<T>(res: Response): Promise<T> {
@@ -156,6 +156,6 @@ export async function signout(session: Session): Promise<void> {
 
 export async function changeSecret(h: Handle, newSecret: string): Promise<void> {
   const url = endpointUrl(h, "/secret");
-  const res = await h.fetch(url, { credentials: "include", method: "POST" });
+  const res = await h.config.fetch(url, { credentials: "include", method: "POST" });
   await guardStatus("changeSecret", 200)(res);
 }

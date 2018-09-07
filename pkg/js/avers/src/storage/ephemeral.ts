@@ -98,7 +98,7 @@ export function ephemeralValue<T>(h: Handle, e: Ephemeral<T>): Computation<T> {
 // FIXME: Retry the request if the promise failed.
 
 async function refreshEphemeral<T>(h: Handle, e: Ephemeral<T>, ent: EphemeralE<T>): Promise<void> {
-  const now = h.now();
+  const now = h.config.now();
   if ((ent.value === undefined || now > ent.expiresAt) && ent.networkRequest === undefined) {
     try {
       const res = await runNetworkRequest(h, e, "fetchEphemeral", e.fetch());

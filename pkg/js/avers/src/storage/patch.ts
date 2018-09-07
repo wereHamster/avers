@@ -34,7 +34,7 @@ async function fetchPatch(h: Handle, objectId: ObjId, revId: RevId): Promise<Pat
     headers: { accept: "application/json" }
   };
 
-  const res = await h.fetch(url, requestInit);
+  const res = await h.config.fetch(url, requestInit);
   await guardStatus("fetchPatch", 200)(res);
 
   return parsePatch(await res.json());
