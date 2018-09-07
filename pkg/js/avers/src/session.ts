@@ -1,5 +1,5 @@
 import { Handle, startNextGeneration, endpointUrl } from "./storage";
-import { assign, guardStatus } from "./shared";
+import { guardStatus } from "./shared";
 
 export enum Transition {
   Restore,
@@ -18,12 +18,12 @@ export class Session {
 
 function runReq(session: Session, path: string, opts: RequestInit): Promise<Response> {
   const url = endpointUrl(session.h, path);
-  return session.h.fetch(url, assign<RequestInit>({ credentials: "include" }, opts));
+  return session.h.fetch(url, { credentials: "include", ...opts });
 }
 
 async function jsonOk<T>(res: Response): Promise<T> {
   if (res.status >= 200 && res.status < 300) {
-    return await res.json();
+    return res.json();
   } else {
     throw new Error("Status " + res.status);
   }
@@ -156,6 +156,6 @@ export async function signout(session: Session): Promise<void> {
 
 export async function changeSecret(h: Handle, newSecret: string): Promise<void> {
   const url = endpointUrl(h, "/secret");
-  const res = await h.fetch(url, assign<RequestInit>({ credentials: "include" }, { method: "POST" }));
+  const res = await h.fetch(url, { credentials: "include", method: "POST" });
   await guardStatus("changeSecret", 200)(res);
 }
