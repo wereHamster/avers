@@ -27,6 +27,10 @@ import {
   detachChangeListener
 } from "./core";
 
+export * from './storage/static';
+export * from './storage/ephemeral';
+export * from './storage/patch';
+
 import { Static, StaticE, withStaticE } from './storage/static';
 import { Ephemeral, EphemeralE, withEphemeralE } from './storage/ephemeral';
 import { Patch, parsePatch } from './storage/patch';
