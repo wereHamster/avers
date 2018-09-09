@@ -76,7 +76,7 @@ export class Handle {
   generationChangeCallbacks: Set<Function> = new Set();
   // ^ List of callbacks which are invoked when the generation changes.
 
-  objectCache = new Map<string, Editable<any>>();
+  editableCache = new Map<string, Editable<any>>();
   staticCache = new Map<Symbol, Map<string, StaticE<any>>>();
   ephemeralCache = new Map<Symbol, Map<string, EphemeralE<any>>>();
 
@@ -151,7 +151,7 @@ export function endpointUrl(h: Handle, path: string): string {
 export function networkRequests(h: Handle): NetworkRequest[] {
   const ret: NetworkRequest[] = [];
 
-  for (const obj of h.objectCache.values()) {
+  for (const obj of h.editableCache.values()) {
     const nr = obj.networkRequest;
     if (nr !== undefined) {
       ret.push(nr);
@@ -170,7 +170,7 @@ export function networkRequests(h: Handle): NetworkRequest[] {
 export function localChanges(h: Handle): { obj: Editable<any>; changes: Operation[] }[] {
   const ret: { obj: Editable<any>; changes: Operation[] }[] = [];
 
-  for (const obj of h.objectCache.values()) {
+  for (const obj of h.editableCache.values()) {
     if (obj.localChanges.length > 0) {
       ret.push({ obj: obj, changes: obj.localChanges });
     }
@@ -276,12 +276,12 @@ function applyPatches(obj: Editable<any>, patches: Patch[]): void {
 // repeatedly with the same id.
 
 export function mkEditable<T>(h: Handle, id: string): Editable<T> {
-  let obj = h.objectCache.get(id);
+  let obj = h.editableCache.get(id);
   if (!obj) {
     obj = new Editable<T>(id);
     obj.changeListener = mkChangeListener(h, id);
 
-    h.objectCache.set(id, Object.freeze(obj) as any);
+    h.editableCache.set(id, Object.freeze(obj) as any);
 
     changeFeedSubscription(h, ["+", id]);
   }
@@ -421,7 +421,7 @@ export class Editable<T> {
 }
 
 function withEditable<T>(h: Handle, objId: ObjId, f: (obj: Editable<T>) => void): void {
-  const obj = h.objectCache.get(objId);
+  const obj = h.editableCache.get(objId);
   if (obj) {
     applyEditableChanges(h, obj, f);
   }
@@ -448,7 +448,7 @@ function updateEditable<T>(h: Handle, objId: ObjId, f: (obj: Editable<T>) => voi
 // the new copy into the cache, overwriting the previous object.
 
 function applyEditableChanges<T>(h: Handle, obj: Editable<T>, f: (obj: Editable<T>) => void): void {
-  h.objectCache.set(obj.objectId, immutableClone<Editable<T>>(Editable, obj, f));
+  h.editableCache.set(obj.objectId, immutableClone<Editable<T>>(Editable, obj, f));
 }
 
 // runNetworkRequest
@@ -550,7 +550,7 @@ export async function loadEditable<T>(h: Handle, obj: Editable<T>): Promise<void
   const objId = obj.objectId;
 
   const res = await runNetworkRequest(h, objId, "fetchEditable", fetchObject(h, objId));
-  const e = h.objectCache.get(objId);
+  const e = h.editableCache.get(objId);
 
   if (e && e.networkRequest === res.networkRequest) {
     // FIXME: Clearing the networkRequest from the entity maybe should
@@ -689,7 +689,7 @@ export function resolveEditable<T>(h: Handle, objId: ObjId, json: any): void {
   // to exist. But we can't encode that in the type system so we should do
   // the check.
 
-  const obj = h.objectCache.get(objId);
+  const obj = h.editableCache.get(objId);
   if (obj !== undefined) {
     migrateObject(obj.content);
   }
@@ -760,7 +760,7 @@ function restoreLocalChangesF(h: Handle, objId: ObjId) {
 const restoreLocalChangesA = (objId: ObjId) => mkAction(`restoreLocalChanges(${objId})`, objId, restoreLocalChangesF);
 
 async function saveEditable(h: Handle, objId: ObjId): Promise<void> {
-  const obj = h.objectCache.get(objId);
+  const obj = h.editableCache.get(objId);
   if (!obj) {
     return;
   }
