@@ -586,6 +586,25 @@ describe("Avers.ephemeralValue", function() {
 
     done();
   });
+  it("should abort computation when request fails", function(done: MochaDone) {
+    const h = mkHandle({}),
+      ne = new Avers.Ephemeral(testNamespace, "test", async () => {
+        throw new Error("…");
+      });
+
+    Avers.ephemeralValue(h, ne).get(sentinel);
+
+    setTimeout(() => {
+      Avers.ephemeralValue(h, ne)
+        .then(
+          () => assert.fail(),
+          () => {
+            done();
+          }
+        )
+        .get(sentinel);
+    }, 1);
+  });
 });
 
 describe("Avers.staticValue", function() {

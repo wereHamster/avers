@@ -105,6 +105,9 @@ function resolveStaticF<T>(h: Handle, { s, value }: { s: Static<T>; value: T }):
   });
 }
 
+const resolveStaticA = <T>(s: Static<T>, value: T) =>
+  mkAction(`resolveStatic(${s.ns.toString()}, ${s.key})`, { s, value }, resolveStaticF);
+
 export function resolveStatic<T>(h: Handle, s: Static<T>, value: T): void {
-  modifyHandle(h, mkAction(`resolveStatic(${s.ns.toString()}, ${s.key})`, { s, value }, resolveStaticF));
+  modifyHandle(h, resolveStaticA(s, value));
 }

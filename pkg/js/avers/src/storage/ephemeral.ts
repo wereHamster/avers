@@ -99,11 +99,11 @@ export function ephemeralValue<T>(h: Handle, e: Ephemeral<T>): Computation<T> {
 
 async function refreshEphemeral<T>(h: Handle, e: Ephemeral<T>, ent: EphemeralE<T>): Promise<void> {
   const now = h.config.now();
-  if ((ent.value === undefined || now > ent.expiresAt) && ent.networkRequest === undefined) {
+  if ((ent.value === Computation.Pending || now > ent.expiresAt) && ent.networkRequest === undefined) {
     try {
       const res = await runNetworkRequest(h, e, "fetchEphemeral", e.fetch());
       resolveEphemeral(h, e, res.res.value, res.res.expiresAt);
-    } catch (e) {
+    } catch (err) {
       // TODO: Set 'lastError' instead of just clearing 'value'.
       resolveEphemeral(h, e, Computation.Pending, now);
     }
@@ -129,9 +129,9 @@ function resolveEphemeralF<T>(
   });
 }
 
+const resolveEphemeralA = <T>(e: Ephemeral<T>, value: T, expiresAt: number) =>
+  mkAction(`resolveEphemeral(${e.ns.toString()}, ${e.key})`, { e, value, expiresAt }, resolveEphemeralF);
+
 export function resolveEphemeral<T>(h: Handle, e: Ephemeral<T>, value: T, expiresAt: number): void {
-  modifyHandle(
-    h,
-    mkAction(`resolveEphemeral(${e.ns.toString()}, ${e.key})`, { e, value, expiresAt }, resolveEphemeralF)
-  );
+  modifyHandle(h, resolveEphemeralA(e, value, expiresAt));
 }
