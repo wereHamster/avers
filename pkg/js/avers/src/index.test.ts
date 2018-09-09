@@ -125,7 +125,7 @@ function mkHandle(json: any): Avers.Handle {
     };
   }
 
-  let infoTable = new Map<string, Avers.ObjectConstructor<any>>();
+  const infoTable = new Map<string, Avers.ObjectConstructor<any>>();
   infoTable.set("library", Library);
   infoTable.set("book", Book);
 
@@ -314,7 +314,7 @@ describe("Avers.resolvePath", function() {
 
 describe("Avers.applyOperation", function() {
   function run(op: Avers.Operation, f: (a: Book, b: Book) => void): void {
-    let orig = Avers.mk(Book, jsonBook),
+    const orig = Avers.mk(Book, jsonBook),
       copy = Avers.applyOperation(orig, op.path, op);
 
     f(orig, copy);
@@ -342,14 +342,14 @@ describe("Avers.applyOperation", function() {
     }
 
     it("should return a copy of the object if some property was changed", function() {
-      let lib = Avers.mk(Library, {});
-      let copy = Avers.applyOperation(lib, "items", mkOp("items", 0, 0, [jsonBookItemWithId]));
+      const lib = Avers.mk(Library, {});
+      const copy = Avers.applyOperation(lib, "items", mkOp("items", 0, 0, [jsonBookItemWithId]));
 
       assert.notEqual(lib, copy);
     });
     it.skip("should return a the same object if no changes were needed", function() {
-      let lib = Avers.mk(Library, {});
-      let copy = Avers.applyOperation(lib, "items", mkOp("items", 0, 0, []));
+      const lib = Avers.mk(Library, {});
+      const copy = Avers.applyOperation(lib, "items", mkOp("items", 0, 0, []));
 
       assert.equal(lib, copy);
     });
@@ -461,7 +461,7 @@ describe("Avers.lookupItem", function() {
 
 describe("Avers.attachGenerationListener", function() {
   it("should invoke the listener when the data changes", function(done: MochaDone) {
-    let h = mkHandle({});
+    const h = mkHandle({});
     Avers.attachGenerationListener(h, () => {
       done();
     });
@@ -474,7 +474,7 @@ describe("Avers.lookupEditable", function() {
     assert.equal(sentinel, Avers.lookupEditable(mkHandle(libraryObjectResponse), "id").get(sentinel));
   });
   it("should resolve to the object after it is loaded", function(done: MochaDone) {
-    let h = mkHandle(libraryObjectResponse);
+    const h = mkHandle(libraryObjectResponse);
 
     Avers.lookupEditable(h, "id").get(sentinel);
     setTimeout(() => {
@@ -485,13 +485,13 @@ describe("Avers.lookupEditable", function() {
     }, 0);
   });
   it("should return a copy when its content changes", function() {
-    let h = mkHandle({});
+    const h = mkHandle({});
 
-    let obj = Avers.mkEditable(h, "id");
+    const obj = Avers.mkEditable(h, "id");
     assert.isUndefined(obj.content);
 
     Avers.resolveEditable(h, "id", libraryObjectResponse);
-    let copy = Avers.mkEditable(h, "id");
+    const copy = Avers.mkEditable(h, "id");
 
     assert.instanceOf(copy, Avers.Editable);
     assert.instanceOf(copy.content, Library);
@@ -502,26 +502,26 @@ describe("Avers.lookupEditable", function() {
 
 describe("registering changes on an Editable", function() {
   it("should make a copy of the content", function() {
-    let h = mkHandle({});
+    const h = mkHandle({});
 
     Avers.resolveEditable(h, "id", libraryObjectResponse);
-    let obj = Avers.mkEditable<Library>(h, "id");
+    const obj = Avers.mkEditable<Library>(h, "id");
 
     assert.instanceOf(obj.content, Library);
     obj.content.items.push(Avers.mk(Item, jsonBookItemWithId));
 
-    let copy = Avers.mkEditable<Library>(h, "id");
+    const copy = Avers.mkEditable<Library>(h, "id");
     assert.instanceOf(copy.content, Library);
     assert.notEqual(obj.content, copy.content);
   });
   it.skip("should preserve objects not in the change path", function() {
-    let h = mkHandle({});
+    const h = mkHandle({});
     Avers.resolveEditable(h, "id", bookObjectResponse);
 
-    let obj = Avers.mkEditable<Book>(h, "id");
+    const obj = Avers.mkEditable<Book>(h, "id");
     obj.content.title = "A Song of Ice and Fire";
 
-    let copy = Avers.mkEditable<Book>(h, "id");
+    const copy = Avers.mkEditable<Book>(h, "id");
     assert.notEqual(obj.content, copy.content, "content");
     assert.equal(obj.content.author, copy.content.author, "content.author");
   });
@@ -548,31 +548,34 @@ describe("Avers.ObjectCollection", function() {
 });
 
 describe("Avers.ephemeralValue", function() {
-  let e = new Avers.Ephemeral(testNamespace, "test", unresolvedPromiseF);
+  const e = new Avers.Ephemeral(testNamespace, "test", unresolvedPromiseF);
 
   it("should return pending when the object is empty", function() {
-    let h = mkHandle({});
+    const h = mkHandle({});
     assert.equal(sentinel, Avers.ephemeralValue(h, e).get(sentinel));
   });
   it("should return the value when the object is resolved", function() {
-    let h = mkHandle({});
+    const h = mkHandle({});
     Avers.resolveEphemeral(h, e, 42, h.config.now() + 99);
     assert.equal(42, Avers.ephemeralValue(h, e).get(sentinel));
   });
   it("should return the value even if it is stale", function() {
-    let h = mkHandle({});
+    const h = mkHandle({});
     Avers.resolveEphemeral(h, e, 42, h.config.now() - 99);
     assert.equal(42, Avers.ephemeralValue(h, e).get(sentinel));
   });
   it("should invoke the fetch function when the value is stale", function(done: MochaDone) {
-    let h = mkHandle({}),
-      ne = new Avers.Ephemeral(testNamespace, "test", done as any);
+    const h = mkHandle({}),
+      ne = new Avers.Ephemeral(testNamespace, "test", async () => {
+        done();
+        return { value: {}, expiresAt: 0 };
+      });
 
     Avers.resolveEphemeral(h, ne, 42, h.config.now() - 99);
     Avers.ephemeralValue(h, ne).get(sentinel);
   });
   it("should not invoke the fetch function when the value is fresh", function(done: MochaDone) {
-    let h = mkHandle({}),
+    const h = mkHandle({}),
       ne = new Avers.Ephemeral(testNamespace, "test", () => {
         assert(false, "fetch of a fresh Ephemeral was invoked");
         throw new Error("fetch of a fresh Ephemeral was invoked");
@@ -586,14 +589,14 @@ describe("Avers.ephemeralValue", function() {
 });
 
 describe("Avers.staticValue", function() {
-  let s = new Avers.Static(testNamespace, "test", unresolvedPromiseF);
+  const s = new Avers.Static(testNamespace, "test", unresolvedPromiseF);
 
   it("should return pending when the object is empty", function() {
-    let h = mkHandle({});
+    const h = mkHandle({});
     assert.equal(sentinel, Avers.staticValue(h, s).get(sentinel));
   });
   it("should return the value when the object is resolved", function() {
-    let h = mkHandle({});
+    const h = mkHandle({});
     Avers.resolveStatic(h, s, 42);
     assert.equal(42, Avers.staticValue(h, s).get(sentinel));
   });
