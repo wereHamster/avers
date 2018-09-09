@@ -27,13 +27,15 @@ import {
   detachChangeListener
 } from "./core";
 
-export * from "./storage/static";
+export * from "./storage/collection";
 export * from "./storage/ephemeral";
 export * from "./storage/patch";
+export * from "./storage/keyed-collection";
+export * from "./storage/static";
 
-import { Static, StaticE, withStaticE } from "./storage/static";
 import { Ephemeral, EphemeralE, withEphemeralE } from "./storage/ephemeral";
 import { Patch, parsePatch } from "./storage/patch";
+import { Static, StaticE, withStaticE } from "./storage/static";
 
 // Helpful type synonyms
 // -----------------------------------------------------------------------------
@@ -852,98 +854,4 @@ function filterOps(ops: Operation[]): Operation[] {
 
     return a;
   }, []);
-}
-
-export class ObjectCollection {
-  fetchedAt: number;
-  url: string;
-  objectIds: undefined | string[];
-
-  ids: Computation<string[]> = new Computation(() => {
-    this.fetch();
-
-    if (this.objectIds === undefined) {
-      return Computation.Pending;
-    } else {
-      return this.objectIds;
-    }
-  });
-
-  constructor(public h: Handle, public collectionName: string) {
-    this.fetchedAt = 0;
-    this.url = endpointUrl(h, "/collection/" + collectionName);
-    this.objectIds = undefined;
-  }
-
-  private mergeIds(ids: string[]): void {
-    const isChanged =
-      this.objectIds === undefined ||
-      ids.length !== this.objectIds.length ||
-      ids.reduce((a, id, index) => {
-        return a || (this.objectIds !== undefined && id !== this.objectIds[index]);
-      }, false);
-
-    if (isChanged) {
-      modifyHandle(
-        this.h,
-        mkAction(`updateObjectCollection(${this.collectionName})`, {}, () => {
-          this.objectIds = ids;
-        })
-      );
-    }
-  }
-
-  private fetch(): void {
-    const now = Date.now();
-    if (now - this.fetchedAt > 10 * 1000) {
-      this.fetchedAt = now;
-
-      this.h.config
-        .fetch(this.url, {
-          credentials: "include",
-          headers: { accept: "application/json" }
-        })
-        .then(res => {
-          return res.json().then((json: any) => {
-            this.mergeIds(json);
-          });
-        })
-        .catch(err => {
-          console.error("Avers.Collection fetch", err);
-        });
-    }
-  }
-}
-
-export function resetObjectCollection(c: ObjectCollection): void {
-  modifyHandle(
-    c.h,
-    mkAction(`resetObjectCollection(${c.collectionName})`, {}, () => {
-      c.fetchedAt = 0;
-    })
-  );
-}
-
-export class KeyedObjectCollection<T> {
-  cache = new Map<string, ObjectCollection>();
-
-  constructor(public h: Handle, public keyFn: (key: T) => string) {}
-
-  get(keyInput: T): ObjectCollection {
-    let key = this.keyFn(keyInput),
-      collection = this.cache.get(key);
-
-    if (!collection) {
-      collection = new ObjectCollection(this.h, key);
-      this.cache.set(key, collection);
-    }
-
-    return collection;
-  }
-}
-
-export function resetKeyedObjectCollection(kc: KeyedObjectCollection<any>): void {
-  kc.cache.forEach(c => {
-    resetObjectCollection(c);
-  });
 }
