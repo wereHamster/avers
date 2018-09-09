@@ -104,8 +104,7 @@ async function refreshEphemeral<T>(h: Handle, e: Ephemeral<T>, ent: EphemeralE<T
       const res = await runNetworkRequest(h, e, "fetchEphemeral", e.fetch());
       resolveEphemeral(h, e, res.res.value, res.res.expiresAt);
     } catch (err) {
-      // TODO: Set 'lastError' instead of just clearing 'value'.
-      resolveEphemeral(h, e, Computation.Pending, now);
+      // Ignore errors. runNetworkRequest already sets 'lastError'.
     }
   }
 }

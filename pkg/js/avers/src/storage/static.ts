@@ -91,8 +91,7 @@ async function refreshStatic<T>(h: Handle, s: Static<T>, ent: StaticE<T>): Promi
       const res = await runNetworkRequest(h, s, "fetchStatic", s.fetch());
       resolveStatic(h, s, res.res);
     } catch (e) {
-      // TODO: Set 'lastError' instead of just clearing 'value'.
-      resolveStatic(h, s, Computation.Pending);
+       // Ignore errors. runNetworkRequest already sets 'lastError'.
     }
   }
 }
