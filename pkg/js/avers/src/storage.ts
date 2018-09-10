@@ -40,13 +40,11 @@ import {
   endpointUrl,
   modifyHandle,
   startNextGeneration,
-  entityLabel,
   withEditable,
-  applyEditableChanges
+  applyEditableChanges,
+  runNetworkRequest,
 } from "./storage/internal";
-import { withEphemeralE } from "./storage/ephemeral";
 import { Patch, parsePatch } from "./storage/patch";
-import { withStaticE } from "./storage/static";
 
 // attachGenerationListener
 // -----------------------------------------------------------------------
@@ -317,83 +315,6 @@ function debounce<T extends any[]>(func: (...args: T) => void, wait: any): (...a
 function updateEditable<T>(h: Handle, objId: ObjId, f: (obj: Editable<T>) => void): void {
   const obj = mkEditable<T>(h, objId);
   applyEditableChanges<T>(h, obj, f);
-}
-
-// runNetworkRequest
-// -----------------------------------------------------------------------
-//
-// Run a network request attached to the given 'Entity'. This overwrites
-// (invalidates) any currently running request. The promise is resolved only
-// when the request is still valid. That is when you can handle the response
-// and apply changes to the Handle.
-
-export function attachNetworkRequestF(
-  h: Handle,
-  { entity, nr }: { entity: string | Static<any> | Ephemeral<any>; nr: NetworkRequest }
-) {
-  function f(e: { networkRequest: undefined | NetworkRequest }) {
-    e.networkRequest = nr;
-  }
-
-  if (typeof entity === "string") {
-    withEditable(h, entity, f);
-  } else if (entity instanceof Static) {
-    withStaticE(h, entity.ns, entity.key, f);
-  } else if (entity instanceof Ephemeral) {
-    withEphemeralE(h, entity.ns, entity.key, f);
-  }
-}
-
-const attachNetworkRequestA = (entity: string | Static<any> | Ephemeral<any>, label: string, nr: NetworkRequest) =>
-  mkAction(`attachNetworkRequest(${entityLabel(entity)},${label})`, { entity, nr }, attachNetworkRequestF);
-
-function reportNetworkFailureF(
-  h: Handle,
-  {
-    entity,
-    nr,
-    err
-  }: {
-    entity: string | Static<any> | Ephemeral<any>;
-    nr: NetworkRequest;
-    err: Error;
-  }
-) {
-  function f(e: { networkRequest: undefined | NetworkRequest; lastError: any }): void {
-    if (e.networkRequest === nr) {
-      e.networkRequest = undefined;
-      e.lastError = err;
-    }
-  }
-
-  if (typeof entity === "string") {
-    withEditable(h, entity, f);
-  } else if (entity instanceof Static) {
-    withStaticE(h, entity.ns, entity.key, f);
-  } else if (entity instanceof Ephemeral) {
-    withEphemeralE(h, entity.ns, entity.key, f);
-  }
-}
-
-const reportNetworkFailureA = (entity: string | Static<any> | Ephemeral<any>, nr: NetworkRequest, err: Error) =>
-  mkAction(`reportNetworkFailure(${entityLabel(entity)},${err})`, { entity, nr, err }, reportNetworkFailureF);
-
-export async function runNetworkRequest<R>(
-  h: Handle,
-  entity: string | Static<any> | Ephemeral<any>,
-  label: string,
-  req: Promise<R>
-): Promise<{ networkRequest: NetworkRequest; res: R }> {
-  const networkRequest = new NetworkRequest(h.config.now(), req);
-  modifyHandle(h, attachNetworkRequestA(entity, label, networkRequest));
-
-  try {
-    const res = await req;
-    return { networkRequest, res };
-  } catch (err) {
-    modifyHandle(h, reportNetworkFailureA(entity, networkRequest, err));
-    throw err;
-  }
 }
 
 // loadEditable

@@ -1,50 +1,7 @@
 import Computation from "computation";
 
-import { immutableClone } from "../shared";
 import { Handle, mkAction, Static, StaticE } from "./types";
-import { modifyHandle } from "./internal";
-import { runNetworkRequest } from "../storage";
-
-function lookupStaticE<T>(h: Handle, ns: Symbol, key: string): undefined | StaticE<T> {
-  const n = h.staticCache.get(ns);
-  if (n) {
-    return n.get(key);
-  }
-}
-
-function insertStaticE<T>(h: Handle, ns: Symbol, key: string, e: StaticE<T>): void {
-  let n = h.staticCache.get(ns);
-  if (!n) {
-    n = new Map<string, StaticE<T>>();
-    h.staticCache.set(ns, n);
-  }
-
-  n.set(key, Object.freeze(e));
-}
-
-function applyStaticChanges<T>(h: Handle, ns: Symbol, key: string, s: StaticE<T>, f: (s: StaticE<T>) => void): void {
-  insertStaticE(h, ns, key, immutableClone<StaticE<T>>(StaticE, s, f));
-}
-
-export function withStaticE<T>(h: Handle, ns: Symbol, key: string, f: (s: StaticE<T>) => void): void {
-  applyStaticChanges(h, ns, key, mkStaticE<T>(h, ns, key), f);
-}
-
-// mkStatic
-// -----------------------------------------------------------------------
-//
-// Even though this function has access to the 'Handle' and indeed modifies
-// it, the changes have has no externally observable effect.
-
-function mkStaticE<T>(h: Handle, ns: Symbol, key: string): StaticE<T> {
-  let s = lookupStaticE<T>(h, ns, key);
-  if (!s) {
-    s = new StaticE<T>();
-    insertStaticE(h, ns, key, s);
-  }
-
-  return s;
-}
+import { modifyHandle, mkStaticE, withStaticE, runNetworkRequest } from "./internal";
 
 // staticValue
 // -----------------------------------------------------------------------

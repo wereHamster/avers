@@ -1,53 +1,7 @@
 import Computation from "computation";
 
-import { immutableClone } from "../shared";
 import { Handle, mkAction, Ephemeral, EphemeralE } from "./types";
-import { modifyHandle } from "./internal";
-import { runNetworkRequest } from "../storage";
-
-function lookupEphemeralE<T>(h: Handle, ns: Symbol, key: string): undefined | EphemeralE<T> {
-  const n = h.ephemeralCache.get(ns);
-  if (n) {
-    return n.get(key);
-  }
-}
-
-function insertEphemeralE<T>(h: Handle, ns: Symbol, key: string, e: EphemeralE<T>): void {
-  let n = h.ephemeralCache.get(ns);
-  if (!n) {
-    n = new Map<string, EphemeralE<T>>();
-    h.ephemeralCache.set(ns, n);
-  }
-
-  n.set(key, Object.freeze(e));
-}
-
-function applyEphemeralChanges<T>(
-  h: Handle,
-  ns: Symbol,
-  key: string,
-  s: EphemeralE<T>,
-  f: (s: EphemeralE<T>) => void
-): void {
-  insertEphemeralE(h, ns, key, immutableClone<EphemeralE<T>>(EphemeralE, s, f));
-}
-
-export function withEphemeralE<T>(h: Handle, ns: Symbol, key: string, f: (s: EphemeralE<T>) => void): void {
-  applyEphemeralChanges(h, ns, key, mkEphemeralE<T>(h, ns, key), f);
-}
-
-// mkEphemeralE
-// -----------------------------------------------------------------------
-
-function mkEphemeralE<T>(h: Handle, ns: Symbol, key: string): EphemeralE<T> {
-  let e = lookupEphemeralE<T>(h, ns, key);
-  if (!e) {
-    e = new EphemeralE<T>();
-    insertEphemeralE(h, ns, key, e);
-  }
-
-  return e;
-}
+import { modifyHandle, mkEphemeralE, withEphemeralE, runNetworkRequest } from "./internal";
 
 // ephemeralValue
 // -----------------------------------------------------------------------

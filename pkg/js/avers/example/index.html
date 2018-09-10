@@ -1,5 +1,6 @@
 <html>
 <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <script src="../avers.js"></script>
 </head>
 <body>
@@ -7,7 +8,7 @@ Open the developer console and play around with the <i>library</i> object. Examp
 
 <code><pre>
 library.location = 'Berlin, Germany';
-library.books.push(Avers.mk(Book, { title: 'A Tale of Two Cities' });
+library.books.push(Avers.mk(Book, { title: 'A Tale of Two Cities' }));
 library.books[0].title = 'Le Petit Prince';
 Avers.attachChangeListener(library, function(path, value) { console.log(path, value); });
 Avers.toJSON(library);
