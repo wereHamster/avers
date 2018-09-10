@@ -1,27 +1,9 @@
 import Computation from "computation";
 
 import { immutableClone } from "../shared";
-import { Handle, NetworkRequest, runNetworkRequest, modifyHandle, mkAction } from "../storage";
-
-// Static<T>
-// -----------------------------------------------------------------------
-//
-// A static value which is read-only. Is loaded from the server when
-// required, then cached indefinitely (or until pruned from the cache).
-// The objects are managed by the Avers Handle, they trigger a generation
-// change when they are modified.
-
-export class Static<T> {
-  [Symbol.species]: "Static";
-
-  constructor(public ns: Symbol, public key: string, public fetch: () => Promise<T>) {}
-}
-
-export class StaticE<T> {
-  networkRequest: undefined | NetworkRequest = undefined;
-  lastError: undefined | Error = undefined;
-  value: T = Computation.Pending;
-}
+import { Handle, mkAction, Static, StaticE } from "./types";
+import { modifyHandle } from "./internal";
+import { runNetworkRequest } from "../storage";
 
 function lookupStaticE<T>(h: Handle, ns: Symbol, key: string): undefined | StaticE<T> {
   const n = h.staticCache.get(ns);
@@ -91,7 +73,7 @@ async function refreshStatic<T>(h: Handle, s: Static<T>, ent: StaticE<T>): Promi
       const res = await runNetworkRequest(h, s, "fetchStatic", s.fetch());
       resolveStatic(h, s, res.res);
     } catch (e) {
-       // Ignore errors. runNetworkRequest already sets 'lastError'.
+      // Ignore errors. runNetworkRequest already sets 'lastError'.
     }
   }
 }

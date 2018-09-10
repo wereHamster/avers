@@ -1,6 +1,7 @@
 import Computation from "computation";
 
-import { Handle, endpointUrl, mkAction, modifyHandle } from "../storage";
+import { Handle, mkAction } from "./types";
+import { endpointUrl, modifyHandle } from "./internal";
 
 const MAXAGE = 10 * 1000;
 

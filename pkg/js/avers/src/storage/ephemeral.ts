@@ -1,36 +1,9 @@
 import Computation from "computation";
 
 import { immutableClone } from "../shared";
-import { Handle, NetworkRequest, runNetworkRequest, modifyHandle, mkAction } from "../storage";
-
-// Ephemeral<T>
-// -----------------------------------------------------------------------
-//
-// Ephemeral<T> objects are similar to Static<T> in that they can't be
-// modified, but they can expire and become stale. Once stale they are
-// re-fetched.
-
-export class Ephemeral<T> {
-  [Symbol.species]: "Ephemeral";
-
-  constructor(public ns: Symbol, public key: string, public fetch: () => Promise<{ value: T; expiresAt: number }>) {}
-}
-
-// EphemeralE<T>
-// ------------------------------------------------------------------------
-//
-// The internal object for an Ephemeral<T> which stores the actual value and
-// keeps track of the network interaction.
-//
-// This is an internal class. It is not exposed through any public API, except
-// through the 'ephemeralCache' in the Handle.
-
-export class EphemeralE<T> {
-  networkRequest: undefined | NetworkRequest = undefined;
-  lastError: undefined | Error = undefined;
-  value: T = Computation.Pending;
-  expiresAt: number = 0;
-}
+import { Handle, mkAction, Ephemeral, EphemeralE } from "./types";
+import { modifyHandle } from "./internal";
+import { runNetworkRequest } from "../storage";
 
 function lookupEphemeralE<T>(h: Handle, ns: Symbol, key: string): undefined | EphemeralE<T> {
   const n = h.ephemeralCache.get(ns);

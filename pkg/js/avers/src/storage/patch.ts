@@ -2,9 +2,9 @@ import Computation from "computation";
 
 import { guardStatus } from "../shared";
 import { Operation } from "../core";
-import { Handle, ObjId, RevId, endpointUrl } from "../storage";
-import { aversNamespace } from "./internal";
-import { Static, staticValue } from "./static";
+import { ObjId, RevId, Handle, Static } from "./types";
+import { aversNamespace, endpointUrl } from "./internal";
+import { staticValue } from "./static";
 
 // Patch
 // -----------------------------------------------------------------------

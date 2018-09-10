@@ -14,7 +14,7 @@
 
 import Computation from "computation";
 
-import { immutableClone, guardStatus } from "./shared";
+import { guardStatus } from "./shared";
 import {
   applyOperation,
   Operation,
@@ -29,90 +29,24 @@ import {
 
 export * from "./storage/collection";
 export * from "./storage/ephemeral";
-export * from "./storage/patch";
+export * from "./storage/internal";
 export * from "./storage/keyed-collection";
+export * from "./storage/patch";
 export * from "./storage/static";
+export * from "./storage/types";
 
-import { Ephemeral, EphemeralE, withEphemeralE } from "./storage/ephemeral";
+import { ObjId, Handle, Editable, Static, Ephemeral, mkAction, NetworkRequest } from "./storage/types";
+import {
+  endpointUrl,
+  modifyHandle,
+  startNextGeneration,
+  entityLabel,
+  withEditable,
+  applyEditableChanges
+} from "./storage/internal";
+import { withEphemeralE } from "./storage/ephemeral";
 import { Patch, parsePatch } from "./storage/patch";
-import { Static, StaticE, withStaticE } from "./storage/static";
-
-// Helpful type synonyms
-// -----------------------------------------------------------------------------
-
-export type ObjId = string;
-export type RevId = number;
-
-export interface ObjectConstructor<T> {
-  new (): T;
-}
-
-export interface Config {
-  apiHost: string;
-  // ^ The hostname where we can reach the Avers API server. Leave
-  // out the trailing slash.
-  //
-  // Example: "//localhost:8000"
-
-  fetch: typeof window.fetch;
-  // ^ API to send network requests. If you use this extension in
-  // a web browser, you can pass in the 'fetch' function directly.
-
-  createWebSocket: (path: string) => WebSocket;
-  // ^ Create a WebSocket connection to the given path.
-
-  now: () => number;
-  // ^ Function which returns the current time. You can use 'Date.now'
-  // or 'window.performance.now', depending on how accurate time
-  // resolution you need.
-
-  infoTable: Map<string, ObjectConstructor<any>>; // ^ All object types which the client can parse.
-}
-
-export class Handle {
-  generationNumber = 0;
-  // ^ Incremented everytime something managed by this handle changes.
-
-  generationChangeCallbacks: Set<Function> = new Set();
-  // ^ List of callbacks which are invoked when the generation changes.
-
-  editableCache = new Map<string, Editable<any>>();
-  staticCache = new Map<Symbol, Map<string, StaticE<any>>>();
-  ephemeralCache = new Map<Symbol, Map<string, EphemeralE<any>>>();
-
-  feedSocket: undefined | WebSocket = undefined;
-  // ^ A WebSocket connected to the feed through which the client receives
-  // change notifications (eg. new patches).
-
-  constructor(public config: Config) {}
-}
-
-export function newHandle(config: Config): Handle {
-  return new Handle(config);
-}
-
-interface Action<T> {
-  label: string;
-  payload: T;
-  applyF: (h: Handle, payload: T) => void;
-}
-
-export function mkAction<T>(label: string, payload: T, applyF: (h: Handle, payload: T) => void): Action<T> {
-  return { label, payload, applyF };
-}
-
-export function modifyHandle<T>(h: Handle, { applyF, payload }: Action<T>): void {
-  applyF(h, payload);
-  startNextGeneration(h);
-}
-
-export function startNextGeneration(h: Handle): void {
-  h.generationNumber++;
-
-  for (const f of h.generationChangeCallbacks) {
-    f();
-  }
-}
+import { withStaticE } from "./storage/static";
 
 // attachGenerationListener
 // -----------------------------------------------------------------------
@@ -137,10 +71,6 @@ export function attachGenerationListener(h: Handle, f: () => void): Function {
 
 export function detachGenerationListener(h: Handle, listener: Function): void {
   h.generationChangeCallbacks.delete(listener);
-}
-
-export function endpointUrl(h: Handle, path: string): string {
-  return h.config.apiHost + path;
 }
 
 // networkRequests
@@ -375,58 +305,6 @@ function debounce<T extends any[]>(func: (...args: T) => void, wait: any): (...a
   };
 }
 
-export class NetworkRequest {
-  constructor(public createdAt: number, public promise: Promise<{}>) {}
-}
-
-export class Editable<T> {
-  [Symbol.species]: "Editable";
-
-  networkRequest: undefined | NetworkRequest = undefined;
-
-  // ^ If we have a active network request at the moment (either to
-  // fetch the object or saving changes etc) then this describes it. We
-  // store the time when the request was started along with the promise.
-  // This helps identify long running requests, so the UI can update
-  // accordingly.
-  //
-  // To cancel the request (or rather, its effects on the local state),
-  // simply set the field to 'undefined' or start another request.
-  // Before a promise applies its effects, it checks whether it is still
-  // current, and if not it will simply abort.
-
-  lastError: undefined | Error = undefined;
-
-  type!: string;
-
-  createdAt!: Date;
-
-  createdBy!: string;
-  // ^ The primary author who created this object.
-
-  revisionId!: RevId;
-  // ^ The RevId as we think is the latest on the server. Local changes
-  // are submitted against this RevId.
-
-  shadowContent!: T;
-  // ^ The content of the object at 'revisionId'.
-
-  content!: T;
-  changeListener!: ChangeCallback;
-
-  submittedChanges: Operation[] = [];
-  localChanges: Operation[] = [];
-
-  constructor(public objectId: ObjId) {}
-}
-
-function withEditable<T>(h: Handle, objId: ObjId, f: (obj: Editable<T>) => void): void {
-  const obj = h.editableCache.get(objId);
-  if (obj) {
-    applyEditableChanges(h, obj, f);
-  }
-}
-
 // updateEditable
 // -----------------------------------------------------------------------
 //
@@ -439,16 +317,6 @@ function withEditable<T>(h: Handle, objId: ObjId, f: (obj: Editable<T>) => void)
 function updateEditable<T>(h: Handle, objId: ObjId, f: (obj: Editable<T>) => void): void {
   const obj = mkEditable<T>(h, objId);
   applyEditableChanges<T>(h, obj, f);
-}
-
-// applyEditableChanges
-// -----------------------------------------------------------------------
-//
-// Create a copy of the given 'Editable', apply the function on it, and insert
-// the new copy into the cache, overwriting the previous object.
-
-function applyEditableChanges<T>(h: Handle, obj: Editable<T>, f: (obj: Editable<T>) => void): void {
-  h.editableCache.set(obj.objectId, immutableClone<Editable<T>>(Editable, obj, f));
 }
 
 // runNetworkRequest
@@ -509,18 +377,6 @@ function reportNetworkFailureF(
 
 const reportNetworkFailureA = (entity: string | Static<any> | Ephemeral<any>, nr: NetworkRequest, err: Error) =>
   mkAction(`reportNetworkFailure(${entityLabel(entity)},${err})`, { entity, nr, err }, reportNetworkFailureF);
-
-function entityLabel(entity: string | Static<any> | Ephemeral<any>): string {
-  if (typeof entity === "string") {
-    return `Editable(${entity})`;
-  } else if (entity instanceof Static) {
-    return `Static(${entity.ns.toString()},${entity.key})`;
-  } else if (entity instanceof Ephemeral) {
-    return `Ephemeral(${entity.ns.toString()},${entity.key})`;
-  } else {
-    return ""; // XXX: EXHAUSTIVE
-  }
-}
 
 export async function runNetworkRequest<R>(
   h: Handle,

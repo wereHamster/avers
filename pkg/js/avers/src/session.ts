@@ -1,4 +1,5 @@
-import { Handle, startNextGeneration, endpointUrl } from "./storage";
+import { Handle, startNextGeneration } from "./storage";
+import { endpointUrl } from "./storage/internal";
 import { guardStatus } from "./shared";
 
 export enum Transition {

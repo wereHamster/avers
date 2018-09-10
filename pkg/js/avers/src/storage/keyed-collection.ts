@@ -1,5 +1,5 @@
 import { ObjectCollection, resetObjectCollection } from "./collection";
-import { Handle } from "../storage";
+import { Handle } from "./types";
 
 export class KeyedObjectCollection<T> {
   cache = new Map<string, ObjectCollection>();
