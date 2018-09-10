@@ -42,7 +42,7 @@ import {
   startNextGeneration,
   withEditable,
   applyEditableChanges,
-  runNetworkRequest,
+  runNetworkRequest
 } from "./storage/internal";
 import { Patch, parsePatch } from "./storage/patch";
 
@@ -344,20 +344,19 @@ export async function loadEditable<T>(h: Handle, obj: Editable<T>): Promise<void
 //
 // Fetch the raw JSON of an object from the server.
 
-export function fetchObject(h: Handle, id: string): Promise<any> {
+export async function fetchObject(h: Handle, id: string): Promise<any> {
   const url = endpointUrl(h, "/objects/" + id);
   const requestInit: RequestInit = {
     credentials: "include",
     headers: { accept: "application/json" }
   };
 
-  return h.config
-    .fetch(url, requestInit)
-    .then(guardStatus("fetchObject", 200))
-    .then(res => res.json());
+  const res = await h.config.fetch(url, requestInit);
+  await guardStatus("fetchObject", 200)(res);
+  return res.json();
 }
 
-export function createObject(h: Handle, type: string, content: any): Promise<string> {
+export async function createObject(h: Handle, type: string, content: any): Promise<string> {
   const url = endpointUrl(h, "/objects");
   const requestInit: RequestInit = {
     credentials: "include",
@@ -366,17 +365,14 @@ export function createObject(h: Handle, type: string, content: any): Promise<str
     headers: { accept: "application/json", "content-type": "application/json" }
   };
 
-  return h.config
-    .fetch(url, requestInit)
-    .then(guardStatus("createObject", 200))
-    .then(res => res.json())
-    .then(json => {
-      startNextGeneration(h);
-      return json.id;
-    });
+  const res = await h.config.fetch(url, requestInit);
+  await guardStatus("createObject", 200)(res);
+  const json = await res.json();
+  startNextGeneration(h);
+  return json.id;
 }
 
-export function createObjectId(h: Handle, objId: ObjId, type: string, content: any): Promise<{}> {
+export async function createObjectId(h: Handle, objId: ObjId, type: string, content: any): Promise<{}> {
   const url = endpointUrl(h, "/objects/" + objId);
   const requestInit: RequestInit = {
     credentials: "include",
@@ -385,21 +381,16 @@ export function createObjectId(h: Handle, objId: ObjId, type: string, content: a
     headers: { accept: "application/json", "content-type": "application/json" }
   };
 
-  return h.config
-    .fetch(url, requestInit)
-    .then(res => res.json())
-    .then(json => {
-      startNextGeneration(h);
-      return {};
-    });
+  const res = await h.config.fetch(url, requestInit);
+  await res.json();
+  startNextGeneration(h);
+  return {};
 }
 
-export function deleteObject(h: Handle, id: string): Promise<void> {
+export async function deleteObject(h: Handle, id: string): Promise<void> {
   const url = endpointUrl(h, "/objects/" + id);
-  return h.config.fetch(url, { credentials: "include", method: "DELETE" }).then(res => {
-    console.log("Deleted", id, res.status);
-    startNextGeneration(h);
-  });
+  const res = await h.config.fetch(url, { credentials: "include", method: "DELETE" });
+  startNextGeneration(h);
 }
 
 function initContent(obj: Editable<any>): void {
