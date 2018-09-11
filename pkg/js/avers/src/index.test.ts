@@ -114,8 +114,8 @@ function mkHandle(json: any): Avers.Handle {
     });
   };
 
-  function createWebSocket(path: string) {
-    return <any>{
+  function createWebSocket(path: string): any {
+    return {
       addEventListener() {
         // EMPTY
       },

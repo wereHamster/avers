@@ -55,7 +55,7 @@ export function applyEditableChanges<T>(h: Handle, obj: Editable<T>, f: (obj: Ed
 //
 // The given patches MUST have consecutive revisionIds!
 
-export function applyPatches(obj: Editable<any>, patches: Patch[]): void {
+export function applyPatches(obj: Editable<unknown>, patches: Patch[]): void {
   if (obj.shadowContent === undefined) {
     // We simply ignore any attempt to apply patches to an Editable which
     // is not resolved.
@@ -88,7 +88,7 @@ export function applyPatches(obj: Editable<any>, patches: Patch[]): void {
   }, obj.shadowContent);
 }
 
-export function initContent(obj: Editable<any>): void {
+export function initContent(obj: Editable<unknown>): void {
   if (obj.shadowContent === undefined) {
     return;
   }
@@ -97,7 +97,7 @@ export function initContent(obj: Editable<any>): void {
     detachChangeListener(obj.content, obj.changeListener);
   }
 
-  obj.content = (<Operation[]>[]).concat(obj.submittedChanges, obj.localChanges).reduce((c, o) => {
+  obj.content = obj.submittedChanges.concat(obj.localChanges).reduce((c, o) => {
     return applyOperation(c, o.path, o);
   }, obj.shadowContent);
 

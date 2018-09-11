@@ -207,4 +207,4 @@ export function parsePatch(json: any): Patch {
 // ----------------------------------------------------------------------------
 // EntityId
 
-export type EntityId = string | Static<any> | Ephemeral<any>;
+export type EntityId = string | Static<unknown> | Ephemeral<unknown>;

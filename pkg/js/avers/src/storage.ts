@@ -74,8 +74,8 @@ export function networkRequests(h: Handle): NetworkRequest[] {
 // Array of all objects which have local changes which were not yet
 // submitted to the server.
 
-export function localChanges(h: Handle): { obj: Editable<any>; changes: Operation[] }[] {
-  const ret: { obj: Editable<any>; changes: Operation[] }[] = [];
+export function localChanges(h: Handle): { obj: Editable<unknown>; changes: Operation[] }[] {
+  const ret: { obj: Editable<unknown>; changes: Operation[] }[] = [];
 
   for (const obj of h.editableCache.values()) {
     if (obj.localChanges.length > 0) {

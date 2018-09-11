@@ -29,7 +29,7 @@ export function mkEditable<T>(h: Handle, id: string): Editable<T> {
 function mkChangeListener(h: Handle, objId: ObjId): ChangeCallback {
   const save = debounce(saveEditable, 1500);
 
-  return function onChange(changes: Change<any>[]): void {
+  return function onChange(changes: Change<unknown>[]): void {
     captureChanges(h, objId, changes.map(changeOperation));
     save(h, objId);
   };

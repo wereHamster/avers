@@ -11,7 +11,7 @@ import { resolveEditable, mkEditable } from "./api";
 //
 // Fetch the raw JSON of an object from the server.
 
-export async function fetchObject(h: Handle, id: string): Promise<any> {
+export async function fetchObject(h: Handle, id: string): Promise<unknown> {
   const url = endpointUrl(h, "/objects/" + id);
   const requestInit: RequestInit = {
     credentials: "include",
@@ -23,12 +23,12 @@ export async function fetchObject(h: Handle, id: string): Promise<any> {
   return res.json();
 }
 
-export async function createObject(h: Handle, type: string, content: any): Promise<string> {
+export async function createObject(h: Handle, type: string, content: unknown): Promise<string> {
   const url = endpointUrl(h, "/objects");
   const requestInit: RequestInit = {
     credentials: "include",
     method: "POST",
-    body: JSON.stringify({ type: type, content: content }),
+    body: JSON.stringify({ type, content }),
     headers: { accept: "application/json", "content-type": "application/json" }
   };
 
@@ -39,12 +39,12 @@ export async function createObject(h: Handle, type: string, content: any): Promi
   return json.id;
 }
 
-export async function createObjectId(h: Handle, objId: ObjId, type: string, content: any): Promise<{}> {
+export async function createObjectId(h: Handle, objId: ObjId, type: string, content: unknown): Promise<{}> {
   const url = endpointUrl(h, "/objects/" + objId);
   const requestInit: RequestInit = {
     credentials: "include",
     method: "POST",
-    body: JSON.stringify({ type: type, content: content }),
+    body: JSON.stringify({ type, content }),
     headers: { accept: "application/json", "content-type": "application/json" }
   };
 
