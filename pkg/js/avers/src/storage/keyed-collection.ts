@@ -1,4 +1,5 @@
-import { ObjectCollection, resetObjectCollection } from "./collection";
+import { ObjectCollection } from "./collection";
+import { resetObjectCollection } from "./api";
 import { Handle } from "./types";
 
 export class KeyedObjectCollection<T> {

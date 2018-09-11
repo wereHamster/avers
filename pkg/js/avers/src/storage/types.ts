@@ -7,6 +7,8 @@ import { Operation, ChangeCallback } from "../core";
 export type ObjId = string;
 export type RevId = number;
 
+export type InfoTable = Map<string, { new (): any }>;
+
 export interface Config {
   apiHost: string;
   // ^ The hostname where we can reach the Avers API server. Leave
@@ -26,7 +28,7 @@ export interface Config {
   // or 'window.performance.now', depending on how accurate time
   // resolution you need.
 
-  infoTable: Map<string, { new (): any }>;
+  infoTable: InfoTable;
   // ^ All object types which the client can parse.
 }
 
@@ -185,3 +187,24 @@ export const mkAction = <T>(label: string, payload: T, applyF: ActionF<T>): Acti
 export class NetworkRequest {
   constructor(public createdAt: number, public promise: Promise<{}>) {}
 }
+
+export class Patch {
+  [Symbol.species]: "Patch";
+
+  constructor(
+    public objectId: ObjId,
+    public revisionId: RevId,
+    public authorId: ObjId,
+    public createdAt: string,
+    public operation: Operation
+  ) {}
+}
+
+export function parsePatch(json: any): Patch {
+  return new Patch(json.objectId, json.revisionId, json.authorId, json.createdAt, json.operation);
+}
+
+// ----------------------------------------------------------------------------
+// EntityId
+
+export type EntityId = string | Static<any> | Ephemeral<any>;

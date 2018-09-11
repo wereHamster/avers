@@ -1,5 +1,6 @@
 import { immutableClone } from "../shared";
-import { ObjId, Handle, Editable, Static, StaticE, Ephemeral, EphemeralE, Action, mkAction, NetworkRequest } from "./types";
+import { Operation, applyOperation, attachChangeListener, detachChangeListener } from "../core";
+import { ObjId, Handle, Editable, Static, StaticE, Ephemeral, EphemeralE, Action, Patch, EntityId } from "./types";
 
 export const aversNamespace = Symbol("aversNamespace");
 
@@ -20,7 +21,7 @@ export function startNextGeneration(h: Handle): void {
   }
 }
 
-export function entityLabel(entity: string | Static<any> | Ephemeral<any>): string {
+export function entityLabel(entity: EntityId): string {
   if (typeof entity === "string") {
     return `Editable(${entity})`;
   } else if (entity instanceof Static) {
@@ -49,17 +50,71 @@ export function applyEditableChanges<T>(h: Handle, obj: Editable<T>, f: (obj: Ed
   h.editableCache.set(obj.objectId, immutableClone<Editable<T>>(Editable, obj, f));
 }
 
+// applyPatches
+// -----------------------------------------------------------------------------
+//
+// The given patches MUST have consecutive revisionIds!
+
+export function applyPatches(obj: Editable<any>, patches: Patch[]): void {
+  if (obj.shadowContent === undefined) {
+    // We simply ignore any attempt to apply patches to an Editable which
+    // is not resolved.
+    //
+    // We could store the patches somewhere and attempt to apply them once
+    // the Editable is resolved. But that would require careful changes to
+    // multiple parts of the code. Given how low the chance is for that to
+    // happen and cause problems, we decided to not handle that situation.
+
+    return;
+  }
+
+  const applicablePatches = patches.filter(p => p.revisionId > obj.revisionId);
+  if (applicablePatches.length === 0 || applicablePatches[0].revisionId !== obj.revisionId + 1) {
+    // The first patch is not one that can be applied directly on the
+    // Editable. This means there is a gap between the first patche we have
+    // and the state of the Editable.
+    //
+    // We could consider storing the patches somewhere, reload the ones
+    // which are missing and then apply them all. But, again, the chance
+    // for that to happen is so low that we don't bother.
+
+    return;
+  }
+
+  obj.revisionId += applicablePatches.length;
+  obj.shadowContent = applicablePatches.reduce((c, patch) => {
+    const op = patch.operation;
+    return applyOperation(c, op.path, op);
+  }, obj.shadowContent);
+}
+
+export function initContent(obj: Editable<any>): void {
+  if (obj.shadowContent === undefined) {
+    return;
+  }
+
+  if (obj.content) {
+    detachChangeListener(obj.content, obj.changeListener);
+  }
+
+  obj.content = (<Operation[]>[]).concat(obj.submittedChanges, obj.localChanges).reduce((c, o) => {
+    return applyOperation(c, o.path, o);
+  }, obj.shadowContent);
+
+  attachChangeListener(obj.content, obj.changeListener);
+}
+
 // ----------------------------------------------------------------------------
 // Static
 
-function lookupStaticE<T>(h: Handle, ns: Symbol, key: string): undefined | StaticE<T> {
+export function lookupStaticE<T>(h: Handle, ns: Symbol, key: string): undefined | StaticE<T> {
   const n = h.staticCache.get(ns);
   if (n) {
     return n.get(key);
   }
 }
 
-function insertStaticE<T>(h: Handle, ns: Symbol, key: string, e: StaticE<T>): void {
+export function insertStaticE<T>(h: Handle, ns: Symbol, key: string, e: StaticE<T>): void {
   let n = h.staticCache.get(ns);
   if (!n) {
     n = new Map<string, StaticE<T>>();
@@ -74,36 +129,21 @@ function applyStaticChanges<T>(h: Handle, ns: Symbol, key: string, s: StaticE<T>
 }
 
 export function withStaticE<T>(h: Handle, ns: Symbol, key: string, f: (s: StaticE<T>) => void): void {
-  applyStaticChanges(h, ns, key, mkStaticE<T>(h, ns, key), f);
-}
-
-// mkStatic
-// -----------------------------------------------------------------------
-//
-// Even though this function has access to the 'Handle' and indeed modifies
-// it, the changes have has no externally observable effect.
-
-export function mkStaticE<T>(h: Handle, ns: Symbol, key: string): StaticE<T> {
-  let s = lookupStaticE<T>(h, ns, key);
-  if (!s) {
-    s = new StaticE<T>();
-    insertStaticE(h, ns, key, s);
-  }
-
-  return s;
+  const e = lookupStaticE<T>(h, ns, key) || new StaticE<T>();
+  applyStaticChanges(h, ns, key, e, f);
 }
 
 // ----------------------------------------------------------------------------
 // Ephemeral
 
-function lookupEphemeralE<T>(h: Handle, ns: Symbol, key: string): undefined | EphemeralE<T> {
+export function lookupEphemeralE<T>(h: Handle, ns: Symbol, key: string): undefined | EphemeralE<T> {
   const n = h.ephemeralCache.get(ns);
   if (n) {
     return n.get(key);
   }
 }
 
-function insertEphemeralE<T>(h: Handle, ns: Symbol, key: string, e: EphemeralE<T>): void {
+export function insertEphemeralE<T>(h: Handle, ns: Symbol, key: string, e: EphemeralE<T>): void {
   let n = h.ephemeralCache.get(ns);
   if (!n) {
     n = new Map<string, EphemeralE<T>>();
@@ -124,96 +164,6 @@ function applyEphemeralChanges<T>(
 }
 
 export function withEphemeralE<T>(h: Handle, ns: Symbol, key: string, f: (s: EphemeralE<T>) => void): void {
-  applyEphemeralChanges(h, ns, key, mkEphemeralE<T>(h, ns, key), f);
-}
-
-// mkEphemeralE
-// -----------------------------------------------------------------------
-
-export function mkEphemeralE<T>(h: Handle, ns: Symbol, key: string): EphemeralE<T> {
-  let e = lookupEphemeralE<T>(h, ns, key);
-  if (!e) {
-    e = new EphemeralE<T>();
-    insertEphemeralE(h, ns, key, e);
-  }
-
-  return e;
-}
-
-
-// runNetworkRequest
-// -----------------------------------------------------------------------
-//
-// Run a network request attached to the given 'Entity'. This overwrites
-// (invalidates) any currently running request. The promise is resolved only
-// when the request is still valid. That is when you can handle the response
-// and apply changes to the Handle.
-
-export function attachNetworkRequestF(
-  h: Handle,
-  { entity, nr }: { entity: string | Static<any> | Ephemeral<any>; nr: NetworkRequest }
-) {
-  function f(e: { networkRequest: undefined | NetworkRequest }) {
-    e.networkRequest = nr;
-  }
-
-  if (typeof entity === "string") {
-    withEditable(h, entity, f);
-  } else if (entity instanceof Static) {
-    withStaticE(h, entity.ns, entity.key, f);
-  } else if (entity instanceof Ephemeral) {
-    withEphemeralE(h, entity.ns, entity.key, f);
-  }
-}
-
-const attachNetworkRequestA = (entity: string | Static<any> | Ephemeral<any>, label: string, nr: NetworkRequest) =>
-  mkAction(`attachNetworkRequest(${entityLabel(entity)},${label})`, { entity, nr }, attachNetworkRequestF);
-
-function reportNetworkFailureF(
-  h: Handle,
-  {
-    entity,
-    nr,
-    err
-  }: {
-    entity: string | Static<any> | Ephemeral<any>;
-    nr: NetworkRequest;
-    err: Error;
-  }
-) {
-  function f(e: { networkRequest: undefined | NetworkRequest; lastError: any }): void {
-    if (e.networkRequest === nr) {
-      e.networkRequest = undefined;
-      e.lastError = err;
-    }
-  }
-
-  if (typeof entity === "string") {
-    withEditable(h, entity, f);
-  } else if (entity instanceof Static) {
-    withStaticE(h, entity.ns, entity.key, f);
-  } else if (entity instanceof Ephemeral) {
-    withEphemeralE(h, entity.ns, entity.key, f);
-  }
-}
-
-const reportNetworkFailureA = (entity: string | Static<any> | Ephemeral<any>, nr: NetworkRequest, err: Error) =>
-  mkAction(`reportNetworkFailure(${entityLabel(entity)},${err})`, { entity, nr, err }, reportNetworkFailureF);
-
-export async function runNetworkRequest<R>(
-  h: Handle,
-  entity: string | Static<any> | Ephemeral<any>,
-  label: string,
-  req: Promise<R>
-): Promise<{ networkRequest: NetworkRequest; res: R }> {
-  const networkRequest = new NetworkRequest(h.config.now(), req);
-  modifyHandle(h, attachNetworkRequestA(entity, label, networkRequest));
-
-  try {
-    const res = await req;
-    return { networkRequest, res };
-  } catch (err) {
-    modifyHandle(h, reportNetworkFailureA(entity, networkRequest, err));
-    throw err;
-  }
+  const e = lookupEphemeralE<T>(h, ns, key) || new EphemeralE<T>();
+  applyEphemeralChanges(h, ns, key, e, f);
 }

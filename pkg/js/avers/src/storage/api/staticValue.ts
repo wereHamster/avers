@@ -1,7 +1,9 @@
 import Computation from "computation";
 
-import { Handle, mkAction, Static, StaticE } from "./types";
-import { modifyHandle, mkStaticE, withStaticE, runNetworkRequest } from "./internal";
+import { Handle, Static, StaticE } from "../types";
+import { runNetworkRequest } from "../internal/runNetworkRequest";
+import { mkStaticE } from "../internal/mkStaticE";
+import { resolveStatic } from "./resolveStatic";
 
 // staticValue
 // -----------------------------------------------------------------------
@@ -33,19 +35,4 @@ async function refreshStatic<T>(h: Handle, s: Static<T>, ent: StaticE<T>): Promi
       // Ignore errors. runNetworkRequest already sets 'lastError'.
     }
   }
-}
-
-function resolveStaticF<T>(h: Handle, { s, value }: { s: Static<T>; value: T }): void {
-  withStaticE(h, s.ns, s.key, e => {
-    e.networkRequest = undefined;
-    e.lastError = undefined;
-    e.value = value;
-  });
-}
-
-const resolveStaticA = <T>(s: Static<T>, value: T) =>
-  mkAction(`resolveStatic(${s.ns.toString()}, ${s.key})`, { s, value }, resolveStaticF);
-
-export function resolveStatic<T>(h: Handle, s: Static<T>, value: T): void {
-  modifyHandle(h, resolveStaticA(s, value));
 }

@@ -125,7 +125,7 @@ function mkHandle(json: any): Avers.Handle {
     };
   }
 
-  const infoTable = new Map<string, Avers.ObjectConstructor<any>>();
+  const infoTable = new Map<string, { new (): any }>();
   infoTable.set("library", Library);
   infoTable.set("book", Book);
 
