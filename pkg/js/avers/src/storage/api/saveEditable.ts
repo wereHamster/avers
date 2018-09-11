@@ -1,13 +1,12 @@
 import { Operation } from "../../core";
 import { guardStatus } from "../../shared";
-import { ObjId, Handle, Editable } from "../types";
+import { ObjId, Handle } from "../types";
 import { endpointUrl } from "../internal";
 import { runNetworkRequest } from "../internal/runNetworkRequest";
 
 import { prepareLocalChanges } from "./prepareLocalChanges";
 import { applyServerResponse } from "./applyServerResponse";
 import { restoreLocalChanges } from "./restoreLocalChanges";
-import { applyChange } from "./applyChange";
 
 export async function saveEditable(h: Handle, objId: ObjId): Promise<void> {
   const obj = h.editableCache.get(objId);
@@ -107,34 +106,4 @@ function filterOps(ops: Operation[]): Operation[] {
 
     return a;
   }, []);
-}
-
-// changeFeedSubscription
-// -----------------------------------------------------------------------------
-//
-// Change the feed subscription. Opens the websocket if not already open.
-
-function changeFeedSubscription(h: Handle, json: any): void {
-  if (h.feedSocket === undefined) {
-    h.feedSocket = h.config.createWebSocket("/feed");
-
-    h.feedSocket.addEventListener("message", msg => {
-      try {
-        applyChange(h, JSON.parse(msg.data));
-      } catch (e) {
-        console.error("changeFeedSubscription: error when parsing message", e);
-      }
-    });
-  }
-
-  if (h.feedSocket.readyState === h.feedSocket.OPEN) {
-    h.feedSocket.send(JSON.stringify(json));
-  } else {
-    h.feedSocket.addEventListener("open", function onOpen() {
-      if (h.feedSocket !== undefined) {
-        h.feedSocket.send(JSON.stringify(json));
-        h.feedSocket.removeEventListener("open", onOpen);
-      }
-    });
-  }
 }

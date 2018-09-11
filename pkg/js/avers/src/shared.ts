@@ -41,7 +41,7 @@ function ownEnumerableKeys<T>(obj: T): (string | symbol)[] {
   return keys.filter(key => propIsEnumerable.call(obj, key));
 }
 
-export function assign<T>(target: T, ...source: Object[]): T {
+export function assign<T>(target: T, ..._source: Object[]): T {
   let to = ToObject<T>(target);
 
   for (let s = 1; s < arguments.length; s++) {

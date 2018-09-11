@@ -7,7 +7,7 @@ interface Payload {
   ids: string[];
 }
 
-const updateObjectCollectionF = (h: Handle, { c, ids }: Payload) => {
+const updateObjectCollectionF = (_h: Handle, { c, ids }: Payload) => {
   c.objectIds = ids;
 };
 

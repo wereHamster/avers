@@ -1,5 +1,5 @@
 import { immutableClone } from "../shared";
-import { Operation, applyOperation, attachChangeListener, detachChangeListener } from "../core";
+import { applyOperation, attachChangeListener, detachChangeListener } from "../core";
 import { ObjId, Handle, Editable, Static, StaticE, Ephemeral, EphemeralE, Action, Patch, EntityId } from "./types";
 
 export const aversNamespace = Symbol("aversNamespace");

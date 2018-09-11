@@ -155,7 +155,7 @@ export async function signout(session: Session): Promise<void> {
 // changeSecret
 // -----------------------------------------------------------------------
 
-export async function changeSecret(h: Handle, newSecret: string): Promise<void> {
+export async function changeSecret(h: Handle, _newSecret: string): Promise<void> {
   const url = endpointUrl(h, "/secret");
   const res = await h.config.fetch(url, { credentials: "include", method: "POST" });
   await guardStatus("changeSecret", 200)(res);

@@ -105,7 +105,7 @@ function now(): number {
 }
 
 function mkHandle(json: any): Avers.Handle {
-  const fetch: any = (url: string) => {
+  const fetch = (): Promise<any> => {
     return Promise.resolve({
       status: 200,
       json: () => {
@@ -114,7 +114,7 @@ function mkHandle(json: any): Avers.Handle {
     });
   };
 
-  function createWebSocket(path: string): any {
+  function createWebSocket(): any {
     return {
       addEventListener() {
         // EMPTY

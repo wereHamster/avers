@@ -2,7 +2,7 @@ import { Handle, mkAction, Action } from "../types";
 import { modifyHandle } from "../internal";
 import { ObjectCollection } from "../collection";
 
-const resetObjectCollectionF = (h: Handle, c: ObjectCollection) => {
+const resetObjectCollectionF = (_h: Handle, c: ObjectCollection) => {
   c.fetchedAt = 0;
 };
 

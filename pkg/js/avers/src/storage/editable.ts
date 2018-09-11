@@ -56,7 +56,7 @@ export async function createObjectId(h: Handle, objId: ObjId, type: string, cont
 
 export async function deleteObject(h: Handle, id: string): Promise<void> {
   const url = endpointUrl(h, "/objects/" + id);
-  const res = await h.config.fetch(url, { credentials: "include", method: "DELETE" });
+  await h.config.fetch(url, { credentials: "include", method: "DELETE" });
   startNextGeneration(h);
 }
 

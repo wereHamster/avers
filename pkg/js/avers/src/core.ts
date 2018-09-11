@@ -352,7 +352,7 @@ export function migrateObject<T>(x: T): T {
 }
 
 let objectProxyHandler = {
-  set: (target: any, property: string, value: any, receiver: any): boolean => {
+  set: (target: any, property: string, value: any): boolean => {
     let oldValue = target[property],
       propertyDescriptor = aversProperties(target)[property];
 
@@ -422,16 +422,6 @@ function isObservableProperty(propertyDescriptor: PropertyDescriptor<any>): bool
   );
 }
 
-interface ChangeRecord {
-  type: string;
-  name: string;
-  object: any;
-  oldValue: any;
-  index: number;
-  addedCount: number;
-  removed: any[];
-}
-
 export function typeName(typeMap: { [klass: string]: any }, klass: any): string {
   for (let type in typeMap) {
     if (typeMap[type] === klass) {
@@ -490,7 +480,7 @@ export interface Item {
   id: string;
 }
 
-export function itemId<T extends Item>(collection: Collection<T>, item: T): string {
+export function itemId<T extends Item>(_collection: Collection<T>, item: T): string {
   // ASSERT: collection.idMap[item.id] === item
   return item.id;
 }
