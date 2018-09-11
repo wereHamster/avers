@@ -53,6 +53,9 @@ export async function saveEditable(h: Handle, objId: ObjId): Promise<void> {
       .then(res => res.json());
 
     const res = await runNetworkRequest(h, objId, "saveEditable", req);
+    if (!res) {
+      return;
+    }
 
     // We ignore whether the response is from the current NetworkRequest
     // or not. It's irrelevant, upon receeiving a successful response

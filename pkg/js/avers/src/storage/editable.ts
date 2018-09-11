@@ -96,7 +96,7 @@ export async function loadEditable(h: Handle, id: string): Promise<void> {
   const res = await runNetworkRequest(h, id, "fetchEditable", fetchObject(h, id));
   const e = h.editableCache.get(id);
 
-  if (e && e.networkRequest === res.networkRequest) {
+  if (e && res && e.networkRequest === res.networkRequest) {
     // FIXME: Clearing the networkRequest from the entity maybe should
     // be a separate action, eg. 'finishNetworkRequest'. Currently it's
     // part of resolveEditable. But that function may be called from
