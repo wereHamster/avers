@@ -1,9 +1,9 @@
 import { Change, ChangeCallback, changeOperation } from "../../core";
-import { ObjId, Handle, Editable } from "../types";
+import { ObjId, Handle, Editable, newEditable } from "../types";
 
 import { captureChanges } from "./captureChanges";
 import { saveEditable } from "./saveEditable";
-import { changeFeedSubscription } from './changeFeedSubscription';
+import { changeFeedSubscription } from "./changeFeedSubscription";
 
 // mkEditable
 // -----------------------------------------------------------------------
@@ -15,9 +15,7 @@ import { changeFeedSubscription } from './changeFeedSubscription';
 export function mkEditable<T>(h: Handle, id: string): Editable<T> {
   let obj = h.editableCache.get(id);
   if (!obj) {
-    obj = new Editable<T>(id);
-    obj.changeListener = mkChangeListener(h, id);
-
+    obj = newEditable(id, mkChangeListener(h, id));
     h.editableCache.set(id, Object.freeze(obj) as any);
 
     changeFeedSubscription(h, ["+", id]);

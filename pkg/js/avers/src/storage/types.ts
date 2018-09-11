@@ -62,10 +62,10 @@ export function newHandle(config: Config): Handle {
 // can be edited) and those changes are automatically synchronized to the
 // server.
 
-export class Editable<T> {
-  [Symbol.species]: "Editable";
+export interface Editable<T> {
+  objectId: ObjId;
 
-  networkRequest: undefined | NetworkRequest = undefined;
+  networkRequest: undefined | NetworkRequest;
 
   // ^ If we have a active network request at the moment (either to
   // fetch the object or saving changes etc) then this describes it. We
@@ -78,30 +78,49 @@ export class Editable<T> {
   // Before a promise applies its effects, it checks whether it is still
   // current, and if not it will simply abort.
 
-  lastError: undefined | Error = undefined;
+  lastError: undefined | Error;
 
-  type!: string;
+  type: string;
 
-  createdAt!: Date;
+  createdAt: Date;
 
-  createdBy!: string;
+  createdBy: string;
   // ^ The primary author who created this object.
 
-  revisionId!: RevId;
+  revisionId: RevId;
   // ^ The RevId as we think is the latest on the server. Local changes
   // are submitted against this RevId.
 
-  shadowContent!: T;
+  shadowContent: T;
   // ^ The content of the object at 'revisionId'.
 
-  content!: T;
-  changeListener!: ChangeCallback;
+  content: T;
+  changeListener: ChangeCallback;
 
-  submittedChanges: Operation[] = [];
-  localChanges: Operation[] = [];
-
-  constructor(public objectId: ObjId) {}
+  submittedChanges: Operation[];
+  localChanges: Operation[];
 }
+
+export const newEditable = (objectId: ObjId, changeListener: ChangeCallback): Editable<any> =>
+  Object.freeze({
+    objectId,
+
+    networkRequest: undefined,
+    lastError: undefined,
+
+    type: "",
+
+    createdAt: new Date(),
+
+    createdBy: "",
+    revisionId: 0,
+    shadowContent: undefined,
+    content: undefined,
+    changeListener,
+
+    submittedChanges: [],
+    localChanges: []
+  });
 
 // Static<T>
 // -----------------------------------------------------------------------
@@ -117,11 +136,17 @@ export class Static<T> {
   constructor(public ns: Symbol, public key: string, public fetch: () => Promise<T>) {}
 }
 
-export class StaticE<T> {
-  networkRequest: undefined | NetworkRequest = undefined;
-  lastError: undefined | Error = undefined;
-  value: T = Computation.Pending;
+export interface StaticE<T> {
+  networkRequest: undefined | NetworkRequest;
+  lastError: undefined | Error;
+  value: T;
 }
+
+export const emptyStaticE: StaticE<any> = Object.freeze({
+  networkRequest: undefined,
+  lastError: undefined,
+  value: Computation.Pending
+});
 
 // Ephemeral<T>
 // -----------------------------------------------------------------------
@@ -145,12 +170,19 @@ export class Ephemeral<T> {
 // This is an internal class. It is not exposed through any public API, except
 // through the 'ephemeralCache' in the Handle.
 
-export class EphemeralE<T> {
-  networkRequest: undefined | NetworkRequest = undefined;
-  lastError: undefined | Error = undefined;
-  value: T = Computation.Pending;
-  expiresAt: number = 0;
+export interface EphemeralE<T> {
+  networkRequest: undefined | NetworkRequest;
+  lastError: undefined | Error;
+  value: T;
+  expiresAt: number;
 }
+
+export const emptyEphemeralE: EphemeralE<any> = Object.freeze({
+  networkRequest: undefined,
+  lastError: undefined,
+  value: Computation.Pending,
+  expiresAt: 0
+});
 
 // ----------------------------------------------------------------------------
 // Action

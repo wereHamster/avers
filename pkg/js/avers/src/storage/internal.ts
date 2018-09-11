@@ -1,6 +1,18 @@
-import { immutableClone } from "../shared";
 import { applyOperation, attachChangeListener, detachChangeListener } from "../core";
-import { ObjId, Handle, Editable, Static, StaticE, Ephemeral, EphemeralE, Action, Patch, EntityId } from "./types";
+import {
+  ObjId,
+  Handle,
+  Editable,
+  Static,
+  StaticE,
+  emptyStaticE,
+  Ephemeral,
+  EphemeralE,
+  emptyEphemeralE,
+  Action,
+  Patch,
+  EntityId
+} from "./types";
 
 export const aversNamespace = Symbol("aversNamespace");
 
@@ -47,7 +59,9 @@ export function withEditable<T>(h: Handle, objId: ObjId, f: (obj: Editable<T>) =
 // the new copy into the cache, overwriting the previous object.
 
 export function applyEditableChanges<T>(h: Handle, obj: Editable<T>, f: (obj: Editable<T>) => void): void {
-  h.editableCache.set(obj.objectId, immutableClone<Editable<T>>(Editable, obj, f));
+  const copy = { ...obj };
+  f(copy);
+  h.editableCache.set(obj.objectId, Object.freeze(copy));
 }
 
 // applyPatches
@@ -125,11 +139,13 @@ export function insertStaticE<T>(h: Handle, ns: Symbol, key: string, e: StaticE<
 }
 
 function applyStaticChanges<T>(h: Handle, ns: Symbol, key: string, s: StaticE<T>, f: (s: StaticE<T>) => void): void {
-  insertStaticE(h, ns, key, immutableClone<StaticE<T>>(StaticE, s, f));
+  const copy = { ...s };
+  f(copy);
+  insertStaticE(h, ns, key, Object.freeze(copy));
 }
 
 export function withStaticE<T>(h: Handle, ns: Symbol, key: string, f: (s: StaticE<T>) => void): void {
-  const e = lookupStaticE<T>(h, ns, key) || new StaticE<T>();
+  const e = lookupStaticE<T>(h, ns, key) || emptyStaticE;
   applyStaticChanges(h, ns, key, e, f);
 }
 
@@ -160,10 +176,12 @@ function applyEphemeralChanges<T>(
   s: EphemeralE<T>,
   f: (s: EphemeralE<T>) => void
 ): void {
-  insertEphemeralE(h, ns, key, immutableClone<EphemeralE<T>>(EphemeralE, s, f));
+  const copy = { ...s };
+  f(copy);
+  insertEphemeralE(h, ns, key, Object.freeze(copy));
 }
 
 export function withEphemeralE<T>(h: Handle, ns: Symbol, key: string, f: (s: EphemeralE<T>) => void): void {
-  const e = lookupEphemeralE<T>(h, ns, key) || new EphemeralE<T>();
+  const e = lookupEphemeralE<T>(h, ns, key) || emptyEphemeralE;
   applyEphemeralChanges(h, ns, key, e, f);
 }

@@ -479,7 +479,6 @@ describe("Avers.lookupEditable", function() {
     Avers.lookupEditable(h, "id").get(sentinel);
     setTimeout(() => {
       var obj = Avers.lookupEditable(h, "id").get(sentinel);
-      assert.instanceOf(obj, Avers.Editable);
       assert.instanceOf(obj.content, Library);
       done();
     }, 0);
@@ -493,7 +492,6 @@ describe("Avers.lookupEditable", function() {
     Avers.resolveEditable(h, "id", libraryObjectResponse);
     const copy = Avers.mkEditable(h, "id");
 
-    assert.instanceOf(copy, Avers.Editable);
     assert.instanceOf(copy.content, Library);
 
     assert.notEqual(obj, copy);
