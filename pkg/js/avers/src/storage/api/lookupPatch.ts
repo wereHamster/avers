@@ -25,7 +25,8 @@ async function fetchPatch(h: Handle, objectId: ObjId, revId: RevId): Promise<Pat
   const res = await h.config.fetch(url, requestInit);
   await guardStatus("fetchPatch", 200)(res);
 
-  return parsePatch(await res.json());
+  const json = await res.json();
+  return parsePatch(json);
 }
 
 function mkPatch(h: Handle, objectId: ObjId, revId: RevId): Static<Patch> {
