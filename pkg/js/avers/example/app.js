@@ -1,18 +1,21 @@
-function Author() {}
+import Avers from "../avers.js";
+
+class Author {}
 Avers.definePrimitive(Author, "firstName");
 Avers.definePrimitive(Author, "lastName");
 
-function Book() {}
+class Book {}
 Avers.definePrimitive(Book, "title");
 Avers.defineObject(Book, "author", Author);
 
-function Library() {}
+class Library {}
 Avers.definePrimitive(Library, "location");
 Avers.defineCollection(Library, "books", Book);
 
-library = Avers.mk(Library, {});
+const library = Avers.mk(Library, {});
+window.library = library;
 
-var changesElement = document.querySelector("#changes");
+const changesElement = document.querySelector("#changes");
 Avers.attachChangeListener(library, changes => {
   changes.forEach(({ path, record }) => {
     var li = document.createElement("li");
@@ -26,9 +29,10 @@ Avers.updateObject(library, {
   books: []
 });
 
-book = Avers.parseJSON(Book, {
+const book = Avers.parseJSON(Book, {
   title: "The Little Prince",
   author: { firstName: "Antoine", lastName: "Saint-Exupéry" }
 });
+window.book = book;
 
 library.books.push(book);

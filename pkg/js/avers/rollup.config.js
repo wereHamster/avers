@@ -5,7 +5,7 @@ export default {
   input: "dist/index.js",
   output: {
     file: "avers.js",
-    format: "umd",
+    format: "esm",
     name: "Avers"
   },
   plugins: [
