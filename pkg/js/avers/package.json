@@ -21,6 +21,6 @@
     "typescript": "^3.0.1"
   },
   "dependencies": {
-    "computation": "^1.0.0"
+    "computation": "^2.0.0"
   }
 }
