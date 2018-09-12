@@ -43,7 +43,7 @@ function debounce<T extends any[]>(func: (...args: T) => void, wait: any): (...a
       timeout = setTimeout(later, wait - last);
     } else {
       timeout = undefined;
-      func.apply(context, args);
+      func.apply(null, args);
       args = undefined;
     }
   };
