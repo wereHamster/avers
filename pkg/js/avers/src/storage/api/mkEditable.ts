@@ -12,7 +12,7 @@ import { changeFeedSubscription } from "./changeFeedSubscription";
 // object is cached in the handle, so it is safe to call this function
 // repeatedly with the same id.
 
-export function mkEditable<T>(h: Handle, id: string): Editable<T> {
+export function mkEditable<T>(h: Handle, id: ObjId): Editable<T> {
   let obj = h.editableCache.get(id);
   if (!obj) {
     obj = newEditable(id, mkChangeListener(h, id));

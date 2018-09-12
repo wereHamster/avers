@@ -1,12 +1,15 @@
 import { Handle, mkAction, parsePatch } from "../types";
-import { modifyHandle, withEditable, initContent, applyPatches } from "../internal";
+import { modifyHandle } from "../internal/modifyHandle";
+import { changeEditable } from "../internal/changeEditable";
+import { initContent } from "../internal/initContent";
+import { applyPatches } from "../internal/applyPatches";
 
 function applyChangeF(h: Handle, change: { type: string; content: any }): void {
   const { type, content } = change;
 
   if (type === "patch") {
     const patch = parsePatch(content);
-    withEditable(h, patch.objectId, obj => {
+    changeEditable(h, patch.objectId, obj => {
       applyPatches(obj, [patch]);
       initContent(obj);
     });

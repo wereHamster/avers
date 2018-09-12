@@ -1,5 +1,6 @@
 import { Handle, Static, Ephemeral, Action, mkAction, NetworkRequest, EntityId } from "../types";
-import { modifyHandle, entityLabel, withEditable, withStaticE, withEphemeralE } from "../internal";
+import { entityLabel, withEditable, withStaticE, withEphemeralE } from "../internal";
+import { modifyHandle } from "./modifyHandle";
 
 interface Payload {
   entity: EntityId;

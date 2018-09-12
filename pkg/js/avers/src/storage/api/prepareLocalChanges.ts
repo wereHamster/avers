@@ -1,8 +1,9 @@
 import { ObjId, Handle, mkAction } from "../types";
-import { modifyHandle, withEditable } from "../internal";
+import { modifyHandle } from "../internal/modifyHandle";
+import { changeEditable } from "../internal/changeEditable";
 
 function prepareLocalChangesF(h: Handle, objId: ObjId) {
-  withEditable(h, objId, obj => {
+  changeEditable(h, objId, obj => {
     obj.submittedChanges = obj.localChanges;
     obj.localChanges = [];
   });

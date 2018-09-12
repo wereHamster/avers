@@ -14,8 +14,6 @@ export async function saveEditable(h: Handle, objId: ObjId): Promise<void> {
     return;
   }
 
-  // ASSERT obj.status === Status.Loaded
-
   // Guard on not having a request in flight. If this editable has any
   // local changes, they will be submitted when the request finishes.
   if (obj.submittedChanges.length > 0) {

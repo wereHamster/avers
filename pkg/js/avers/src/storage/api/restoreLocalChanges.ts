@@ -1,8 +1,9 @@
 import { ObjId, Handle, mkAction } from "../types";
-import { modifyHandle, withEditable } from "../internal";
+import { modifyHandle } from "../internal/modifyHandle";
+import { changeEditable } from "../internal/changeEditable";
 
 function restoreLocalChangesF(h: Handle, objId: ObjId) {
-  withEditable(h, objId, obj => {
+  changeEditable(h, objId, obj => {
     obj.localChanges = obj.submittedChanges.concat(obj.localChanges);
     obj.submittedChanges = [];
   });

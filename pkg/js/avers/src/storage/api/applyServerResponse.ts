@@ -1,8 +1,11 @@
 import { ObjId, Handle, mkAction, NetworkRequest } from "../types";
-import { modifyHandle, withEditable, initContent, applyPatches } from "../internal";
+import { modifyHandle } from "../internal/modifyHandle";
+import { changeEditable } from "../internal/changeEditable";
+import { initContent } from "../internal/initContent";
+import { applyPatches } from "../internal/applyPatches";
 
 function applyServerResponseF(h: Handle, { objId, res, body }: { objId: string; res: any; body: any }): void {
-  withEditable(h, objId, obj => {
+  changeEditable(h, objId, obj => {
     if (obj.networkRequest === res.networkRequest) {
       obj.networkRequest = undefined;
     }

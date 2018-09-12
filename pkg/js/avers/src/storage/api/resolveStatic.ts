@@ -1,11 +1,12 @@
 import { Handle, Static, mkAction } from "../types";
-import { modifyHandle, withStaticE } from "../internal";
+import { insertStaticE } from "../internal";
+import { modifyHandle } from "../internal/modifyHandle";
 
 function resolveStaticF<T>(h: Handle, { s, value }: { s: Static<T>; value: T }): void {
-  withStaticE(h, s.ns, s.key, e => {
-    e.networkRequest = undefined;
-    e.lastError = undefined;
-    e.value = value;
+  insertStaticE(h, s.ns, s.key, {
+    networkRequest: undefined,
+    lastError: undefined,
+    value
   });
 }
 

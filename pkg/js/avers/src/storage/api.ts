@@ -10,5 +10,6 @@ export * from "./api/resolveEditable";
 export * from "./api/resolveEphemeral";
 export * from "./api/resolveStatic";
 export * from "./api/restoreLocalChanges";
+export * from "./api/startNextGeneration";
 export * from "./api/staticValue";
 export * from "./api/updateObjectCollection";

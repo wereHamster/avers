@@ -1,21 +1,9 @@
 import { parseJSON, migrateObject } from "../../core";
-import { ObjId, Handle, Editable, mkAction } from "../types";
-import { modifyHandle, applyEditableChanges, initContent } from "../internal";
-import { mkEditable } from './mkEditable';
-
-// updateEditable
-// -----------------------------------------------------------------------
-//
-// A non-destructive update of an 'Editable'. The callback is given a copy
-// of the original and can set any properties on it. The copy is then
-// inserted into the cache.
-//
-// If the 'Editable' doesn't exist in the cache then it is created.
-
-export function updateEditable<T>(h: Handle, objId: ObjId, f: (obj: Editable<T>) => void): void {
-  const obj = mkEditable<T>(h, objId);
-  applyEditableChanges<T>(h, obj, f);
-}
+import { ObjId, Handle, mkAction } from "../types";
+import { applyEditableChanges } from "../internal";
+import { modifyHandle } from "../internal/modifyHandle";
+import { initContent } from "../internal/initContent";
+import { mkEditable } from "./mkEditable";
 
 // resolveEditable
 // -----------------------------------------------------------------------
@@ -28,7 +16,13 @@ export function updateEditable<T>(h: Handle, objId: ObjId, f: (obj: Editable<T>)
 function resolveEditableF<T>(h: Handle, { objId, json }: { objId: string; json: any }) {
   // ASSERT objId === json.id
 
-  updateEditable(h, objId, obj => {
+  const obj = mkEditable<T>(h, objId);
+  applyEditableChanges(h, obj, obj => {
+    const ctor = h.config.infoTable.get(json.type);
+    if (ctor === undefined) {
+      throw new Error(`resolveEditable: unknown type ${obj.type}`);
+    }
+
     obj.networkRequest = undefined;
     obj.lastError = undefined;
 
@@ -38,10 +32,6 @@ function resolveEditableF<T>(h: Handle, { objId, json }: { objId: string; json: 
     obj.createdBy = json.createdBy;
     obj.revisionId = json.revisionId || 0;
 
-    const ctor = h.config.infoTable.get(obj.type);
-    if (ctor === undefined) {
-      throw new Error(`resolveEditable: unknown type ${obj.type}`);
-    }
     obj.shadowContent = parseJSON<T>(ctor, json.content);
 
     obj.submittedChanges = [];

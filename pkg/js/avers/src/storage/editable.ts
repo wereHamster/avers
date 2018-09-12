@@ -2,7 +2,8 @@ import Computation from "computation";
 
 import { guardStatus } from "../shared";
 import { ObjId, Handle, Editable } from "./types";
-import { endpointUrl, startNextGeneration } from "./internal";
+import { startNextGeneration } from "./api/startNextGeneration";
+import { endpointUrl } from "./internal";
 import { runNetworkRequest } from "./internal/runNetworkRequest";
 import { resolveEditable, mkEditable } from "./api";
 
@@ -67,23 +68,28 @@ export async function deleteObject(h: Handle, id: string): Promise<void> {
 // rejected accordingly). This is useful in asynchronous code where you
 // can't use 'Computation' (lookupEditable).
 
-export function fetchEditable<T>(h: Handle, id: string): Promise<Editable<T>> {
-  return new Promise((resolve, reject) => {
-    (function check(obj?: any) {
-      obj = mkEditable(h, id);
+export async function fetchEditable<T>(h: Handle, id: string): Promise<Editable<T>> {
+  async function go(): Promise<Editable<T>> {
+    const obj = mkEditable<T>(h, id);
 
-      if (obj.content !== undefined) {
-        resolve(obj);
-      } else if (obj.lastError !== undefined) {
-        reject();
-      } else {
-        const nr = obj.networkRequest,
-          req = nr ? nr.promise : loadEditable(h, id);
+    if (obj.content !== undefined) {
+      return obj;
+    } else if (obj.lastError !== undefined) {
+      throw obj.lastError;
+    } else {
+      const nr = obj.networkRequest,
+        req = nr ? nr.promise : loadEditable(h, id);
 
-        req.then(check).catch(check);
+      try {
+        await req;
+        return go();
+      } catch (err) {
+        return go();
       }
-    })();
-  });
+    }
+  }
+
+  return go();
 }
 
 // loadEditable
@@ -93,16 +99,13 @@ export function fetchEditable<T>(h: Handle, id: string): Promise<Editable<T>> {
 // response.
 
 export async function loadEditable(h: Handle, id: string): Promise<void> {
-  const res = await runNetworkRequest(h, id, "fetchEditable", fetchObject(h, id));
-  const e = h.editableCache.get(id);
-
-  if (e && res && e.networkRequest === res.networkRequest) {
-    // FIXME: Clearing the networkRequest from the entity maybe should
-    // be a separate action, eg. 'finishNetworkRequest'. Currently it's
-    // part of resolveEditable. But that function may be called from
-    // somebody else, outside of the context of a network request.
-
-    resolveEditable(h, id, res.res);
+  try {
+    const res = await runNetworkRequest(h, id, "fetchEditable", fetchObject(h, id));
+    if (res) {
+      resolveEditable(h, id, res.res);
+    }
+  } catch (err) {
+    // Ignore errors. runNetworkRequest already sets 'lastError'.
   }
 }
 

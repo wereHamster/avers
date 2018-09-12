@@ -1,5 +1,5 @@
 import { Handle, mkAction, Action } from "../types";
-import { modifyHandle } from "../internal";
+import { modifyHandle } from "../internal/modifyHandle";
 import { ObjectCollection } from "../collection";
 
 const resetObjectCollectionF = (_h: Handle, c: ObjectCollection) => {

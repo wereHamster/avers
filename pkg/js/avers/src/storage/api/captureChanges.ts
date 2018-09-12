@@ -1,9 +1,11 @@
 import { Operation } from "../../core";
 import { ObjId, Handle, mkAction } from "../types";
-import { modifyHandle, withEditable, initContent } from "../internal";
+import { modifyHandle } from "../internal/modifyHandle";
+import { changeEditable } from "../internal/changeEditable";
+import { initContent } from "../internal/initContent";
 
 function captureChangesF(h: Handle, { objId, ops }: { objId: string; ops: any }): void {
-  withEditable(h, objId, obj => {
+  changeEditable(h, objId, obj => {
     obj.localChanges = obj.localChanges.concat(ops);
     initContent(obj);
   });

@@ -1,5 +1,6 @@
 import { Handle, Ephemeral, mkAction } from "../types";
-import { modifyHandle, withEphemeralE } from "../internal";
+import { insertEphemeralE } from "../internal";
+import { modifyHandle } from "../internal/modifyHandle";
 
 // resolveEphemeral<T>
 // -----------------------------------------------------------------------
@@ -8,15 +9,18 @@ import { modifyHandle, withEphemeralE } from "../internal";
 // fetch function. This is exported to allow users to simulate these responses
 // without actually hitting the network.
 
-function resolveEphemeralF<T>(
-  h: Handle,
-  { e, value, expiresAt }: { e: Ephemeral<T>; value: T; expiresAt: number }
-): void {
-  withEphemeralE(h, e.ns, e.key, e => {
-    e.networkRequest = undefined;
-    e.lastError = undefined;
-    e.value = value;
-    e.expiresAt = expiresAt;
+interface Payload<T> {
+  e: Ephemeral<T>;
+  value: T;
+  expiresAt: number;
+}
+
+function resolveEphemeralF<T>(h: Handle, { e, value, expiresAt }: Payload<T>): void {
+  insertEphemeralE(h, e.ns, e.key, {
+    networkRequest: undefined,
+    lastError: undefined,
+    value,
+    expiresAt
   });
 }
 
