@@ -1,0 +1,10 @@
+#!/usr/bin/env nix-shell
+#!nix-shell -i bash -p nodejs-10_x -p jq -p git
+
+set -e
+
+N=$(git log --oneline v$(jq -r .version <package.json)... | wc -l)
+nix-build --argstr commit $(git rev-parse --short HEAD) --argstr n $N release.nix -A canary
+
+cd result
+npm publish --tag canary .
