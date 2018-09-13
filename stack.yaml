@@ -1,4 +1,4 @@
-resolver: nightly-2017-02-01
+resolver: nightly-2018-08-21
 packages:
 - pkg/hs/avers/
 - pkg/hs/avers-api/
