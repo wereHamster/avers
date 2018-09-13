@@ -1,6 +1,0 @@
-resolver: nightly-2018-08-21
-packages:
-- pkg/hs/avers/
-- pkg/hs/avers-api/
-- pkg/hs/avers-api-docs/
-- pkg/hs/avers-server/
