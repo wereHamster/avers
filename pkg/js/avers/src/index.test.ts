@@ -618,3 +618,19 @@ describe("Avers.staticValue", function() {
     assert.equal(42, Avers.staticValue(h, s).get(sentinel));
   });
 });
+
+describe("Avers.networkRequests", function() {
+  it("should return network requests attached to all entities", function() {
+    const h = mkHandle({});
+
+    const ep = new Avers.Ephemeral(testNamespace, "test", unresolvedPromiseF);
+    const st = new Avers.Static(testNamespace, "test", unresolvedPromiseF);
+
+    Avers.mkEditable(h, "test");
+    Avers.loadEditable(h, "test");
+    Avers.ephemeralValue(h, ep).get(sentinel);
+    Avers.staticValue(h, st).get(sentinel);
+
+    assert.lengthOf(Avers.networkRequests(h), 3);
+  });
+});

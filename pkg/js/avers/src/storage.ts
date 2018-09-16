@@ -56,12 +56,25 @@ export function detachGenerationListener(h: Handle, listener: Function): void {
 
 export function networkRequests(h: Handle): NetworkRequest[] {
   const ret: NetworkRequest[] = [];
-
-  // TODO: Also collect network requests from Static and Ephemeral entities.`
-  for (const obj of h.editableCache.values()) {
-    const nr = obj.networkRequest;
+  const addNetworkRequest = (nr: undefined | NetworkRequest): void => {
     if (nr !== undefined) {
       ret.push(nr);
+    }
+  };
+
+  for (const obj of h.editableCache.values()) {
+    addNetworkRequest(obj.networkRequest);
+  }
+
+  for (const ns of h.staticCache.values()) {
+    for (const obj of ns.values()) {
+      addNetworkRequest(obj.networkRequest);
+    }
+  }
+
+  for (const ns of h.ephemeralCache.values()) {
+    for (const obj of ns.values()) {
+      addNetworkRequest(obj.networkRequest);
     }
   }
 
