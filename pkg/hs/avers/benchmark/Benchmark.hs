@@ -51,7 +51,7 @@ mkBenchmarkHandle :: IO Handle
 mkBenchmarkHandle = do
     dbURI <- databaseConfig
     let config = Config dbURI undefined [SomeObjectType dummyObjectType] (\_ _ -> return ())
-    Right h <- newState config
+    Right h <- newHandle config
     return h
 
 
