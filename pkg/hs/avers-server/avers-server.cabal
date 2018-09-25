@@ -45,7 +45,7 @@ library
    , resource-pool
    , rethinkdb-client-driver
    , servant
-   , servant-server
+   , servant-server >= 0.12
    , stm
    , text
    , time

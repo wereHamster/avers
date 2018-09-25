@@ -48,6 +48,7 @@ instance (HasServer sublayout context) => HasServer (Credentials :> sublayout) c
                     Left _ -> delayedFailFatal err400
                     Right sId -> pure $ CredSessionId $ SessionId sId
 
+    hoistServerWithContext _ pc nt s = hoistServerWithContext (Proxy :: Proxy sublayout) pc nt . s
 
 
 instance (HasServer sublayout context) => HasServer (SessionId :> sublayout) context where
@@ -68,6 +69,7 @@ instance (HasServer sublayout context) => HasServer (SessionId :> sublayout) con
                     Left _ -> delayedFailFatal err401
                     Right sId -> pure $ SessionId sId
 
+    hoistServerWithContext _ pc nt s = hoistServerWithContext (Proxy :: Proxy sublayout) pc nt . s
 
 
 instance ToHttpApiData SetCookie where
