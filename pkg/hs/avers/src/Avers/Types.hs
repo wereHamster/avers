@@ -27,7 +27,6 @@ import qualified Data.Text as T
 
 import           Data.Map  (Map)
 
-import           Data.Monoid
 import           Data.Char
 
 import           Data.Attoparsec.Text

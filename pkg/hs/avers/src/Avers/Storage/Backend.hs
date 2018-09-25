@@ -33,7 +33,6 @@ import           Prelude hiding (lookup)
 import           Control.Monad.Except
 import           Control.Monad.State
 
-import           Data.Monoid
 import           Data.Aeson (Value, Result(..))
 import           Data.Aeson.Types (parse, parseEither)
 import           Data.Pool

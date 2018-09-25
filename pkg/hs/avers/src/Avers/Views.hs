@@ -12,7 +12,6 @@ import           Control.Monad
 
 import           Data.Text (Text)
 import           Data.Aeson as Aeson
-import           Data.Monoid
 import qualified Data.HashMap.Strict as HMS
 
 import qualified Database.RethinkDB as R
