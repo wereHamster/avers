@@ -1,7 +1,0 @@
-
-#!/bin/sh
-set -e
-
-find . -not -path './scripts/*' -name cibuild -type f | while read p; do
-    (cd $(dirname $p)/.. && ./script/cibuild)
-done
