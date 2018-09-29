@@ -15,6 +15,7 @@ manipulate objects stored in it.
 module Avers.Storage where
 
 import           Control.Applicative
+import           Control.Concurrent
 import           Control.Concurrent.STM
 
 import           Control.Monad.Random (getRandomR, evalRandIO)
@@ -705,20 +706,28 @@ createTable name indices = do
 
 -- | Stream new patches from the database into the channel.
 streamPatches :: Pool R.Handle -> TChan Change -> IO ()
-streamPatches pool chan = forever $ withResource pool $ \handle -> do
-    token <- R.start handle $ R.SequenceChanges patchesTable
-    loop handle token
+streamPatches pool chan = forever $ do
+    withResource pool $ \handle -> do
+        putStrLn $ "streamPatches: start"
+        token <- R.start handle $ R.SequenceChanges patchesTable
+        loop handle token
+        putStrLn $ "streamPatches: done"
+
+    -- We shouldn't reach this place too often. If we get here it's usually because
+    -- something unexpected has happened in the system. Wait a bit before retrying.
+    threadDelay $ 5 * 1000 * 1000
+
   where
     writePatchNotifications :: Vector R.ChangeNotification -> IO ()
     writePatchNotifications v = forM_ v $ \cn -> case parseDatum (R.cnNewValue cn) of
-        Left e  -> print e
+        Left e  -> putStrLn $ "streamPatches: failed to parse value - " <> show e
         Right p -> atomically $ writeTChan chan $ CPatch p
 
     loop :: R.Handle -> R.Token -> IO ()
     loop handle token = do
         res <- R.nextResult handle token :: IO (Either R.Error (R.Sequence R.ChangeNotification))
         case res of
-            Left e                -> print e
+            Left e                -> putStrLn $ "streamPatches: nextResult error - " <> show e
             Right (R.Done r)      -> writePatchNotifications r
             Right (R.Partial _ r) -> do
                 writePatchNotifications r
