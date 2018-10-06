@@ -12,7 +12,7 @@ in {
     ];
 
     buildPhase = ''
-      HOME=$PWD npm install
+      HOME=$PWD npm ci
       npm version patch
       ./node_modules/.bin/tsc
       cat package.json | jq 'del(.devDependencies) | .version = .version + "-alpha.${n}+${commit}"' > dist/package.json
