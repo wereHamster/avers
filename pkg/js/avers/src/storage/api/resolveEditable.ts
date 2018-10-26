@@ -13,7 +13,7 @@ import { mkEditable } from "./mkEditable";
 // Note that this will invalidate any currently running network requests and
 // drop any local changes.
 
-function resolveEditableF<T>(h: Handle, { objId, json }: { objId: string; json: any }) {
+function resolveEditableF<T extends object>(h: Handle, { objId, json }: { objId: string; json: any }) {
   // ASSERT objId === json.id
 
   const obj = mkEditable<T>(h, objId);

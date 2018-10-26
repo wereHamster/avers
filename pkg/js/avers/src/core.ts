@@ -207,7 +207,7 @@ export function definePrimitive<T>(x: any, name: string, defaultValue: undefined
   defineProperty(x, name, desc);
 }
 
-export function defineObject<T>(x: any, name: string, klass: any, def?: T) {
+export function defineObject<T extends object>(x: any, name: string, klass: any, def?: T) {
   let desc: ObjectPropertyDescriptor<T> = {
     type: "ObjectPropertyDescriptor",
     parser: createObjectParser<T>(klass),
@@ -221,7 +221,7 @@ export function defineObject<T>(x: any, name: string, klass: any, def?: T) {
   defineProperty(x, name, desc);
 }
 
-export function defineVariant<T>(
+export function defineVariant<T extends object>(
   x: any,
   name: string,
   typeField: string,
@@ -261,11 +261,11 @@ export function defineCollection(x: any, name: string, klass: any) {
   defineProperty(x, name, desc);
 }
 
-function createObjectParser<T>(klass: any): (json: any) => T {
+function createObjectParser<T extends object>(klass: any): (json: any) => T {
   return json => parseJSON<T>(klass, json);
 }
 
-function createVariantParser<T>(
+function createVariantParser<T extends object>(
   name: string,
   typeField: string,
   typeMap: { [typeField: string]: any }
@@ -391,11 +391,11 @@ let objectProxyHandler = {
   }
 };
 
-function createObject<T>(x: new () => T): T {
+function createObject<T extends object>(x: new () => T): T {
   return new Proxy(new x(), objectProxyHandler);
 }
 
-export function parseJSON<T>(x: new () => T, json: any): T {
+export function parseJSON<T extends object>(x: new () => T, json: any): T {
   if (<any>x === String || <any>x === Number) {
     return new (<any>x)(json).valueOf();
   } else {
@@ -403,7 +403,7 @@ export function parseJSON<T>(x: new () => T, json: any): T {
   }
 }
 
-export function mk<T>(x: new () => T, json: any): T {
+export function mk<T extends object>(x: new () => T, json: any): T {
   return migrateObject(parseJSON(x, json));
 }
 
