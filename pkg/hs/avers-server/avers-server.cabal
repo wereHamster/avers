@@ -43,7 +43,6 @@ library
    , memory
    , mtl
    , resource-pool
-   , rethinkdb-client-driver
    , servant
    , servant-server >= 0.12
    , stm
