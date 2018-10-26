@@ -70,7 +70,3 @@ instance (HasServer sublayout context) => HasServer (SessionId :> sublayout) con
                     Right sId -> pure $ SessionId sId
 
     hoistServerWithContext _ pc nt s = hoistServerWithContext (Proxy :: Proxy sublayout) pc nt . s
-
-
-instance ToHttpApiData SetCookie where
-    toUrlPiece = T.decodeUtf8 . toByteString' . renderSetCookie
