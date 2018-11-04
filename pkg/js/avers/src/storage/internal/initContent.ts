@@ -1,7 +1,8 @@
-import { detachChangeListener, applyOperation, attachChangeListener } from "../../core";
+import { detachChangeListener, applyOperation, attachChangeListener, clone } from "../../core";
 import { Editable } from "../types";
 
 export function initContent(obj: Editable<unknown>): void {
+  // XXX: When does this happen?
   if (obj.shadowContent === undefined) {
     return;
   }
@@ -10,9 +11,12 @@ export function initContent(obj: Editable<unknown>): void {
     detachChangeListener(obj.content, obj.changeListener);
   }
 
-  obj.content = obj.submittedChanges.concat(obj.localChanges).reduce((c, o) => {
+  // All changes we want to apply on top of the 'shadowContent'.
+  const changes = obj.submittedChanges.concat(obj.localChanges);
+
+  obj.content = changes.reduce((c, o) => {
     return applyOperation(c, o.path, o);
-  }, obj.shadowContent);
+  }, clone(obj.shadowContent));
 
   attachChangeListener(obj.content, obj.changeListener);
 }
