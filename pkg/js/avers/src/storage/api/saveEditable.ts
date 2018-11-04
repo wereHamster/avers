@@ -62,18 +62,6 @@ export async function saveEditable(h: Handle, objId: ObjId): Promise<void> {
 
     const body = res.res;
 
-    console.log(
-      [
-        "Saved ",
-        body.resultingPatches.length,
-        " operations on ",
-        objId,
-        " (",
-        body.previousPatches.length,
-        " previous patches)"
-      ].join("")
-    );
-
     // Apply all server patches to the shadow content, to bring it up
     // to date WRT the server version. Also bump the revisionId to
     // reflect what the server has.
