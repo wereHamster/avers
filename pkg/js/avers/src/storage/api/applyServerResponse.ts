@@ -1,15 +1,11 @@
-import { ObjId, Handle, mkAction, NetworkRequest } from "../types";
+import { ObjId, Handle, mkAction } from "../types";
 import { modifyHandle } from "../internal/modifyHandle";
 import { changeEditable } from "../internal/changeEditable";
 import { initContent } from "../internal/initContent";
 import { applyPatches } from "../internal/applyPatches";
 
-function applyServerResponseF(h: Handle, { objId, res, body }: { objId: string; res: any; body: any }): void {
+function applyServerResponseF(h: Handle, { objId, body }: { objId: string; body: any }): void {
   changeEditable(h, objId, obj => {
-    if (obj.networkRequest === res.networkRequest) {
-      obj.networkRequest = undefined;
-    }
-
     // Clear out any traces that we've submitted changes to the
     // server.
     obj.submittedChanges = [];
@@ -19,14 +15,13 @@ function applyServerResponseF(h: Handle, { objId, res, body }: { objId: string; 
   });
 }
 
-const applyServerResponseA = (objId: ObjId, res: { networkRequest: NetworkRequest; res: any }, body: any) =>
-  mkAction(`applyServerResponse(${objId})`, { objId, res, body }, applyServerResponseF);
+const applyServerResponseA = (objId: ObjId, body: any) =>
+  mkAction(`applyServerResponse(${objId})`, { objId, body }, applyServerResponseF);
 
 export const applyServerResponse = (
   h: Handle,
   objId: ObjId,
-  res: { networkRequest: NetworkRequest; res: any },
   body: any
 ): void => {
-  modifyHandle(h, applyServerResponseA(objId, res, body));
+  modifyHandle(h, applyServerResponseA(objId, body));
 };

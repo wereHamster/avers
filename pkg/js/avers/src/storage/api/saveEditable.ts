@@ -50,31 +50,11 @@ export async function saveEditable(h: Handle, objId: ObjId): Promise<void> {
       .then(res => res.json());
 
     const res = await runNetworkRequest(h, objId, "saveEditable", req);
-    if (!res) {
-      return;
-    }
-
-    // We ignore whether the response is from the current NetworkRequest
-    // or not. It's irrelevant, upon receeiving a successful response
-    // from the server the changes have been stored in the database,
-    // and there is no way back. We have no choice than to accept the
-    // changes and apply to the local state.
-
-    const body = res.res;
-
-    // Apply all server patches to the shadow content, to bring it up
-    // to date WRT the server version. Also bump the revisionId to
-    // reflect what the server has.
-
-    applyServerResponse(h, objId, res, body);
+    applyServerResponse(h, objId, res);
 
     // See if we have any more local changes which we need to save.
     await saveEditable(h, objId);
   } catch (err) {
-    // The server would presumably respond with changes which
-    // were submitted before us, and we'd have to rebase our
-    // changes on top of that.
-
     restoreLocalChanges(h, objId);
   }
 }

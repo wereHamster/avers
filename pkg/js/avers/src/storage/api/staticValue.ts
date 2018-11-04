@@ -30,9 +30,7 @@ async function refreshStatic<T>(h: Handle, s: Static<T>, ent: StaticE<T>): Promi
   if (ent.value === Computation.Pending && ent.networkRequest === undefined) {
     try {
       const res = await runNetworkRequest(h, s, "fetchStatic", s.fetch());
-      if (res) {
-        resolveStatic(h, s, res.res);
-      }
+      resolveStatic(h, s, res);
     } catch (e) {
       // Ignore errors. runNetworkRequest already sets 'lastError'.
     }

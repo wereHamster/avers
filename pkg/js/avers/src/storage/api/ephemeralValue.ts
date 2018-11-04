@@ -31,9 +31,7 @@ async function refreshEphemeral<T>(h: Handle, e: Ephemeral<T>, ent: EphemeralE<T
   if ((ent.value === Computation.Pending || now > ent.expiresAt) && ent.networkRequest === undefined) {
     try {
       const res = await runNetworkRequest(h, e, "fetchEphemeral", e.fetch());
-      if (res) {
-        resolveEphemeral(h, e, res.res.value, res.res.expiresAt);
-      }
+      resolveEphemeral(h, e, res.value, res.expiresAt);
     } catch (err) {
       // Ignore errors. runNetworkRequest already sets 'lastError'.
     }

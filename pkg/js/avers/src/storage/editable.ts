@@ -99,13 +99,14 @@ export async function fetchEditable<T>(h: Handle, id: string): Promise<Editable<
 // response.
 
 export async function loadEditable(h: Handle, id: string): Promise<void> {
-  try {
-    const res = await runNetworkRequest(h, id, "fetchEditable", fetchObject(h, id));
-    if (res) {
-      resolveEditable(h, id, res.res);
+  const e = mkEditable<unknown>(h, id);
+  if (e.shadowContent === undefined && e.networkRequest === undefined) {
+    try {
+      const res = await runNetworkRequest(h, id, "fetchEditable", fetchObject(h, id));
+      resolveEditable(h, id, res);
+    } catch (err) {
+      // Ignore errors. runNetworkRequest already sets 'lastError'.
     }
-  } catch (err) {
-    // Ignore errors. runNetworkRequest already sets 'lastError'.
   }
 }
 
