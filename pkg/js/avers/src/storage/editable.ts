@@ -118,19 +118,14 @@ export async function loadEditable(h: Handle, id: string): Promise<void> {
 
 export function lookupEditable<T>(h: Handle, id: string): Computation<Editable<T>> {
   return new Computation(() => {
-    if (id) {
-      const obj = mkEditable<T>(h, id);
-      if (!obj.content) {
-        if (obj.networkRequest === undefined) {
-          loadEditable(h, id);
-        }
-
-        return Computation.Pending;
-      } else {
-        return obj;
-      }
+    const obj = mkEditable<T>(h, id);
+    if (obj.content) {
+      return obj;
+    } else if (obj.lastError) {
+      throw obj.lastError;
     } else {
-      throw new Error("Avers.lookupEditable: invalid id <" + id + ">");
+      loadEditable(h, id);
+      return Computation.Pending;
     }
   });
 }

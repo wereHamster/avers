@@ -23,11 +23,9 @@ export function staticValue<T>(h: Handle, s: Static<T>): Computation<T> {
 // -----------------------------------------------------------------------
 //
 // Internal function which is used to initiate the fetch if required.
-//
-// FIXME: Retry the request if the promise failed.
 
 async function refreshStatic<T>(h: Handle, s: Static<T>, ent: StaticE<T>): Promise<void> {
-  if (ent.value === Computation.Pending && ent.networkRequest === undefined) {
+  if (ent.value === Computation.Pending && ent.networkRequest === undefined && ent.lastError === undefined) {
     try {
       const res = await runNetworkRequest(h, s, "fetchStatic", s.fetch());
       resolveStatic(h, s, res);
