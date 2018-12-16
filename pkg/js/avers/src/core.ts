@@ -160,7 +160,7 @@ function applySpliceOperation(root: any, path: string, op: Splice): any {
 
   let parser = prop.parser,
     insert = op.insert.map(json => parser(json, parent)),
-    args = [op.index, op.remove].concat(insert);
+    args: [number, number, ...any[]] = [op.index, op.remove, ...insert];
 
   splice.apply(obj, args);
 
