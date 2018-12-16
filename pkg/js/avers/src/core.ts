@@ -22,7 +22,7 @@ const changeListenersSymbol = Symbol("aversChangeListeners");
 const childListenersSymbol = Symbol("aversChildListeners");
 
 function emitChanges(self: any, changes: Change<any>[]): void {
-  let listeners = self[changeListenersSymbol];
+  const listeners = self[changeListenersSymbol];
   if (listeners) {
     listeners.forEach((fn: any) => {
       fn(changes);
@@ -41,9 +41,9 @@ function listenTo(self: any, obj: any, callback: ChangeCallback): void {
 }
 
 function stopListening(self: any, obj: any): void {
-  let listeners = self[childListenersSymbol];
+  const listeners = self[childListenersSymbol];
   if (listeners) {
-    let fn = listeners.get(obj);
+    const fn = listeners.get(obj);
     if (fn) {
       detachChangeListener(obj, fn);
       listeners.delete(obj);
@@ -131,7 +131,7 @@ export function clone(x: any): any {
 }
 
 function setValueAtPath(root: any, path: string, value: any): any {
-  let pathKeys = path.split("."),
+  const pathKeys = path.split("."),
     lastKey = pathKeys.pop(),
     obj = resolvePath<any>(root, pathKeys.join("."));
 
@@ -143,14 +143,14 @@ function setValueAtPath(root: any, path: string, value: any): any {
 }
 
 function parentPath(path: string): string {
-  let pathKeys = path.split(".");
+  const pathKeys = path.split(".");
   return pathKeys.slice(0, pathKeys.length - 1).join(".");
 }
 
 // Splice operations can currently not be applied to the root. This is
 // a restriction which may be lifted in the future.
 function applySpliceOperation(root: any, path: string, op: Splice): any {
-  let obj = resolvePath<any>(root, path),
+  const obj = resolvePath<any>(root, path),
     parent = resolvePath<any>(root, parentPath(path)),
     prop = aversProperties(parent)[last(path.split("."))];
 
@@ -158,7 +158,7 @@ function applySpliceOperation(root: any, path: string, op: Splice): any {
     return;
   }
 
-  let parser = prop.parser,
+  const parser = prop.parser,
     insert = op.insert.map(json => parser(json, parent)),
     args: [number, number, ...any[]] = [op.index, op.remove, ...insert];
 
@@ -184,7 +184,7 @@ export function applyOperation<T>(root: T, path: string, op: Operation): T {
 }
 
 function defineProperty<T>(x: any, name: string, desc: PropertyDescriptor<T>): void {
-  let proto = x.prototype,
+  const proto = x.prototype,
     aversProps = proto[aversPropertiesSymbol] || Object.create(null);
 
   aversProps[name] = desc;
@@ -192,14 +192,14 @@ function defineProperty<T>(x: any, name: string, desc: PropertyDescriptor<T>): v
 }
 
 export function declareConstant(x: any): void {
-  let proto = x.prototype,
+  const proto = x.prototype,
     aversProps = proto[aversPropertiesSymbol] || Object.create(null);
 
   proto[aversPropertiesSymbol] = aversProps;
 }
 
 export function definePrimitive<T>(x: any, name: string, defaultValue: undefined | T) {
-  let desc: PrimitivePropertyDescriptor<T> = {
+  const desc: PrimitivePropertyDescriptor<T> = {
     type: "PrimitivePropertyDescriptor",
     defaultValue
   };
@@ -208,7 +208,7 @@ export function definePrimitive<T>(x: any, name: string, defaultValue: undefined
 }
 
 export function defineObject<T extends object>(x: any, name: string, klass: any, def?: T) {
-  let desc: ObjectPropertyDescriptor<T> = {
+  const desc: ObjectPropertyDescriptor<T> = {
     type: "ObjectPropertyDescriptor",
     parser: createObjectParser<T>(klass),
     defaultValue: undefined
@@ -234,14 +234,14 @@ export function defineVariant<T extends object>(
   //
   // This is something which can be removed from the production builds.
 
-  for (let k in typeMap) {
-    let aversProps = typeMap[k].prototype[aversPropertiesSymbol];
+  for (const k in typeMap) {
+    const aversProps = typeMap[k].prototype[aversPropertiesSymbol];
     if (aversProps === undefined) {
       throw new Error('Variant constructor of "' + k + '" is not an Avers object');
     }
   }
 
-  let desc: VariantPropertyDescriptor<T> = {
+  const desc: VariantPropertyDescriptor<T> = {
     type: "VariantPropertyDescriptor",
     parser: createVariantParser<T>(name, typeField, typeMap),
     typeField: typeField,
@@ -253,7 +253,7 @@ export function defineVariant<T extends object>(
 }
 
 export function defineCollection(x: any, name: string, klass: any) {
-  let desc: CollectionPropertyDescriptor<any> = {
+  const desc: CollectionPropertyDescriptor<any> = {
     type: "CollectionPropertyDescriptor",
     parser: createObjectParser(klass)
   };
@@ -271,7 +271,7 @@ function createVariantParser<T extends object>(
   typeMap: { [typeField: string]: any }
 ): (json: any, parent: any) => T {
   return function(json: any, parent: any): T {
-    let type = parent[typeField] || parent[name][typeField];
+    const type = parent[typeField] || parent[name][typeField];
     return parseJSON<T>(typeMap[type], json);
   };
 }
@@ -311,10 +311,10 @@ function parseValue(desc: PropertyDescriptor<any>, old: any, json: any, parent: 
 }
 
 export function updateObject<T>(x: T, json: any): T {
-  let aversProps = aversProperties(x);
+  const aversProps = aversProperties(x);
 
-  for (let name in aversProps) {
-    let desc = aversProps[name];
+  for (const name in aversProps) {
+    const desc = aversProps[name];
 
     if (json[name] != null) {
       (x as any)[name] = parseValue(desc, (x as any)[name], json[name], json);
@@ -325,17 +325,17 @@ export function updateObject<T>(x: T, json: any): T {
 }
 
 export function migrateObject<T>(x: T): T {
-  let aversProps = aversProperties(x);
+  const aversProps = aversProperties(x);
 
-  for (let name in aversProps) {
-    let desc = aversProps[name],
+  for (const name in aversProps) {
+    const desc = aversProps[name],
       prop = (x as any)[name];
 
     if (prop == null) {
       if (desc.type === "CollectionPropertyDescriptor") {
         (x as any)[name] = mkCollection([]);
       } else {
-        let value = desc.defaultValue;
+        const value = desc.defaultValue;
         if (value != null && value !== prop) {
           migrateObject(value);
           (x as any)[name] = value;
@@ -351,9 +351,9 @@ export function migrateObject<T>(x: T): T {
   return x;
 }
 
-let objectProxyHandler = {
+const objectProxyHandler = {
   set: (target: any, property: string, value: any): boolean => {
-    let oldValue = target[property],
+    const oldValue = target[property],
       propertyDescriptor = aversProperties(target)[property];
 
     target[property] = value;
@@ -378,7 +378,7 @@ let objectProxyHandler = {
   },
 
   deleteProperty: (target: any, property: string): boolean => {
-    let oldValue = target[property],
+    const oldValue = target[property],
       propertyDescriptor = aversProperties(target)[property];
 
     if (propertyDescriptor && isObservableProperty(propertyDescriptor) && oldValue) {
@@ -414,7 +414,7 @@ function concatPath(self: string, child: string): string {
 // Return true if the property can generate change events and thus the
 // parent should listen to events.
 function isObservableProperty(propertyDescriptor: PropertyDescriptor<any>): boolean {
-  let type = propertyDescriptor.type;
+  const type = propertyDescriptor.type;
   return (
     type === "ObjectPropertyDescriptor" ||
     type === "VariantPropertyDescriptor" ||
@@ -423,7 +423,7 @@ function isObservableProperty(propertyDescriptor: PropertyDescriptor<any>): bool
 }
 
 export function typeName(typeMap: { [klass: string]: any }, klass: any): string {
-  for (let type in typeMap) {
+  for (const type in typeMap) {
     if (typeMap[type] === klass) {
       return type;
     }
@@ -433,11 +433,11 @@ export function typeName(typeMap: { [klass: string]: any }, klass: any): string 
 }
 
 function objectJSON(x: any): any {
-  let json = Object.create(null),
+  const json = Object.create(null),
     aversProps = aversProperties(x);
 
-  for (let name in aversProps) {
-    let desc = aversProps[name];
+  for (const name in aversProps) {
+    const desc = aversProps[name];
 
     switch (desc.type) {
       case "PrimitivePropertyDescriptor":
@@ -449,7 +449,7 @@ function objectJSON(x: any): any {
         break;
 
       case "VariantPropertyDescriptor":
-        let value = x[name];
+        const value = x[name];
 
         if (value) {
           json[name] = toJSON(value);
@@ -495,16 +495,16 @@ function resetCollection<T extends Item>(x: Collection<T>): void {
 }
 
 function mkCollection<T extends Item>(items: T[]): Collection<T> {
-  let collection: Collection<T> = <any>[];
+  const collection: Collection<T> = <any>[];
   resetCollection(collection);
 
   if (items.length > 0) {
-    let args = (<any>[0, 0]).concat(items);
+    const args = (<any>[0, 0]).concat(items);
     splice.apply(collection, args);
   }
 
   function _splice(start: number, deleteCount: number, ...items: T[]): T[] {
-    let deletedItems = collection.slice(start, start + deleteCount);
+    const deletedItems = collection.slice(start, start + deleteCount);
 
     splice.call(collection, start, deleteCount, ...items);
 
@@ -518,7 +518,7 @@ function mkCollection<T extends Item>(items: T[]): Collection<T> {
         collection.idMap[item.id] = item;
 
         listenTo(collection, item, changes => {
-          let id = itemId(collection, item);
+          const id = itemId(collection, item);
           emitChanges(collection, changes.map(change => embedChange(change, id)));
         });
       }
@@ -655,7 +655,7 @@ export interface ChangeCallback {
 // object or any of its properties change.
 
 export function attachChangeListener(obj: any, fn: ChangeCallback): void {
-  let listeners = obj[changeListenersSymbol] || new Set();
+  const listeners = obj[changeListenersSymbol] || new Set();
   obj[changeListenersSymbol] = listeners;
 
   listeners.add(fn);
@@ -667,7 +667,7 @@ export function attachChangeListener(obj: any, fn: ChangeCallback): void {
 // Detach a given change listener callback from an object.
 
 export function detachChangeListener(obj: any, fn: ChangeCallback): void {
-  let listeners = obj[changeListenersSymbol];
+  const listeners = obj[changeListenersSymbol];
   if (listeners) {
     listeners.delete(fn);
   }
