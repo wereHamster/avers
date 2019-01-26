@@ -2,18 +2,22 @@
   "name": "avers",
   "description": "",
   "version": "0.18.0",
-  "main": "index.js",
+  "main": "index.node.js",
+  "module": "index.js",
   "repository": {
     "type": "git",
     "url": "git://github.com/wereHamster/avers.git"
   },
   "license": "MIT",
   "devDependencies": {
+    "@babel/core": "^7.2.2",
+    "@babel/preset-env": "^7.3.1",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "chai": "^4.1.2",
     "mocha": "^5.2.0",
     "rollup": "^1.0.0",
+    "rollup-plugin-babel": "^4.3.2",
     "rollup-plugin-commonjs": "^9.1.6",
     "rollup-plugin-node-resolve": "^4.0.0",
     "serve": "*",

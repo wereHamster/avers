@@ -15,6 +15,7 @@ in {
       HOME=$PWD npm ci
       npm version patch
       ./node_modules/.bin/tsc
+      ./node_modules/.bin/rollup -c rollup.config.js
       cat package.json | jq 'del(.devDependencies) | .version = .version + "-alpha.${n}+${commit}"' > dist/package.json
     '';
 
