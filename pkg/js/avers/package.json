@@ -22,5 +22,6 @@
   },
   "dependencies": {
     "computation": "^2.0.0"
-  }
+  },
+  "sideEffects": false
 }
