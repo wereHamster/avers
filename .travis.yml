@@ -54,5 +54,5 @@ matrix:
         - npm ci
       script:
         - node_modules/.bin/tslint --project tsconfig.json
-        - node_modules/.bin/tsc
+        - node_modules/.bin/tsc --module commonjs --esModuleInterop
         - node_modules/.bin/mocha dist
