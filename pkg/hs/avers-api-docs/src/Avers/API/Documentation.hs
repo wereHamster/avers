@@ -114,9 +114,6 @@ instance ToParamSchema BlobId
 instance ToSchema Path
 
 
-instance ToParamSchema SetCookie where
-    toParamSchema _ = toParamSchema (Proxy :: Proxy Text)
-
 instance ToSchema BlobContent where
     declareNamedSchema _ = pure (NamedSchema (Just "BlobContent") binarySchema)
 
