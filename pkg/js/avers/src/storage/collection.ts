@@ -2,7 +2,7 @@ import Computation from "computation";
 
 import { Handle } from "./types";
 import { endpointUrl } from "./internal";
-import { updateObjectCollection } from './api';
+import { updateObjectCollection } from "./api";
 
 const MAXAGE = 10 * 1000;
 
@@ -26,8 +26,7 @@ export class ObjectCollection {
 function mergeIds(c: ObjectCollection, ids: string[]): void {
   const isChanged =
     c.objectIds === Computation.Pending ||
-    ids.length !== c.objectIds.length ||
-    ids.reduce((a, id, index) => a || (c.objectIds !== Computation.Pending && id !== c.objectIds[index]), false);
+    (ids.length !== c.objectIds.length || ids.reduce<boolean>((a, id, index) => a || id !== c.objectIds[index], false));
 
   if (isChanged) {
     updateObjectCollection(c.h, c, ids);
