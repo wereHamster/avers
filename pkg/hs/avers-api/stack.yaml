@@ -1,4 +1,4 @@
-resolver: nightly-2019-03-29
+resolver: nightly-2019-06-28
 packages:
 - .
 - ../avers
