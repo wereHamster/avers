@@ -31,6 +31,7 @@ module Avers.Storage.Backend
 import           Prelude hiding (lookup)
 
 import           Control.Monad.Except
+import           Control.Monad.IO.Class
 import           Control.Monad.State
 
 import           Data.Aeson (Value, Result(..))

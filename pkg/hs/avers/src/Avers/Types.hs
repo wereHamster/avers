@@ -14,6 +14,7 @@ import           GHC.Generics
 import           Control.Applicative
 
 import           Control.Monad.Except
+import           Control.Monad.IO.Class
 import           Control.Monad.State
 
 import           Control.Concurrent.STM
