@@ -18,6 +18,8 @@ import           Control.Applicative
 import           Control.Concurrent
 import           Control.Concurrent.STM
 
+import           Control.Monad
+import           Control.Monad.IO.Class
 import           Control.Monad.Random (getRandomR, evalRandIO)
 import           Control.Monad.State
 import           Control.Monad.Except

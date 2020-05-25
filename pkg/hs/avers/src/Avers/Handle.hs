@@ -6,6 +6,7 @@ module Avers.Handle (newHandle, newState) where
 
 import           Safe
 
+import           Control.Monad
 import           Control.Monad.Except
 
 import           Control.Concurrent

@@ -1,6 +1,7 @@
 module Avers.Metrics where
 
 
+import           Control.Monad.IO.Class
 import           Control.Monad.State
 import           Control.Exception.Base
 
