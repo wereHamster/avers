@@ -1,0 +1,29 @@
+name: Validate
+
+on: push
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./pkg/js/avers
+
+    steps:
+      - uses: actions/checkout@master
+
+      - uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "14.x"
+
+      - run: npm install
+
+      - run: ./node_modules/.bin/tsc
+      - run: ./node_modules/.bin/ava
