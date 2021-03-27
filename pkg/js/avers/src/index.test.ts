@@ -279,6 +279,18 @@ describe("Change event propagation", function () {
     expectChangeAtPath(library, "items", t.pass);
     library.items.push(Avers.parseJSON(Item, jsonItem));
   });
+
+  it("should deliver multiple changes done during the same microtask", async function (t) {
+    t.plan(2);
+
+    const book = Avers.parseJSON(Book, jsonBook);
+
+    expectChangeAtPath(book, "title", t.pass);
+    expectChangeAtPath(book, "author.firstName", t.pass);
+
+    book.title = "GAME OF THRONES";
+    book.author.firstName = "TOMAS";
+  });
 });
 
 describe("Avers.resolvePath", function () {
