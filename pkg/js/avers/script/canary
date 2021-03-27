@@ -1,5 +1,5 @@
 #!/usr/bin/env nix-shell
-#!nix-shell -i bash -p nodejs-10_x -p jq -p git
+#!nix-shell -i bash -p nodejs-14_x -p jq -p git
 
 set -e
 

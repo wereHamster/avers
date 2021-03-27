@@ -7,7 +7,7 @@ in {
     src = ./.;
 
     buildInputs = [
-      pkgs.nodejs-10_x
+      pkgs.nodejs-14_x
       pkgs.jq
     ];
 
@@ -16,12 +16,12 @@ in {
       npm version patch
       ./node_modules/.bin/tsc
       ./node_modules/.bin/rollup -c rollup.config.js
-      cat package.json | jq 'del(.devDependencies) | .version = .version + "-alpha.${n}+${commit}"' > dist/package.json
+      cat package.json | jq 'del(.devDependencies) | del(.ava) | .version = .version + "-alpha.${n}+${commit}"' > dist/package.json
     '';
 
     checkPhase = ''
       ./node_modules/.bin/tslint --project tsconfig.json
-      ./node_modules/.bin/mocha dist/
+      ./node_modules/.bin/ava
     '';
 
     installPhase = ''
