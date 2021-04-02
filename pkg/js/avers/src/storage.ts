@@ -12,7 +12,10 @@
 // [2]: https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise
 // [3]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol
 
-import { Operation } from "./core";
+import { attachChangeListener, Change, changeOperation, clone, Operation } from "./core";
+import { mkEditable } from "./storage/api";
+import { changeEditable } from "./storage/internal/changeEditable";
+import { initContent } from "./storage/internal/initContent";
 
 export * from "./storage/api";
 export * from "./storage/collection";
@@ -97,4 +100,21 @@ export function localChanges(h: Handle): { obj: Editable<unknown>; changes: Oper
   }
 
   return ret;
+}
+
+export function updateEditable<T>(h: Handle, id: string, f: (content: T) => void) {
+  const obj = mkEditable<T>(h, id);
+  const content = clone(obj.content);
+
+  let localChanges: Change<unknown>[] = [];
+  attachChangeListener(content, function onChange(changes: Change<unknown>[]): void {
+    localChanges = [...localChanges, ...changes];
+  });
+
+  f(content);
+
+  changeEditable(h, id, (obj) => {
+    obj.localChanges = obj.localChanges.concat(localChanges.map(changeOperation));
+    initContent(obj);
+  });
 }

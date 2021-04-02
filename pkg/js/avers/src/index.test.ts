@@ -653,3 +653,26 @@ describe("Avers.networkRequests", function () {
     t.is(Avers.networkRequests(h).length, 3);
   });
 });
+
+describe("Editable", () => {
+  it("allows multiple mutations via updateEditable()", (t) => {
+    const h = mkHandle({});
+    const objId = "id";
+
+    Avers.resolveEditable(h, objId, {
+      type: "book",
+      id: objId,
+      createdAt: new Date().toISOString(),
+      createdBy: "me",
+      content: jsonBook,
+    });
+
+    Avers.updateEditable<Book>(h, objId, (content) => {
+      content.title = "GAME OF THRONES";
+      content.author.firstName = "TOMAS";
+    });
+
+    const obj = Avers.mkEditable(h, objId);
+    t.is(obj.localChanges.length, 2);
+  });
+});
