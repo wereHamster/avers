@@ -16,7 +16,7 @@ export async function fetchObject(h: Handle, id: string): Promise<unknown> {
   const url = endpointUrl(h, "/objects/" + id);
   const requestInit: RequestInit = {
     credentials: "include",
-    headers: { accept: "application/json" }
+    headers: { accept: "application/json" },
   };
 
   const res = await h.config.fetch(url, requestInit);
@@ -30,7 +30,7 @@ export async function createObject(h: Handle, type: string, content: unknown): P
     credentials: "include",
     method: "POST",
     body: JSON.stringify({ type, content }),
-    headers: { accept: "application/json", "content-type": "application/json" }
+    headers: { accept: "application/json", "content-type": "application/json" },
   };
 
   const res = await h.config.fetch(url, requestInit);
@@ -46,7 +46,7 @@ export async function createObjectId(h: Handle, objId: ObjId, type: string, cont
     credentials: "include",
     method: "POST",
     body: JSON.stringify({ type, content }),
-    headers: { accept: "application/json", "content-type": "application/json" }
+    headers: { accept: "application/json", "content-type": "application/json" },
   };
 
   const res = await h.config.fetch(url, requestInit);
@@ -69,27 +69,20 @@ export async function deleteObject(h: Handle, id: string): Promise<void> {
 // can't use 'Computation' (lookupEditable).
 
 export async function fetchEditable<T>(h: Handle, id: string): Promise<Editable<T>> {
-  async function go(): Promise<Editable<T>> {
-    const obj = mkEditable<T>(h, id);
+  const obj = mkEditable<T>(h, id);
 
-    if (obj.content !== undefined) {
-      return obj;
-    } else if (obj.lastError !== undefined) {
-      throw obj.lastError;
-    } else {
-      const nr = obj.networkRequest,
-        req = nr ? nr.promise : loadEditable(h, id);
-
-      try {
-        await req;
-        return go();
-      } catch (err) {
-        return go();
-      }
+  if (obj.content !== undefined) {
+    return obj;
+  } else if (obj.lastError !== undefined) {
+    throw obj.lastError;
+  } else {
+    try {
+      await (obj.networkRequest?.promise ?? loadEditable(h, id));
+      return fetchEditable(h, id);
+    } catch (err) {
+      return fetchEditable(h, id);
     }
   }
-
-  return go();
 }
 
 // loadEditable
@@ -137,5 +130,5 @@ export function lookupEditable<T>(h: Handle, id: string): Computation<Editable<T
 // it. This is a convenience function to get just that.
 
 export function lookupContent<T>(h: Handle, id: string): Computation<T> {
-  return lookupEditable<T>(h, id).fmap(x => x.content);
+  return lookupEditable<T>(h, id).fmap((x) => x.content);
 }
