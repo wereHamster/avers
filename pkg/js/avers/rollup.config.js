@@ -11,7 +11,7 @@ export default {
     }
   ],
   plugins: [
-    nodeResolve({ jsnext: true, main: true }),
+    nodeResolve(),
     babel({ presets: [["@babel/preset-env", { targets: { node: "10" } }]] }),
     commonjs({ include: ["node_modules/**", "dist/**"] })
   ]
