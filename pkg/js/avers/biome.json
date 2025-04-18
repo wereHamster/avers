@@ -16,7 +16,6 @@
         "useShorthandFunctionType": "off",
         "noParameterAssign": "off",
         "useSingleVarDeclarator": "off",
-        "useTemplate": "off",
         "useImportType": "off",
         "noUselessElse": "off"
       },

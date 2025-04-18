@@ -26,7 +26,7 @@ async function jsonOk<T>(res: Response): Promise<T> {
   if (res.status >= 200 && res.status < 300) {
     return res.json();
   } else {
-    throw new Error("Status " + res.status);
+    throw new Error(`Status ${res.status}`);
   }
 }
 
@@ -66,7 +66,7 @@ export async function restoreSession(session: Session): Promise<void> {
     } else if (res.status === 404) {
       finishTransition(session, undefined, undefined);
     } else {
-      throw new Error("Status " + res.status);
+      throw new Error(`Status ${res.status}`);
     }
   } catch (err: unknown) {
     finishTransition(session, undefined, err as Error);

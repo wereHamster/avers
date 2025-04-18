@@ -16,7 +16,7 @@ export function lookupPatch(h: Handle, objectId: ObjId, revId: RevId): Computati
 }
 
 async function fetchPatch(h: Handle, objectId: ObjId, revId: RevId): Promise<Patch> {
-  const url = endpointUrl(h, "/objects/" + objectId + "/patches/" + revId);
+  const url = endpointUrl(h, `/objects/${objectId}/patches/${revId}`);
   const requestInit: RequestInit = {
     credentials: "include",
     headers: { accept: "application/json" }
@@ -30,6 +30,6 @@ async function fetchPatch(h: Handle, objectId: ObjId, revId: RevId): Promise<Pat
 }
 
 function mkPatch(h: Handle, objectId: ObjId, revId: RevId): Static<Patch> {
-  const key = objectId + "@" + revId;
+  const key = `${objectId}@${revId}`;
   return new Static<Patch>(aversNamespace, key, () => fetchPatch(h, objectId, revId));
 }

@@ -13,7 +13,7 @@ import { resolveEditable, mkEditable } from "./api.js";
 // Fetch the raw JSON of an object from the server.
 
 export async function fetchObject(h: Handle, id: string): Promise<unknown> {
-  const url = endpointUrl(h, "/objects/" + id);
+  const url = endpointUrl(h, `/objects/${id}`);
   const requestInit: RequestInit = {
     credentials: "include",
     headers: { accept: "application/json" },
@@ -41,7 +41,7 @@ export async function createObject(h: Handle, type: string, content: unknown): P
 }
 
 export async function createObjectId(h: Handle, objId: ObjId, type: string, content: unknown): Promise<{}> {
-  const url = endpointUrl(h, "/objects/" + objId);
+  const url = endpointUrl(h, `/objects/${objId}`);
   const requestInit: RequestInit = {
     credentials: "include",
     method: "POST",
@@ -56,7 +56,7 @@ export async function createObjectId(h: Handle, objId: ObjId, type: string, cont
 }
 
 export async function deleteObject(h: Handle, id: string): Promise<void> {
-  const url = endpointUrl(h, "/objects/" + id);
+  const url = endpointUrl(h, `/objects/${id}`);
   await h.config.fetch(url, { credentials: "include", method: "DELETE" });
   startNextGeneration(h);
 }

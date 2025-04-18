@@ -18,7 +18,7 @@ export class ObjectCollection {
 
   constructor(public h: Handle, public collectionName: string) {
     this.fetchedAt = 0;
-    this.url = endpointUrl(h, "/collection/" + collectionName);
+    this.url = endpointUrl(h, `/collection/${collectionName}`);
     this.objectIds = Computation.Pending;
   }
 }
