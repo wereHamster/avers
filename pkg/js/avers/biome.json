@@ -1,6 +1,6 @@
 {
   "files": {
-    "ignore": ["dist", "docs", "node_modules"]
+    "ignore": [".direnv", "dist", "docs", "node_modules"]
   },
 
   "formatter": {
