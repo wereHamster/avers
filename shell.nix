@@ -9,6 +9,6 @@ in pkgs.mkShell {
     pkgs.libiconv
 
     # JavaScript
-    pkgs.nodejs-14_x
+    pkgs.nodejs_22
   ];
 }
