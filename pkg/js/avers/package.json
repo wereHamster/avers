@@ -3,20 +3,21 @@
   "name": "avers",
   "description": "",
   "version": "0.18.0",
-  "main": "index.node.js",
-  "module": "index.js",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/wereHamster/avers.git"
-  },
   "license": "MIT",
+  "sideEffects": false,
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "dependencies": {
+    "computation": "^2.0.0"
+  },
   "devDependencies": {
     "ava": "^3.15.0",
     "serve": "*",
     "typescript": "^4.0.3"
   },
-  "dependencies": {
-    "computation": "^2.0.0"
-  },
-  "sideEffects": false
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/wereHamster/avers.git"
+  }
 }

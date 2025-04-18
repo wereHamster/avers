@@ -16,8 +16,7 @@ in {
       HOME=$PWD npm ci
       npm version patch
       ./node_modules/.bin/tsc
-      ./node_modules/.bin/rollup -c rollup.config.js
-      cat package.json | jq 'del(.devDependencies) | del(.ava) | .version = .version + "-alpha.${n}+${commit}"' > dist/package.json
+      jq 'del(.devDependencies) | .version = .version + "-alpha.${n}+${commit}"' package.json > temp.json && mv temp.json package.json
     '';
 
     checkPhase = ''
@@ -26,8 +25,7 @@ in {
     '';
 
     installPhase = ''
-      mv dist $out
-      rm $out/*.test.*
+      mv . $out
     '';
   };
 }

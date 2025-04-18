@@ -10,6 +10,7 @@
         "preserveConstEnums": true,
         "rootDir": "src",
         "outDir": "dist",
+        "sourceMap": true,
         "types": []
     },
     "include": [

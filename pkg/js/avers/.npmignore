@@ -1,0 +1,4 @@
+*
+
+!{dist,src}/*
+{dist,src}/**/*.test.*
