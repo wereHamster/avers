@@ -16,7 +16,6 @@
         "useEnumInitializers": "off",
         "useShorthandFunctionType": "off",
         "noParameterAssign": "off",
-        "noVar": "off",
         "useSingleVarDeclarator": "off",
         "useTemplate": "off",
         "useImportType": "off",

@@ -18,7 +18,7 @@ window.library = library;
 const changesElement = document.querySelector("#changes");
 Avers.attachChangeListener(library, changes => {
   changes.forEach(({ path, record }) => {
-    var li = document.createElement("li");
+    const li = document.createElement("li");
     li.innerText = path + " changed " + JSON.stringify(record);
     changesElement.appendChild(li);
   });
