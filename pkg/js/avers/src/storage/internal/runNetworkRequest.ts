@@ -15,13 +15,13 @@ export async function runNetworkRequest<R>(
   label: string,
   req: Promise<R>
 ): Promise<R> {
-  const networkRequest = new NetworkRequest(h.config.now(), req);
+  const networkRequest = new NetworkRequest(h.config.now(), req as any);
   attachNetworkRequest(h, entity, label, networkRequest);
 
   try {
     return await req;
-  } catch (err) {
-    reportNetworkFailure(h, entity, networkRequest, err);
+  } catch (err: unknown) {
+    reportNetworkFailure(h, entity, networkRequest, err as Error);
     throw err;
   }
 }
