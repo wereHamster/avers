@@ -1,9 +1,9 @@
 import Computation from "computation";
 
-import { guardStatus } from "../../shared";
-import { ObjId, RevId, Handle, Static, Patch, parsePatch } from "../types";
-import { aversNamespace, endpointUrl } from "../internal";
-import { staticValue } from "./staticValue";
+import { guardStatus } from "../../shared.js";
+import { ObjId, RevId, Handle, Static, Patch, parsePatch } from "../types.js";
+import { aversNamespace, endpointUrl } from "../internal.js";
+import { staticValue } from "./staticValue.js";
 
 // lookupPatch
 // -----------------------------------------------------------------------

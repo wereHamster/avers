@@ -1,5 +1,5 @@
-import { Handle, StaticE, emptyStaticE } from "../types";
-import { lookupStaticE, insertStaticE } from "../internal";
+import { Handle, StaticE, emptyStaticE } from "../types.js";
+import { lookupStaticE, insertStaticE } from "../internal.js";
 
 export function mkStaticE<T>(h: Handle, ns: Symbol, key: string): StaticE<T> {
   let s = lookupStaticE<T>(h, ns, key);

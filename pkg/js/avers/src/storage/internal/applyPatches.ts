@@ -1,5 +1,5 @@
-import { applyOperation } from "../../core";
-import { Editable, Patch } from "../types";
+import { applyOperation } from "../../core.js";
+import { Editable, Patch } from "../types.js";
 
 // applyPatches
 // -----------------------------------------------------------------------------
@@ -38,4 +38,3 @@ export function applyPatches(obj: Editable<unknown>, patches: Patch[]): void {
     return applyOperation(c, op.path, op);
   }, obj.shadowContent);
 }
-

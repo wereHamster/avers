@@ -1,6 +1,6 @@
-import { Handle, Ephemeral, mkAction } from "../types";
-import { insertEphemeralE } from "../internal";
-import { modifyHandle } from "../internal/modifyHandle";
+import { Handle, Ephemeral, mkAction } from "../types.js";
+import { insertEphemeralE } from "../internal.js";
+import { modifyHandle } from "../internal/modifyHandle.js";
 
 // resolveEphemeral<T>
 // -----------------------------------------------------------------------

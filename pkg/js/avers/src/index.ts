@@ -1,3 +1,3 @@
-export * from "./core";
-export * from "./storage";
-export * from "./session";
+export * from "./core.js";
+export * from "./storage.js";
+export * from "./session.js";

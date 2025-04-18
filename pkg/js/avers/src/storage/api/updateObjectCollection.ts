@@ -1,6 +1,6 @@
-import { Handle, mkAction, Action } from "../types";
-import { modifyHandle } from "../internal/modifyHandle";
-import { ObjectCollection } from "../collection";
+import { Handle, mkAction, Action } from "../types.js";
+import { modifyHandle } from "../internal/modifyHandle.js";
+import { ObjectCollection } from "../collection.js";
 
 interface Payload {
   c: ObjectCollection;

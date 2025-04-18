@@ -1,6 +1,6 @@
-import { Handle, Static, Ephemeral, mkAction, NetworkRequest, EntityId, Action } from "../types";
-import { entityLabel, withEditable, withStaticE, withEphemeralE } from "../internal";
-import { modifyHandle } from "./modifyHandle";
+import { Handle, Static, Ephemeral, mkAction, NetworkRequest, EntityId, Action } from "../types.js";
+import { entityLabel, withEditable, withStaticE, withEphemeralE } from "../internal.js";
+import { modifyHandle } from "./modifyHandle.js";
 
 interface Payload {
   entity: EntityId;

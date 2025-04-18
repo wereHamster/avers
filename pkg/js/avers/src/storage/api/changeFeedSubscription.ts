@@ -1,5 +1,5 @@
-import { Handle } from "../types";
-import { applyChange } from "./applyChange";
+import { Handle } from "../types.js";
+import { applyChange } from "./applyChange.js";
 
 // changeFeedSubscription
 // -----------------------------------------------------------------------------

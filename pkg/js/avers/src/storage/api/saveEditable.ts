@@ -1,12 +1,12 @@
-import { Operation } from "../../core";
-import { guardStatus } from "../../shared";
-import { ObjId, Handle } from "../types";
-import { endpointUrl } from "../internal";
-import { runNetworkRequest } from "../internal/runNetworkRequest";
+import { Operation } from "../../core.js";
+import { guardStatus } from "../../shared.js";
+import { ObjId, Handle } from "../types.js";
+import { endpointUrl } from "../internal.js";
+import { runNetworkRequest } from "../internal/runNetworkRequest.js";
 
-import { prepareLocalChanges } from "./prepareLocalChanges";
-import { applyServerResponse } from "./applyServerResponse";
-import { restoreLocalChanges } from "./restoreLocalChanges";
+import { prepareLocalChanges } from "./prepareLocalChanges.js";
+import { applyServerResponse } from "./applyServerResponse.js";
+import { restoreLocalChanges } from "./restoreLocalChanges.js";
 
 export async function saveEditable(h: Handle, objId: ObjId): Promise<void> {
   const obj = h.editableCache.get(objId);

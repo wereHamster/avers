@@ -1,6 +1,6 @@
-import { ObjId, Handle, mkAction } from "../types";
-import { modifyHandle } from "../internal/modifyHandle";
-import { changeEditable } from "../internal/changeEditable";
+import { ObjId, Handle, mkAction } from "../types.js";
+import { modifyHandle } from "../internal/modifyHandle.js";
+import { changeEditable } from "../internal/changeEditable.js";
 
 function restoreLocalChangesF(h: Handle, objId: ObjId) {
   changeEditable(h, objId, obj => {
