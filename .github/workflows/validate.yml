@@ -27,7 +27,7 @@ jobs:
         with:
           version: "1.9.4"
 
-      - run: npm install
+      - run: pnpm install --frozen-lockfile
 
       - run: biome lint .
       - run: ./node_modules/.bin/tsc
