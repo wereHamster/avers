@@ -6,7 +6,7 @@ export enum Transition {
   Restore,
   Signin,
   Signup,
-  Signout
+  Signout,
 }
 
 export class Session {
@@ -68,8 +68,8 @@ export async function restoreSession(session: Session): Promise<void> {
     } else {
       throw new Error("Status " + res.status);
     }
-  } catch (err) {
-    finishTransition(session, undefined, err);
+  } catch (err: unknown) {
+    finishTransition(session, undefined, err as Error);
     throw err;
   }
 }
@@ -89,7 +89,7 @@ export async function signup(session: Session, login: string): Promise<string> {
   const requestInit: RequestInit = {
     method: "POST",
     body: JSON.stringify({ login }),
-    headers: { accept: "application/json", "content-type": "application/json" }
+    headers: { accept: "application/json", "content-type": "application/json" },
   };
 
   beginTransition(session, Transition.Signup);
@@ -103,8 +103,8 @@ export async function signup(session: Session, login: string): Promise<string> {
     finishTransition(session, session.objId, undefined);
 
     return json.objId;
-  } catch (err) {
-    finishTransition(session, session.objId, err);
+  } catch (err: unknown) {
+    finishTransition(session, session.objId, err as Error);
     throw err;
   }
 }
@@ -119,7 +119,7 @@ export async function signin(session: Session, login: string, secret: string): P
   const requestInit: RequestInit = {
     method: "POST",
     body: JSON.stringify({ login: login, secret: secret }),
-    headers: { accept: "application/json", "content-type": "application/json" }
+    headers: { accept: "application/json", "content-type": "application/json" },
   };
 
   beginTransition(session, Transition.Signin);
@@ -128,8 +128,8 @@ export async function signin(session: Session, login: string, secret: string): P
     const res = await runReq(session, "/session", requestInit);
     const json = await jsonOk<any>(res);
     finishTransition(session, json.objId, undefined);
-  } catch (err) {
-    finishTransition(session, undefined, err);
+  } catch (err: unknown) {
+    finishTransition(session, undefined, err as Error);
     throw err;
   }
 }
@@ -146,8 +146,8 @@ export async function signout(session: Session): Promise<void> {
     const res = await runReq(session, "/session", { method: "DELETE" });
     await guardStatus("signout", 200, 204)(res);
     finishTransition(session, undefined, undefined);
-  } catch (err) {
-    finishTransition(session, session.objId, err);
+  } catch (err: unknown) {
+    finishTransition(session, session.objId, err as Error);
     throw err;
   }
 }

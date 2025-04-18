@@ -11,6 +11,7 @@
   "linter": {
     "rules": {
       "style": {
+        "useAsConstAssertion": "off",
         "noArguments": "off",
         "useEnumInitializers": "off",
         "useShorthandFunctionType": "off",
