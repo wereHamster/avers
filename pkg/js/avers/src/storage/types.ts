@@ -131,7 +131,7 @@ export const newEditable = (objectId: ObjId, changeListener: ChangeCallback): Ed
 // change when they are modified.
 
 export class Static<T> {
-  [Symbol.species]: "Static" = "Static";
+  [Symbol.species] = "Static" as const;
 
   constructor(public ns: Symbol, public key: string, public fetch: () => Promise<T>) {}
 }
@@ -156,7 +156,7 @@ export const emptyStaticE: StaticE<any> = Object.freeze({
 // re-fetched.
 
 export class Ephemeral<T> {
-  [Symbol.species]: "Ephemeral" = "Ephemeral";
+  [Symbol.species] = "Ephemeral" as const;
 
   constructor(public ns: Symbol, public key: string, public fetch: () => Promise<{ value: T; expiresAt: number }>) {}
 }
@@ -221,7 +221,7 @@ export class NetworkRequest {
 }
 
 export class Patch {
-  [Symbol.species]: "Patch" = "Patch";
+  [Symbol.species] = "Patch" as const;
 
   constructor(
     public objectId: ObjId,
