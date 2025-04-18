@@ -19,7 +19,6 @@
               pkgs.pnpm
               pkgs.biome
             ];
-
           };
         }
       );
