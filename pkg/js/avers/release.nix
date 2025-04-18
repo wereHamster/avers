@@ -7,7 +7,7 @@ in {
     src = ./.;
 
     buildInputs = [
-      pkgs.nodejs-14_x
+      pkgs.nodejs
       pkgs.jq
     ];
 
