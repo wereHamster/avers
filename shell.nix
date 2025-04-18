@@ -10,6 +10,7 @@ in pkgs.mkShell {
 
     # JavaScript
     pkgs.nodejs
+    pkgs.pnpm
 
     pkgs.biome
   ];
