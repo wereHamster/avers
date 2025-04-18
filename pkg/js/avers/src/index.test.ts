@@ -26,7 +26,7 @@ class Author {
   lastName!: string;
 }
 
-var jsonAuthor = {
+const jsonAuthor = {
   firstName: "Tomas",
   lastName: "Carnecky",
 };
@@ -34,7 +34,7 @@ var jsonAuthor = {
 Avers.definePrimitive(Author, "firstName", "John");
 Avers.definePrimitive(Author, "lastName", "Doe");
 
-var unknownAuthor = Avers.mk(Author, {
+const unknownAuthor = Avers.mk(Author, {
   firstName: "John",
   lastName: "Doe",
 });
@@ -45,13 +45,13 @@ class Book {
   tags!: string[];
 }
 
-var jsonBook = {
+const jsonBook = {
   title: "Game of Thrones",
   author: jsonAuthor,
   tags: ["violent", "fantasy"],
 };
 
-var jsonBookWithId = {
+const jsonBookWithId = {
   id: "some-random-id",
   title: "Game of Thrones",
   author: jsonAuthor,
@@ -85,18 +85,18 @@ class Item {
   content!: Book | Magazine | Diary;
 }
 
-var jsonItem = {
+const jsonItem = {
   type: "book",
   content: jsonBook,
 };
 
-var jsonBookItemWithId = {
+const jsonBookItemWithId = {
   id: "some-random-id",
   type: "book",
   content: jsonBook,
 };
 
-var def = Avers.mk(Book, jsonBook);
+const def = Avers.mk(Book, jsonBook);
 Avers.defineVariant(Item, "content", "type", { book: Book, magazine: Magazine, diary: Diary }, def);
 
 class NullableTest {
@@ -146,7 +146,7 @@ function mkHandle(json: any): Avers.Handle {
 }
 
 function mkObjectCollection() {
-  var h = mkHandle(["one", "two"]);
+  const h = mkHandle(["one", "two"]);
   return new Avers.ObjectCollection(h, "/test");
 }
 
@@ -174,27 +174,27 @@ function unresolvedPromiseF(): Promise<any> {
 
 describe("Avers.parseJSON", function () {
   it("should create a new object from json", function (t) {
-    var book = Avers.parseJSON(Book, jsonBook);
+    const book = Avers.parseJSON(Book, jsonBook);
     t.is("Game of Thrones", book.title);
     t.is("Tomas", book.author.firstName);
     t.is("Carnecky", book.author.lastName);
   });
 
   it("should accept an empty JSON if the fields have a default", function (t) {
-    var author = Avers.parseJSON(Author, {});
+    const author = Avers.parseJSON(Author, {});
     t.is(author.firstName, undefined as any);
     t.is(author.lastName, undefined as any);
   });
 
   it("should instantiate plain classes in variant properties", function (t) {
-    var item = Avers.parseJSON(Item, { type: "diary", content: {} });
+    const item = Avers.parseJSON(Item, { type: "diary", content: {} });
     t.true(item.content instanceof Diary);
   });
 });
 
 describe("Avers.updateObject", function () {
   it("Avers.updateObject should update an existing object", function (t) {
-    var book = new Book();
+    const book = new Book();
     Avers.updateObject(book, jsonBook);
     t.is("Game of Thrones", book.title);
     t.is("Tomas", book.author.firstName);
@@ -219,15 +219,15 @@ describe("Avers.toJSON", function () {
     runTest(t, Avers.parseJSON(Book, jsonBook), jsonBook);
   });
   it("should handle variants", function (t) {
-    var json = { type: "book", content: jsonBook };
+    const json = { type: "book", content: jsonBook };
     runTest(t, Avers.parseJSON(Item, json), json);
   });
   it("should handle variant properties with plain constructors", function (t) {
-    var json = { type: "diary", content: {} };
+    const json = { type: "diary", content: {} };
     runTest(t, Avers.parseJSON(Item, json), json);
   });
   it("should handle collections", function (t) {
-    var library = Avers.mk(Library, {});
+    const library = Avers.mk(Library, {});
     library.items.push(Avers.parseJSON(Item, jsonBookItemWithId));
     runTest(t, library.items, [jsonBookItemWithId]);
   });
@@ -253,28 +253,28 @@ describe("Change event propagation", function () {
   }
 
   it("should deliver changes of primitive values on the root object", function (t) {
-    var book = Avers.parseJSON(Book, jsonBook);
+    const book = Avers.parseJSON(Book, jsonBook);
 
     expectChangeAtPath(book, "title", t.pass);
     book.title = "GAME OF THRONES";
   });
 
   it("should deliver changes of embedded objects", function (t) {
-    var book = Avers.parseJSON(Book, jsonBook);
+    const book = Avers.parseJSON(Book, jsonBook);
 
     expectChangeAtPath(book, "author.firstName", t.pass);
     book.author.firstName = "TOMAS";
   });
 
   it("should deliver changes inside variant properties", function (t) {
-    var item = Avers.mk(Item, jsonItem);
+    const item = Avers.mk(Item, jsonItem);
 
     expectChangeAtPath(item, "content.author.firstName", t.pass);
     (<Book>item.content).author.firstName = "TOMAS";
   });
 
   it("should deliver changes when adding elments to a collection", function (t) {
-    var library = Avers.mk(Library, {});
+    const library = Avers.mk(Library, {});
 
     expectChangeAtPath(library, "items", t.pass);
     library.items.push(Avers.parseJSON(Item, jsonItem));
@@ -295,25 +295,25 @@ describe("Change event propagation", function () {
 
 describe("Avers.resolvePath", function () {
   it("should resolve in a simple object", function (t) {
-    var book = Avers.parseJSON(Book, jsonBook);
+    const book = Avers.parseJSON(Book, jsonBook);
     t.is("Game of Thrones", Avers.resolvePath(book, "title") as any);
   });
   it("should resolve an empty string to the object itself", function (t) {
-    var book = Avers.parseJSON(Book, jsonBook);
+    const book = Avers.parseJSON(Book, jsonBook);
     t.is("Game of Thrones", Avers.resolvePath(book.title, "") as any);
   });
   it("should resolve nested objects", function (t) {
-    var book = Avers.parseJSON(Book, jsonBook);
+    const book = Avers.parseJSON(Book, jsonBook);
     t.is("Tomas", Avers.resolvePath(book, "author.firstName") as any);
   });
   it("should resolve across arrays", function (t) {
-    var item = Avers.parseJSON(Item, jsonBookItemWithId),
+    const item = Avers.parseJSON(Item, jsonBookItemWithId),
       library = Avers.mk(Library, {});
 
     library.items.push(item);
 
-    var id = Avers.itemId(library.items, item);
-    var path = "items." + id + ".content.author.firstName";
+    const id = Avers.itemId(library.items, item);
+    const path = "items." + id + ".content.author.firstName";
 
     t.is("Tomas", Avers.resolvePath(library, path) as any);
   });
@@ -321,16 +321,16 @@ describe("Avers.resolvePath", function () {
     t.is(Avers.resolvePath({}, "array.0.deep.key"), undefined);
   });
   it("should ignore properties that are not registered", function (t) {
-    var book = Avers.parseJSON(Book, jsonBook);
+    const book = Avers.parseJSON(Book, jsonBook);
     (<any>book.author).something = "42";
     t.is(Avers.resolvePath(book, "author.something"), undefined);
   });
   it("should ignore array indices out of bounds", function (t) {
-    var library = new Library();
+    const library = new Library();
     t.is(Avers.resolvePath(library.items, "1"), undefined);
   });
   it("should ignore properties on arrays", function (t) {
-    var library = Avers.mk(Library, {});
+    const library = Avers.mk(Library, {});
 
     (<any>library.items).something = "42";
     t.is(Avers.resolvePath(library.items, "something"), undefined);
@@ -383,14 +383,14 @@ describe("Avers.applyOperation", function () {
 
 describe("Avers.itemId", function () {
   it("should return undefined until changes have been delivered", function (t) {
-    var item = Avers.parseJSON(Item, jsonItem),
+    const item = Avers.parseJSON(Item, jsonItem),
       library = Avers.mk(Library, {});
 
     library.items.push(item);
     t.is(Avers.itemId(library.items, item), undefined as any);
   });
   it("should return the item id when the item has one set", function (t) {
-    var item = Avers.parseJSON(Item, jsonBookItemWithId),
+    const item = Avers.parseJSON(Item, jsonBookItemWithId),
       library = Avers.mk(Library, {});
 
     library.items.push(item);
@@ -403,50 +403,50 @@ describe("Avers.clone", function () {
     t.is("str", Avers.clone("str"));
   });
   it("should clone Avers objects", function (t) {
-    var book = Avers.parseJSON(Book, jsonBook);
-    var clone = Avers.clone(book);
+    const book = Avers.parseJSON(Book, jsonBook);
+    const clone = Avers.clone(book);
 
     t.not(book, clone);
     t.deepEqual(Avers.toJSON(book), Avers.toJSON(clone));
   });
   it("should clone collections", function (t) {
-    var item = Avers.parseJSON(Item, jsonItem),
+    const item = Avers.parseJSON(Item, jsonItem),
       library = Avers.mk(Library, {});
 
     library.items.push(item);
-    var clone = Avers.clone(library.items);
+    const clone = Avers.clone(library.items);
     t.deepEqual(Avers.toJSON(library.items), Avers.toJSON(clone));
   });
 });
 
 describe("Avers.migrateObject", function () {
   it("should set primitive properties to their default value", function (t) {
-    var author = Avers.parseJSON(Author, {});
+    const author = Avers.parseJSON(Author, {});
     Avers.migrateObject(author);
     t.is("John", author.firstName);
   });
   it("should initialize objects with their default value", function (t) {
-    var book = Avers.parseJSON(Book, {});
+    const book = Avers.parseJSON(Book, {});
     Avers.migrateObject(book);
     t.true(book.author instanceof Author);
   });
   it("should not initialize object properties without a default value", function (t) {
-    var nt = Avers.parseJSON(NullableTest, {});
+    const nt = Avers.parseJSON(NullableTest, {});
     Avers.migrateObject(nt);
     t.true(!nt.obj);
   });
   it("should not initialize variant properties without a default value", function (t) {
-    var nt = Avers.parseJSON(NullableTest, {});
+    const nt = Avers.parseJSON(NullableTest, {});
     Avers.migrateObject(nt);
     t.true(!nt.variant);
   });
   it("should initialize variant properties with a default value", function (t) {
-    var item = Avers.parseJSON(Item, {});
+    const item = Avers.parseJSON(Item, {});
     Avers.migrateObject(item);
     t.true(item.content instanceof Book);
   });
   it("should initialize collections to an empty array", function (t) {
-    var library = Avers.parseJSON(Library, {});
+    const library = Avers.parseJSON(Library, {});
     Avers.migrateObject(library);
     t.true(Array.isArray(library.items));
   });
@@ -454,12 +454,12 @@ describe("Avers.migrateObject", function () {
 
 describe("Avers.mk", function () {
   it("should create and migrate the object", function (t) {
-    var author = Avers.mk(Author, {});
+    const author = Avers.mk(Author, {});
     t.is("John", author.firstName);
   });
 
   it("should flush all changes", function (t) {
-    var author = Avers.mk(Author, jsonAuthor),
+    let author = Avers.mk(Author, jsonAuthor),
       allChanges: Avers.Change<any>[] = [];
 
     Avers.attachChangeListener(author, (changes) => {
@@ -473,12 +473,12 @@ describe("Avers.mk", function () {
 
 describe("Avers.lookupItem", function () {
   it("should find the item in the collection", function (t) {
-    var library = Avers.mk(Library, {});
+    const library = Avers.mk(Library, {});
     library.items.push(Avers.mk(Item, jsonBookItemWithId));
     t.true(!!Avers.lookupItem(library.items, jsonBookWithId.id));
   });
   it("should find non-existing in the collection", function (t) {
-    var library = Avers.mk(Library, {});
+    const library = Avers.mk(Library, {});
     library.items.push(Avers.mk(Item, jsonBookItemWithId));
     t.is(Avers.lookupItem(library.items, "non-existing-id"), undefined as any);
   });
@@ -552,11 +552,11 @@ describe("registering changes on an Editable", function () {
 describe("Avers.ObjectCollection", function () {
   describe("ids", function () {
     it("should return a pending Computation when not fetched yet", function (t) {
-      var col = mkObjectCollection();
+      const col = mkObjectCollection();
       t.is(sentinel, col.ids.get(sentinel));
     });
     it("should resolve to the object after it is loaded", async function (t) {
-      var col = mkObjectCollection();
+      const col = mkObjectCollection();
       col.ids.get(sentinel);
       await flushChanges();
 
