@@ -1,6 +1,6 @@
-import { Handle, startNextGeneration } from "./storage";
-import { endpointUrl } from "./storage/internal";
-import { guardStatus } from "./shared";
+import { Handle, startNextGeneration } from "./storage.js";
+import { endpointUrl } from "./storage/internal.js";
+import { guardStatus } from "./shared.js";
 
 export enum Transition {
   Restore,

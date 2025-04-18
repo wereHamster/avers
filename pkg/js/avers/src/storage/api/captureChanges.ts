@@ -1,8 +1,8 @@
-import { Operation } from "../../core";
-import { ObjId, Handle, mkAction } from "../types";
-import { modifyHandle } from "../internal/modifyHandle";
-import { changeEditable } from "../internal/changeEditable";
-import { initContent } from "../internal/initContent";
+import { Operation } from "../../core.js";
+import { ObjId, Handle, mkAction } from "../types.js";
+import { modifyHandle } from "../internal/modifyHandle.js";
+import { changeEditable } from "../internal/changeEditable.js";
+import { initContent } from "../internal/initContent.js";
 
 function captureChangesF(h: Handle, { objId, ops }: { objId: string; ops: any }): void {
   changeEditable(h, objId, obj => {

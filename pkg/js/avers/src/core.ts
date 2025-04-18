@@ -1,4 +1,4 @@
-import { last } from "./shared";
+import { last } from "./shared.js";
 
 const splice = Array.prototype.splice;
 

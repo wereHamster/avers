@@ -12,20 +12,20 @@
 // [2]: https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise
 // [3]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol
 
-import { attachChangeListener, Change, changeOperation, clone, Operation } from "./core";
-import { mkEditable } from "./storage/api";
-import { changeEditable } from "./storage/internal/changeEditable";
-import { initContent } from "./storage/internal/initContent";
+import { attachChangeListener, Change, changeOperation, clone, Operation } from "./core.js";
+import { mkEditable } from "./storage/api.js";
+import { changeEditable } from "./storage/internal/changeEditable.js";
+import { initContent } from "./storage/internal/initContent.js";
 
-export * from "./storage/api";
-export * from "./storage/collection";
-export * from "./storage/editable";
-export * from "./storage/internal";
-export * from "./storage/keyed-collection";
-export * from "./storage/api/lookupPatch";
-export * from "./storage/types";
+export * from "./storage/api.js";
+export * from "./storage/collection.js";
+export * from "./storage/editable.js";
+export * from "./storage/internal.js";
+export * from "./storage/keyed-collection.js";
+export * from "./storage/api/lookupPatch.js";
+export * from "./storage/types.js";
 
-import { Handle, Editable, NetworkRequest } from "./storage/types";
+import { Handle, Editable, NetworkRequest } from "./storage/types.js";
 
 // attachGenerationListener
 // -----------------------------------------------------------------------

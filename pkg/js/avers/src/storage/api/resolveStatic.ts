@@ -1,6 +1,6 @@
-import { Handle, Static, mkAction } from "../types";
-import { insertStaticE } from "../internal";
-import { modifyHandle } from "../internal/modifyHandle";
+import { Handle, Static, mkAction } from "../types.js";
+import { insertStaticE } from "../internal.js";
+import { modifyHandle } from "../internal/modifyHandle.js";
 
 function resolveStaticF<T>(h: Handle, { s, value }: { s: Static<T>; value: T }): void {
   insertStaticE(h, s.ns, s.key, {

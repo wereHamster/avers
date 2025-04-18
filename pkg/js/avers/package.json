@@ -26,15 +26,5 @@
   "dependencies": {
     "computation": "^2.0.0"
   },
-  "sideEffects": false,
-  "ava": {
-    "require": [
-      "esm"
-    ],
-    "typescript": {
-      "rewritePaths": {
-        "src/": "dist/"
-      }
-    }
-  }
+  "sideEffects": false
 }

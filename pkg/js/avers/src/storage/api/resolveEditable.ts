@@ -1,9 +1,9 @@
-import { parseJSON, migrateObject } from "../../core";
-import { ObjId, Handle, mkAction } from "../types";
-import { applyEditableChanges } from "../internal";
-import { modifyHandle } from "../internal/modifyHandle";
-import { initContent } from "../internal/initContent";
-import { mkEditable } from "./mkEditable";
+import { parseJSON, migrateObject } from "../../core.js";
+import { ObjId, Handle, mkAction } from "../types.js";
+import { applyEditableChanges } from "../internal.js";
+import { modifyHandle } from "../internal/modifyHandle.js";
+import { initContent } from "../internal/initContent.js";
+import { mkEditable } from "./mkEditable.js";
 
 // resolveEditable
 // -----------------------------------------------------------------------

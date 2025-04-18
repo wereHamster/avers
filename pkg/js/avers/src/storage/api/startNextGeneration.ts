@@ -1,4 +1,4 @@
-import { Handle } from "../types";
+import { Handle } from "../types.js";
 
 export function startNextGeneration(h: Handle): void {
   h.generationNumber++;

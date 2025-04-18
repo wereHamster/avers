@@ -1,9 +1,9 @@
-import { Change, ChangeCallback, changeOperation } from "../../core";
-import { ObjId, Handle, Editable, newEditable } from "../types";
+import { Change, ChangeCallback, changeOperation } from "../../core.js";
+import { ObjId, Handle, Editable, newEditable } from "../types.js";
 
-import { captureChanges } from "./captureChanges";
-import { saveEditable } from "./saveEditable";
-import { changeFeedSubscription } from "./changeFeedSubscription";
+import { captureChanges } from "./captureChanges.js";
+import { saveEditable } from "./saveEditable.js";
+import { changeFeedSubscription } from "./changeFeedSubscription.js";
 
 // mkEditable
 // -----------------------------------------------------------------------

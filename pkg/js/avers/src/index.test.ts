@@ -1,5 +1,5 @@
 import test, { ExecutionContext, Implementation } from "ava";
-import * as Avers from "./index";
+import * as Avers from "./index.js";
 
 let group = "";
 function it(name: string, f: Implementation<unknown>) {

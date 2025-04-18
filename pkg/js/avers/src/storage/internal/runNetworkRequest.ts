@@ -1,7 +1,7 @@
-import { Handle, NetworkRequest, EntityId } from "../types";
+import { Handle, NetworkRequest, EntityId } from "../types.js";
 
-import { attachNetworkRequest } from "./attachNetworkRequest";
-import { reportNetworkFailure } from "./reportNetworkFailure";
+import { attachNetworkRequest } from "./attachNetworkRequest.js";
+import { reportNetworkFailure } from "./reportNetworkFailure.js";
 
 // runNetworkRequest
 // -----------------------------------------------------------------------
