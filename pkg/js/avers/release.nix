@@ -9,6 +9,7 @@ in {
     buildInputs = [
       pkgs.nodejs
       pkgs.jq
+      pkgs.biome
     ];
 
     buildPhase = ''
@@ -20,7 +21,7 @@ in {
     '';
 
     checkPhase = ''
-      ./node_modules/.bin/tslint --project tsconfig.json
+      biome lint .
       ./node_modules/.bin/ava
     '';
 
