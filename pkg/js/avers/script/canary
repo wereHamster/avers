@@ -1,7 +1,10 @@
 #!/usr/bin/env nix-shell
-#!nix-shell -i bash -p nodejs-14_x -p jq -p git
+#!nix-shell -i bash -p nodejs -p jq -p git
 
 set -e
+
+pnpm install --frozen-lockfile
+./node_modules/.bin/tsc
 
 N=$(git log --oneline v$(jq -r .version <package.json)... | wc -l)
 nix-build --argstr commit $(git rev-parse --short HEAD) --argstr n $N release.nix -A canary
