@@ -2,7 +2,7 @@ import test, { ExecutionContext, Implementation } from "ava";
 import * as Avers from "./index.js";
 
 let group = "";
-function it(name: string, f: Implementation<unknown>) {
+function it(name: string, f: Implementation<unknown[]>) {
   test(`${group}: ${name}`, f);
 }
 
@@ -182,8 +182,8 @@ describe("Avers.parseJSON", function () {
 
   it("should accept an empty JSON if the fields have a default", function (t) {
     var author = Avers.parseJSON(Author, {});
-    t.is(author.firstName, undefined);
-    t.is(author.lastName, undefined);
+    t.is(author.firstName, undefined as any);
+    t.is(author.lastName, undefined as any);
   });
 
   it("should instantiate plain classes in variant properties", function (t) {
@@ -296,15 +296,15 @@ describe("Change event propagation", function () {
 describe("Avers.resolvePath", function () {
   it("should resolve in a simple object", function (t) {
     var book = Avers.parseJSON(Book, jsonBook);
-    t.is("Game of Thrones", Avers.resolvePath(book, "title"));
+    t.is("Game of Thrones", Avers.resolvePath(book, "title") as any);
   });
   it("should resolve an empty string to the object itself", function (t) {
     var book = Avers.parseJSON(Book, jsonBook);
-    t.is("Game of Thrones", Avers.resolvePath(book.title, ""));
+    t.is("Game of Thrones", Avers.resolvePath(book.title, "") as any);
   });
   it("should resolve nested objects", function (t) {
     var book = Avers.parseJSON(Book, jsonBook);
-    t.is("Tomas", Avers.resolvePath(book, "author.firstName"));
+    t.is("Tomas", Avers.resolvePath(book, "author.firstName") as any);
   });
   it("should resolve across arrays", function (t) {
     var item = Avers.parseJSON(Item, jsonBookItemWithId),
@@ -315,7 +315,7 @@ describe("Avers.resolvePath", function () {
     var id = Avers.itemId(library.items, item);
     var path = "items." + id + ".content.author.firstName";
 
-    t.is("Tomas", Avers.resolvePath(library, path));
+    t.is("Tomas", Avers.resolvePath(library, path) as any);
   });
   it("should return undefined if the path can not be resolved", function (t) {
     t.is(Avers.resolvePath({}, "array.0.deep.key"), undefined);
@@ -387,7 +387,7 @@ describe("Avers.itemId", function () {
       library = Avers.mk(Library, {});
 
     library.items.push(item);
-    t.is(Avers.itemId(library.items, item), undefined);
+    t.is(Avers.itemId(library.items, item), undefined as any);
   });
   it("should return the item id when the item has one set", function (t) {
     var item = Avers.parseJSON(Item, jsonBookItemWithId),
@@ -480,7 +480,7 @@ describe("Avers.lookupItem", function () {
   it("should find non-existing in the collection", function (t) {
     var library = Avers.mk(Library, {});
     library.items.push(Avers.mk(Item, jsonBookItemWithId));
-    t.is(Avers.lookupItem(library.items, "non-existing-id"), undefined);
+    t.is(Avers.lookupItem(library.items, "non-existing-id"), undefined as any);
   });
 });
 
@@ -577,12 +577,12 @@ describe("Avers.ephemeralValue", function () {
   it("should return the value when the object is resolved", function (t) {
     const h = mkHandle({});
     Avers.resolveEphemeral(h, e, 42, h.config.now() + 99);
-    t.is(42, Avers.ephemeralValue(h, e).get(sentinel));
+    t.is(42, Avers.ephemeralValue(h, e).get(sentinel) as any);
   });
   it("should return the value even if it is stale", function (t) {
     const h = mkHandle({});
     Avers.resolveEphemeral(h, e, 42, h.config.now() - 99);
-    t.is(42, Avers.ephemeralValue(h, e).get(sentinel));
+    t.is(42, Avers.ephemeralValue(h, e).get(sentinel) as any);
   });
   it("should invoke the fetch function when the value is stale", function (t) {
     const h = mkHandle({}),
