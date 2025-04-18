@@ -19,11 +19,15 @@ jobs:
         with:
           node-version: "22.x"
 
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 10
+
       - uses: biomejs/setup-biome@f382a98e582959e6aaac8e5f8b17b31749018780 # v2.5.0
         with:
           version: "1.9.4"
 
-      - run: npm install
+      - run: pnpm install --frozen-lockfile
 
       - run: biome lint .
       - run: ./node_modules/.bin/tsc

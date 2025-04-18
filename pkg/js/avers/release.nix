@@ -8,12 +8,13 @@ in {
 
     buildInputs = [
       pkgs.nodejs
+      pkgs.pnpm
       pkgs.jq
       pkgs.biome
     ];
 
     buildPhase = ''
-      HOME=$PWD npm ci
+      HOME=$PWD pnpm install --frozen-lockfile
       npm version patch
       ./node_modules/.bin/tsc
       jq 'del(.devDependencies) | .version = .version + "-alpha.${n}+${commit}"' package.json > temp.json && mv temp.json package.json
