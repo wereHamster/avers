@@ -1,0 +1,39 @@
+{
+  "files": {
+    "ignore": ["dist", "docs", "node_modules"]
+  },
+
+  "formatter": {
+    "indentStyle": "space",
+    "lineWidth": 120
+  },
+
+  "linter": {
+    "rules": {
+      "style": {
+        "noArguments": "off",
+        "useEnumInitializers": "off",
+        "useShorthandFunctionType": "off",
+        "noParameterAssign": "off",
+        "noVar": "off",
+        "useSingleVarDeclarator": "off",
+        "useTemplate": "off",
+        "useImportType": "off",
+        "noUselessElse": "off"
+      },
+      "correctness": {
+        "noSwitchDeclarations": "off"
+      },
+      "suspicious": {
+        "noConfusingVoidType": "off",
+        "noShadowRestrictedNames": "off",
+        "noExplicitAny": "off"
+      },
+      "complexity": {
+        "noForEach": "off",
+        "noBannedTypes": "off",
+        "useArrowFunction": "off"
+      }
+    }
+  }
+}
