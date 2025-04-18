@@ -14,7 +14,7 @@ function applyChangeF(h: Handle, change: { type: string; content: any }): void {
       initContent(obj);
     });
   } else {
-    console.info("applyChangeF: Unhandled type: " + type);
+    console.info(`applyChangeF: Unhandled type: ${type}`);
   }
 }
 

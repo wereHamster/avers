@@ -237,7 +237,7 @@ export function defineVariant<T extends object>(
   for (const k in typeMap) {
     const aversProps = typeMap[k].prototype[aversPropertiesSymbol];
     if (aversProps === undefined) {
-      throw new Error('Variant constructor of "' + k + '" is not an Avers object');
+      throw new Error(`Variant constructor of "${k}" is not an Avers object`);
     }
   }
 
@@ -408,7 +408,7 @@ export function mk<T extends object>(x: new () => T, json: any): T {
 }
 
 function concatPath(self: string, child: string): string {
-  return child === "" ? self : self + "." + child;
+  return child === "" ? self : `${self}.${child}`;
 }
 
 // Return true if the property can generate change events and thus the
@@ -640,7 +640,7 @@ export function changeOperation(change: Change<any>): Operation {
       insert: toJSON(record.insert)
     };
   } else {
-    throw new Error("Unknown change record: " + record);
+    throw new Error(`Unknown change record: ${record}`);
   }
 }
 

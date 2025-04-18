@@ -36,7 +36,7 @@ export async function saveEditable(h: Handle, objId: ObjId): Promise<void> {
   prepareLocalChanges(h, objId);
 
   try {
-    const url = endpointUrl(h, "/objects/" + objId);
+    const url = endpointUrl(h, `/objects/${objId}`);
     const requestInit: RequestInit = {
       credentials: "include",
       method: "PATCH",

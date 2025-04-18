@@ -313,7 +313,7 @@ describe("Avers.resolvePath", function () {
     library.items.push(item);
 
     const id = Avers.itemId(library.items, item);
-    const path = "items." + id + ".content.author.firstName";
+    const path = `items.${id}.content.author.firstName`;
 
     t.is("Tomas", Avers.resolvePath(library, path) as any);
   });
