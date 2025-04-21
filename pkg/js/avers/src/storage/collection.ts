@@ -9,7 +9,7 @@ const MAXAGE = 10 * 1000;
 export class ObjectCollection {
   fetchedAt: number;
   url: string;
-  objectIds: string[];
+  objectIds: typeof Computation.Pending | string[];
 
   ids: Computation<string[]> = new Computation(() => {
     fetchObjectCollection(this);
@@ -24,9 +24,10 @@ export class ObjectCollection {
 }
 
 function mergeIds(c: ObjectCollection, ids: string[]): void {
+  const objectIds = c.objectIds
   const isChanged =
-    c.objectIds === Computation.Pending ||
-    (ids.length !== c.objectIds.length || ids.reduce<boolean>((a, id, index) => a || id !== c.objectIds[index], false));
+    objectIds === Computation.Pending ||
+    (ids.length !== objectIds.length || ids.reduce<boolean>((a, id, index) => a || id !== objectIds[index], false));
 
   if (isChanged) {
     updateObjectCollection(c.h, c, ids);
