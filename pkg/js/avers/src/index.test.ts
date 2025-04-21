@@ -615,12 +615,7 @@ describe("Avers.ephemeralValue", function () {
     Avers.ephemeralValue(h, ne).get(sentinel);
     await flushChanges();
 
-    Avers.ephemeralValue(h, ne)
-      .then(
-        () => t.pass(),
-        () => t.fail()
-      )
-      .get(sentinel);
+    t.is(Avers.ephemeralValue(h, ne).get(sentinel), sentinel);
   });
 });
 
