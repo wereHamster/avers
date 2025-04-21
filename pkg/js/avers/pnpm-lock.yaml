@@ -10,7 +10,7 @@ importers:
     dependencies:
       computation:
         specifier: ^2.0.0
-        version: 2.0.2
+        version: 2.1.3
     devDependencies:
       ava:
         specifier: ^6.2.0
@@ -193,8 +193,8 @@ packages:
   common-path-prefix@3.0.0:
     resolution: {integrity: sha512-QE33hToZseCH3jS0qN96O/bSh3kaw/h+Tq7ngyY9eWDUnTlTNUyqfqvCXioLe5Na5jFsL78ra/wuBU4iuEgd4w==}
 
-  computation@2.0.2:
-    resolution: {integrity: sha512-gCY3/vOEfz1cl1EdF37g/TB8/S6G+RfyI08chZMZuuboYAuQUySVrCn7q/j80cB4KftQ7t/Twsj8xECWM3HmPg==}
+  computation@2.1.3:
+    resolution: {integrity: sha512-oelwNUYbMSm8EsBzjc/R0yfpRMh8hR3bBnP8AXhulKW0iW3Qpgacfmhvi2tVyzcybRfPwM6+dGgsHyHoxxnZtQ==}
 
   concat-map@0.0.1:
     resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
@@ -836,7 +836,7 @@ snapshots:
 
   common-path-prefix@3.0.0: {}
 
-  computation@2.0.2: {}
+  computation@2.1.3: {}
 
   concat-map@0.0.1: {}
 
