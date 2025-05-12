@@ -41,10 +41,7 @@ export function applyEditableChanges<T>(h: Handle, obj: Editable<T>, f: (obj: Ed
 // Static
 
 export function lookupStaticE<T>(h: Handle, ns: symbol, key: string): undefined | StaticE<T> {
-  const n = h.staticCache.get(ns);
-  if (n) {
-    return n.get(key);
-  }
+  return h.staticCache.get(ns)?.get(key);
 }
 
 export function insertStaticE<T>(h: Handle, ns: symbol, key: string, e: StaticE<T>): void {
@@ -74,10 +71,7 @@ export function withStaticE<T>(h: Handle, ns: symbol, key: string, f: (s: Static
 // Ephemeral
 
 export function lookupEphemeralE<T>(h: Handle, ns: symbol, key: string): undefined | EphemeralE<T> {
-  const n = h.ephemeralCache.get(ns);
-  if (n) {
-    return n.get(key);
-  }
+  return h.ephemeralCache.get(ns)?.get(key);
 }
 
 export function insertEphemeralE<T>(h: Handle, ns: symbol, key: string, e: EphemeralE<T>): void {
