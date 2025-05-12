@@ -40,8 +40,8 @@ export class Handle {
   // ^ List of callbacks which are invoked when the generation changes.
 
   editableCache = new Map<string, Editable<any>>();
-  staticCache = new Map<Symbol, Map<string, StaticE<any>>>();
-  ephemeralCache = new Map<Symbol, Map<string, EphemeralE<any>>>();
+  staticCache = new Map<symbol, Map<string, StaticE<any>>>();
+  ephemeralCache = new Map<symbol, Map<string, EphemeralE<any>>>();
 
   feedSocket: undefined | WebSocket = undefined;
   // ^ A WebSocket connected to the feed through which the client receives
@@ -133,7 +133,7 @@ export const newEditable = (objectId: ObjId, changeListener: ChangeCallback): Ed
 export class Static<T> {
   [Symbol.species] = "Static" as const;
 
-  constructor(public ns: Symbol, public key: string, public fetch: () => Promise<T>) {}
+  constructor(public ns: symbol, public key: string, public fetch: () => Promise<T>) {}
 }
 
 export interface StaticE<T> {
@@ -158,7 +158,7 @@ export const emptyStaticE: StaticE<any> = Object.freeze({
 export class Ephemeral<T> {
   [Symbol.species] = "Ephemeral" as const;
 
-  constructor(public ns: Symbol, public key: string, public fetch: () => Promise<{ value: T; expiresAt: number }>) {}
+  constructor(public ns: symbol, public key: string, public fetch: () => Promise<{ value: T; expiresAt: number }>) {}
 }
 
 // EphemeralE<T>

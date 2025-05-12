@@ -21,7 +21,7 @@ const changeListenersSymbol = Symbol("aversChangeListeners");
 
 const childListenersSymbol = Symbol("aversChildListeners");
 
-function emitChanges(self: any, changes: Change<any>[]): void {
+function emitChanges(self: any, changes: Change<Operation.Set | Operation.Splice>[]): void {
   const listeners = self[changeListenersSymbol];
   if (listeners) {
     listeners.forEach((fn: any) => {
