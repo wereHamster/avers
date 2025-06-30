@@ -23,7 +23,7 @@ jobs:
         with:
           version: 10
 
-      - uses: biomejs/setup-biome@f382a98e582959e6aaac8e5f8b17b31749018780 # v2.5.0
+      - uses: biomejs/setup-biome@454fa0d884737805f48d7dc236c1761a0ac3cc13 # v2.6.0
         with:
           version: "1.9.4"
 
