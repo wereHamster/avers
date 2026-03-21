@@ -1,4 +1,4 @@
-import { ObjId, Handle, Editable } from "../types.js";
+import type { ObjId, Handle, Editable } from "../types.js";
 import { applyEditableChanges } from "../internal.js";
 
 export function changeEditable<T>(h: Handle, objId: ObjId, f: (obj: Editable<T>) => void): void {

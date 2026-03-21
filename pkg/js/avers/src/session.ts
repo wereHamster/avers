@@ -1,4 +1,4 @@
-import { Handle, startNextGeneration } from "./storage.js";
+import { type Handle, startNextGeneration } from "./storage.js";
 import { endpointUrl } from "./storage/internal.js";
 import { guardStatus } from "./shared.js";
 

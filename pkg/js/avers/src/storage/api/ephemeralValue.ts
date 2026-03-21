@@ -1,6 +1,6 @@
 import Computation from "computation";
 
-import { Handle, Ephemeral, EphemeralE } from "../types.js";
+import type { Handle, Ephemeral, EphemeralE } from "../types.js";
 import { runNetworkRequest } from "../internal/runNetworkRequest.js";
 import { mkEphemeralE } from "../internal/mkEphemeralE.js";
 import { resolveEphemeral } from "./resolveEphemeral.js";

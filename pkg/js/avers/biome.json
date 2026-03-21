@@ -2,12 +2,10 @@
   "files": {
     "includes": ["**", "!**/.direnv", "!**/dist", "!**/docs", "!**/node_modules"]
   },
-
   "formatter": {
     "indentStyle": "space",
     "lineWidth": 120
   },
-
   "assist": {
     "actions": {
       "source": {
@@ -15,7 +13,6 @@
       }
     }
   },
-
   "linter": {
     "rules": {
       "a11y": {
@@ -26,7 +23,6 @@
         "useShorthandFunctionType": "off",
         "noParameterAssign": "off",
         "useSingleVarDeclarator": "off",
-        "useImportType": "off",
         "noUselessElse": "off"
       },
       "correctness": {

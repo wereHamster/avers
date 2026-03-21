@@ -1,6 +1,6 @@
-import { Operation } from "../../core.js";
+import type { Operation } from "../../core.js";
 import { guardStatus } from "../../shared.js";
-import { ObjId, Handle } from "../types.js";
+import type { ObjId, Handle } from "../types.js";
 import { endpointUrl } from "../internal.js";
 import { runNetworkRequest } from "../internal/runNetworkRequest.js";
 

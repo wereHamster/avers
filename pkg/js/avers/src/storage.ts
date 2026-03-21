@@ -10,7 +10,7 @@
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol
  */
 
-import { attachChangeListener, Change, changeOperation, clone, Operation } from "./core.js";
+import { attachChangeListener, type Change, changeOperation, clone, type Operation } from "./core.js";
 import { mkEditable } from "./storage/api.js";
 import { changeEditable } from "./storage/internal/changeEditable.js";
 import { initContent } from "./storage/internal/initContent.js";
@@ -23,7 +23,7 @@ export * from "./storage/keyed-collection.js";
 export * from "./storage/api/lookupPatch.js";
 export * from "./storage/types.js";
 
-import { Handle, Editable, NetworkRequest } from "./storage/types.js";
+import type { Handle, Editable, NetworkRequest } from "./storage/types.js";
 
 /**
  * Attach a listener to the handle which will be invoked everytime data managed by the handle changes.

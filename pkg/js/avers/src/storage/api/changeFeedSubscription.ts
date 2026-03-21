@@ -1,4 +1,4 @@
-import { Handle } from "../types.js";
+import type { Handle } from "../types.js";
 import { applyChange } from "./applyChange.js";
 
 /**

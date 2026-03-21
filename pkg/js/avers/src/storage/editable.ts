@@ -1,7 +1,7 @@
 import Computation from "computation";
 
 import { guardStatus } from "../shared.js";
-import { ObjId, Handle, Editable } from "./types.js";
+import type { ObjId, Handle, Editable } from "./types.js";
 import { startNextGeneration } from "./api/startNextGeneration.js";
 import { endpointUrl } from "./internal.js";
 import { runNetworkRequest } from "./internal/runNetworkRequest.js";

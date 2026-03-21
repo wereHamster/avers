@@ -1,4 +1,4 @@
-import { Handle, Ephemeral, mkAction } from "../types.js";
+import { type Handle, type Ephemeral, mkAction } from "../types.js";
 import { insertEphemeralE } from "../internal.js";
 import { modifyHandle } from "../internal/modifyHandle.js";
 

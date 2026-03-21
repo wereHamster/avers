@@ -1,4 +1,13 @@
-import { ObjId, Handle, Editable, Static, StaticE, Ephemeral, EphemeralE, EntityId } from "./types.js";
+import {
+  type ObjId,
+  type Handle,
+  type Editable,
+  Static,
+  type StaticE,
+  Ephemeral,
+  type EphemeralE,
+  type EntityId,
+} from "./types.js";
 
 export const aversNamespace = Symbol("aversNamespace");
 

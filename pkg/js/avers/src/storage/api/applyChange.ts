@@ -1,4 +1,4 @@
-import { Handle, mkAction, parsePatch } from "../types.js";
+import { type Handle, mkAction, parsePatch } from "../types.js";
 import { modifyHandle } from "../internal/modifyHandle.js";
 import { changeEditable } from "../internal/changeEditable.js";
 import { initContent } from "../internal/initContent.js";

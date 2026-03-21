@@ -1,4 +1,4 @@
-import { Handle, Static, Ephemeral, mkAction, NetworkRequest, EntityId, Action } from "../types.js";
+import { type Handle, Static, Ephemeral, mkAction, type NetworkRequest, type EntityId, type Action } from "../types.js";
 import { entityLabel, withEditable, withStaticE, withEphemeralE } from "../internal.js";
 import { modifyHandle } from "./modifyHandle.js";
 
