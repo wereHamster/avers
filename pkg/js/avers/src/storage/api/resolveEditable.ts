@@ -5,14 +5,11 @@ import { modifyHandle } from "../internal/modifyHandle.js";
 import { initContent } from "../internal/initContent.js";
 import { mkEditable } from "./mkEditable.js";
 
-// resolveEditable
-// -----------------------------------------------------------------------
-//
-// Given a response from the server, initialize an 'Editable' with the data.
-//
-// Note that this will invalidate any currently running network requests and
-// drop any local changes.
-
+/**
+ * Given a response from the server, initialize an 'Editable' with the data.
+ *
+ * Note that this will invalidate any currently running network requests and drop any local changes.
+ */
 function resolveEditableF<T extends object>(h: Handle, { objId, json }: { objId: string; json: any }) {
   // ASSERT objId === json.id
 

@@ -25,12 +25,9 @@ export function withEditable<T>(h: Handle, objId: ObjId, f: (obj: Editable<T>) =
   }
 }
 
-// ----------------------------------------------------------------------------
-// applyEditableChanges
-//
-// Create a copy of the given 'Editable', apply the function on it, and insert
-// the new copy into the cache, overwriting the previous object.
-
+/**
+ * Create a copy of the given 'Editable', apply the function on it, and insert the new copy into the cache, overwriting the previous object.
+ */
 export function applyEditableChanges<T>(h: Handle, obj: Editable<T>, f: (obj: Editable<T>) => void): void {
   const copy = { ...obj };
   f(copy);

@@ -1,11 +1,10 @@
 import { Handle } from "../types.js";
 import { applyChange } from "./applyChange.js";
 
-// changeFeedSubscription
-// -----------------------------------------------------------------------------
-//
-// Change the feed subscription. Opens the websocket if not already open.
-
+/**
+ * Change the feed subscription.
+ * Opens the websocket if not already open.
+ */
 export function changeFeedSubscription(h: Handle, json: any): void {
   if (h.feedSocket === undefined) {
     h.feedSocket = h.config.createWebSocket("/feed");

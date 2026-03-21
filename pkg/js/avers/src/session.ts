@@ -45,13 +45,10 @@ function finishTransition(session: Session, objId: undefined | string, err: unde
   startNextGeneration(session.h);
 }
 
-// restoreSession
-// -----------------------------------------------------------------------
-//
-// Attempt to determine the session status by contacting the server. The
-// server returns either 404 if no session exists, or 200 and includes
-// the session ObjId in the response.
-
+/**
+ * Attempt to determine the session status by contacting the server.
+ * The server returns either 404 if no session exists, or 200 and includes the session ObjId in the response.
+ */
 export async function restoreSession(session: Session): Promise<void> {
   beginTransition(session, Transition.Restore);
 
@@ -74,17 +71,15 @@ export async function restoreSession(session: Session): Promise<void> {
   }
 }
 
-// signup
-// -----------------------------------------------------------------------
-//
-// Create a new object on the server against which one can sign in. This
-// will usually be an account, if the server has such a concept.
-//
-// Note that this doesn't automatically authenticate the client. If you want
-// to continue with the just created account, you need to sign in with it.
-//
-// Also, creating a new account will not invalidate an existing session.
-
+/**
+ * Create a new object on the server against which one can sign in.
+ * This will usually be an account, if the server has such a concept.
+ *
+ * Note that this doesn't automatically authenticate the client.
+ * If you want to continue with the just created account, you need to sign in with it.
+ *
+ * Also, creating a new account will not invalidate an existing session.
+ */
 export async function signup(session: Session, login: string): Promise<string> {
   const requestInit: RequestInit = {
     method: "POST",
@@ -109,12 +104,9 @@ export async function signup(session: Session, login: string): Promise<string> {
   }
 }
 
-// signin
-// -----------------------------------------------------------------------
-//
-// Sign in with an identifier of an object against which one can
-// authenticate.
-
+/**
+ * Sign in with an identifier of an object against which one can authenticate.
+ */
 export async function signin(session: Session, login: string, secret: string): Promise<void> {
   const requestInit: RequestInit = {
     method: "POST",
@@ -134,11 +126,9 @@ export async function signin(session: Session, login: string, secret: string): P
   }
 }
 
-// signout
-// -----------------------------------------------------------------------
-//
-// Delete the session and revert the session to the Anynomous state.
-
+/**
+ * Delete the session and revert the session to the Anynomous state.
+ */
 export async function signout(session: Session): Promise<void> {
   beginTransition(session, Transition.Signout);
 
@@ -151,9 +141,6 @@ export async function signout(session: Session): Promise<void> {
     throw err;
   }
 }
-
-// changeSecret
-// -----------------------------------------------------------------------
 
 export async function changeSecret(h: Handle, _newSecret: string): Promise<void> {
   const url = endpointUrl(h, "/secret");

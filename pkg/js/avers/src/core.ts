@@ -2,23 +2,17 @@ import { last } from "./shared.js";
 
 const splice = Array.prototype.splice;
 
-// changeListenersSymbol
-// -----------------------------------------------------------------------
-//
-// The symbol under which the change listeners callbacks are attached to
-// an object. The value of this property is a Set. This means the
-// callbacks must be unique. If you attach the same callback twice to an
-// object (ie by using 'attachChangeListener') then it will be called only
-// once.
-
+/**
+ * The symbol under which the change listeners callbacks are attached to an object.
+ * The value of this property is a Set.
+ * This means the callbacks must be unique.
+ * If you attach the same callback twice to an object (ie by using 'attachChangeListener') then it will be called only once.
+ */
 const changeListenersSymbol = Symbol("aversChangeListeners");
 
-// childListenersSymbol
-// -----------------------------------------------------------------------
-//
-// If an object has listeners set up on c of its children, it'll keep
-// a map from child to callback in a Map stored under this symbol.
-
+/**
+ * If an object has listeners set up on c of its children, it'll keep a map from child to callback in a Map stored under this symbol.
+ */
 const childListenersSymbol = Symbol("aversChildListeners");
 
 function emitChanges(self: any, changes: Change<any>[]): void {
@@ -51,9 +45,10 @@ function stopListening(self: any, obj: any): void {
   }
 }
 
-// Symbol used as the key for the avers property descriptor object. It is
-// kept private so only the Avers module has access to the descriptors.
-
+/**
+ * Symbol used as the key for the avers property descriptor object.
+ * It is kept private so only the Avers module has access to the descriptors.
+ */
 const aversPropertiesSymbol = Symbol("aversProperties");
 
 type PropertyDescriptor<T> =
@@ -90,8 +85,10 @@ interface AversProperties {
   [name: string]: PropertyDescriptor<any>;
 }
 
-// Return the property descriptors for the given object. Returns undefined
-// if the object has no properties defined on it.
+/**
+ * Return the property descriptors for the given object.
+ * Returns undefined if the object has no properties defined on it.
+ */
 function aversProperties(obj: any): AversProperties {
   return Object.getPrototypeOf(obj)[aversPropertiesSymbol];
 }
@@ -147,8 +144,10 @@ function parentPath(path: string): string {
   return pathKeys.slice(0, pathKeys.length - 1).join(".");
 }
 
-// Splice operations can currently not be applied to the root. This is
-// a restriction which may be lifted in the future.
+/**
+ * Splice operations can currently not be applied to the root.
+ * This is a restriction which may be lifted in the future.
+ */
 function applySpliceOperation(root: any, path: string, op: Splice): any {
   const obj = resolvePath<any>(root, path),
     parent = resolvePath<any>(root, parentPath(path)),
@@ -167,13 +166,10 @@ function applySpliceOperation(root: any, path: string, op: Splice): any {
   return root;
 }
 
-// applyOperation
-// -----------------------------------------------------------------------
-//
-// Apply an operation to a root object. The operation can come from
-// a local change (be sure to convert the change to an 'Operation' first)
-// or loaded from the server.
-
+/**
+ * Apply an operation to a root object.
+ * The operation can come from a local change (be sure to convert the change to an 'Operation' first) or loaded from the server.
+ */
 export function applyOperation<T>(root: T, path: string, op: Operation): T {
   switch (op.type) {
     case "set":
@@ -411,8 +407,9 @@ function concatPath(self: string, child: string): string {
   return child === "" ? self : `${self}.${child}`;
 }
 
-// Return true if the property can generate change events and thus the
-// parent should listen to events.
+/**
+ * Return true if the property can generate change events and thus the parent should listen to events.
+ */
 function isObservableProperty(propertyDescriptor: PropertyDescriptor<any>): boolean {
   const type = propertyDescriptor.type;
   return (
@@ -557,22 +554,18 @@ function mkCollection<T extends Item>(items: T[]): Collection<T> {
   return collection;
 }
 
-// lookupItem
-// -----------------------------------------------------------------------
-//
-// Return the item in the collection which has the given id. May return
-// undefined if no such item exists.
-
+/**
+ * Return the item in the collection which has the given id.
+ * May return undefined if no such item exists.
+ */
 export function lookupItem<T extends Item>(collection: Collection<T>, id: string): T {
   return collection.idMap[id];
 }
 
-// Operation
-// -----------------------------------------------------------------------
-//
-// Definition of a pure JavaScript object which describes a change at
-// a particular path. It can be converted directly to JSON.
-
+/**
+ * Definition of a pure JavaScript object which describes a change at a particular path.
+ * It can be converted directly to JSON.
+ */
 export type Operation = Set | Splice;
 
 export interface Set {
@@ -589,12 +582,9 @@ export interface Splice {
   insert: any[];
 }
 
-// Change
-// -----------------------------------------------------------------------
-//
-// A 'Change' is an description of a 'Set' or 'Splice' change which has
-// happened at a particular path.
-
+/**
+ * A 'Change' is an description of a 'Set' or 'Splice' change which has happened at a particular path.
+ */
 export class Change<T> {
   constructor(
     public path: string,
@@ -634,12 +624,9 @@ function forwardChanges(obj: any, prop: string, key: string): void {
   });
 }
 
-// changeOperation
-// -----------------------------------------------------------------------
-//
-// Convert a 'Change' to an 'Operation' which is a pure JS object and can
-// be directly converted to JSON and sent over network.
-
+/**
+ * Convert a 'Change' to an 'Operation' which is a pure JS object and can be directly converted to JSON and sent over network.
+ */
 export function changeOperation(change: Change<any>): Operation {
   const record = change.record;
 
@@ -666,12 +653,10 @@ export interface ChangeCallback {
   (changes: Change<any>[]): void;
 }
 
-// attachChangeListener
-// -----------------------------------------------------------------------
-//
-// Attach a change callback to the object. It will be called each time the
-// object or any of its properties change.
-
+/**
+ * Attach a change callback to the object.
+ * It will be called each time the object or any of its properties change.
+ */
 export function attachChangeListener(obj: any, fn: ChangeCallback): void {
   const listeners = obj[changeListenersSymbol] || new Set();
   obj[changeListenersSymbol] = listeners;
@@ -679,11 +664,9 @@ export function attachChangeListener(obj: any, fn: ChangeCallback): void {
   listeners.add(fn);
 }
 
-// detachChangeListener
-// -----------------------------------------------------------------------
-//
-// Detach a given change listener callback from an object.
-
+/**
+ * Detach a given change listener callback from an object.
+ */
 export function detachChangeListener(obj: any, fn: ChangeCallback): void {
   const listeners = obj[changeListenersSymbol];
   if (listeners) {
