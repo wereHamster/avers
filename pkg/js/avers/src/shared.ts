@@ -3,7 +3,7 @@ export function last<T>(xs: T[]): T {
 }
 
 export function guardStatus(functionName: string, ...statuses: number[]): (res: Response) => Response {
-  return res => {
+  return (res) => {
     if (statuses.indexOf(res.status) >= 0) {
       return res;
     } else {

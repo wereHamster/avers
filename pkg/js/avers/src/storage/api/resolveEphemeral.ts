@@ -20,7 +20,7 @@ function resolveEphemeralF<T>(h: Handle, { e, value, expiresAt }: Payload<T>): v
     networkRequest: undefined,
     lastError: undefined,
     value,
-    expiresAt
+    expiresAt,
   });
 }
 

@@ -3,7 +3,7 @@ import { modifyHandle } from "../internal/modifyHandle.js";
 import { changeEditable } from "../internal/changeEditable.js";
 
 function prepareLocalChangesF(h: Handle, objId: ObjId) {
-  changeEditable(h, objId, obj => {
+  changeEditable(h, objId, (obj) => {
     obj.submittedChanges = obj.localChanges;
     obj.localChanges = [];
   });

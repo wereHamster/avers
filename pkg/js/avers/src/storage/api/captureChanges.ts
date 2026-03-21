@@ -5,7 +5,7 @@ import { changeEditable } from "../internal/changeEditable.js";
 import { initContent } from "../internal/initContent.js";
 
 function captureChangesF(h: Handle, { objId, ops }: { objId: string; ops: any }): void {
-  changeEditable(h, objId, obj => {
+  changeEditable(h, objId, (obj) => {
     obj.localChanges = obj.localChanges.concat(ops);
     initContent(obj);
   });

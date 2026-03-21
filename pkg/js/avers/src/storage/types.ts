@@ -119,7 +119,7 @@ export const newEditable = (objectId: ObjId, changeListener: ChangeCallback): Ed
     changeListener,
 
     submittedChanges: [],
-    localChanges: []
+    localChanges: [],
   });
 
 // Static<T>
@@ -133,7 +133,11 @@ export const newEditable = (objectId: ObjId, changeListener: ChangeCallback): Ed
 export class Static<T> {
   [Symbol.species] = "Static" as const;
 
-  constructor(public ns: symbol, public key: string, public fetch: () => Promise<T>) {}
+  constructor(
+    public ns: symbol,
+    public key: string,
+    public fetch: () => Promise<T>,
+  ) {}
 }
 
 export interface StaticE<T> {
@@ -145,7 +149,7 @@ export interface StaticE<T> {
 export const emptyStaticE: StaticE<any> = Object.freeze({
   networkRequest: undefined,
   lastError: undefined,
-  value: Computation.Pending
+  value: Computation.Pending,
 });
 
 // Ephemeral<T>
@@ -158,7 +162,11 @@ export const emptyStaticE: StaticE<any> = Object.freeze({
 export class Ephemeral<T> {
   [Symbol.species] = "Ephemeral" as const;
 
-  constructor(public ns: symbol, public key: string, public fetch: () => Promise<{ value: T; expiresAt: number }>) {}
+  constructor(
+    public ns: symbol,
+    public key: string,
+    public fetch: () => Promise<{ value: T; expiresAt: number }>,
+  ) {}
 }
 
 // EphemeralE<T>
@@ -181,7 +189,7 @@ export const emptyEphemeralE: EphemeralE<any> = Object.freeze({
   networkRequest: undefined,
   lastError: undefined,
   value: Computation.Pending,
-  expiresAt: 0
+  expiresAt: 0,
 });
 
 // ----------------------------------------------------------------------------
@@ -205,7 +213,7 @@ export interface Action<T> {
 export const mkAction = <T>(label: string, payload: T, applyF: ActionF<T>): Action<T> => ({
   label,
   payload,
-  applyF
+  applyF,
 });
 
 // ----------------------------------------------------------------------------
@@ -217,7 +225,10 @@ export const mkAction = <T>(label: string, payload: T, applyF: ActionF<T>): Acti
 // See also: 'runNetworkRequest'.
 
 export class NetworkRequest {
-  constructor(public createdAt: number, public promise: Promise<{}>) {}
+  constructor(
+    public createdAt: number,
+    public promise: Promise<{}>,
+  ) {}
 }
 
 export class Patch {
@@ -228,7 +239,7 @@ export class Patch {
     public revisionId: RevId,
     public authorId: ObjId,
     public createdAt: string,
-    public operation: Operation
+    public operation: Operation,
   ) {}
 }
 

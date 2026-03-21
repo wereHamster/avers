@@ -28,7 +28,7 @@ export async function saveEditable(h: Handle, objId: ObjId): Promise<void> {
   const data = JSON.stringify({
     objectId: obj.objectId,
     revisionId: obj.revisionId,
-    operations: filterOps(obj.localChanges)
+    operations: filterOps(obj.localChanges),
   });
 
   // We immeadiately mark the Editable as being saved. This ensures that
@@ -41,13 +41,13 @@ export async function saveEditable(h: Handle, objId: ObjId): Promise<void> {
       credentials: "include",
       method: "PATCH",
       body: data,
-      headers: { accept: "application/json", "content-type": "application/json" }
+      headers: { accept: "application/json", "content-type": "application/json" },
     };
 
     const req = h.config
       .fetch(url, requestInit)
       .then(guardStatus("saveEditable", 200))
-      .then(res => res.json());
+      .then((res) => res.json());
 
     const res = await runNetworkRequest(h, objId, "saveEditable", req);
     applyServerResponse(h, objId, res);

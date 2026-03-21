@@ -10,7 +10,7 @@ export function changeFeedSubscription(h: Handle, json: any): void {
   if (h.feedSocket === undefined) {
     h.feedSocket = h.config.createWebSocket("/feed");
 
-    h.feedSocket.addEventListener("message", msg => {
+    h.feedSocket.addEventListener("message", (msg) => {
       try {
         applyChange(h, JSON.parse(msg.data));
       } catch (e) {

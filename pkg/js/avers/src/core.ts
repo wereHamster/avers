@@ -159,7 +159,7 @@ function applySpliceOperation(root: any, path: string, op: Splice): any {
   }
 
   const parser = prop.parser,
-    insert = op.insert.map(json => parser(json, parent)),
+    insert = op.insert.map((json) => parser(json, parent)),
     args: [number, number, ...any[]] = [op.index, op.remove, ...insert];
 
   splice.apply(obj, args);
@@ -201,7 +201,7 @@ export function declareConstant(x: any): void {
 export function definePrimitive<T>(x: any, name: string, defaultValue: undefined | T) {
   const desc: PrimitivePropertyDescriptor<T> = {
     type: "PrimitivePropertyDescriptor",
-    defaultValue
+    defaultValue,
   };
 
   defineProperty(x, name, desc);
@@ -211,7 +211,7 @@ export function defineObject<T extends object>(x: any, name: string, klass: any,
   const desc: ObjectPropertyDescriptor<T> = {
     type: "ObjectPropertyDescriptor",
     parser: createObjectParser<T>(klass),
-    defaultValue: undefined
+    defaultValue: undefined,
   };
 
   if (def) {
@@ -226,7 +226,7 @@ export function defineVariant<T extends object>(
   name: string,
   typeField: string,
   typeMap: { [name: string]: any },
-  def?: T
+  def?: T,
 ): void {
   // Check that all constructors are valid Avers objects. This is an
   // invariant which we can't express in the type system, but want to
@@ -246,7 +246,7 @@ export function defineVariant<T extends object>(
     parser: createVariantParser<T>(name, typeField, typeMap),
     typeField: typeField,
     typeMap: typeMap,
-    defaultValue: def === undefined ? undefined : clone(def)
+    defaultValue: def === undefined ? undefined : clone(def),
   };
 
   defineProperty(x, name, desc);
@@ -255,22 +255,22 @@ export function defineVariant<T extends object>(
 export function defineCollection(x: any, name: string, klass: any) {
   const desc: CollectionPropertyDescriptor<any> = {
     type: "CollectionPropertyDescriptor",
-    parser: createObjectParser(klass)
+    parser: createObjectParser(klass),
   };
 
   defineProperty(x, name, desc);
 }
 
 function createObjectParser<T extends object>(klass: any): (json: any) => T {
-  return json => parseJSON<T>(klass, json);
+  return (json) => parseJSON<T>(klass, json);
 }
 
 function createVariantParser<T extends object>(
   name: string,
   typeField: string,
-  typeMap: { [typeField: string]: any }
+  typeMap: { [typeField: string]: any },
 ): (json: any, parent: any) => T {
-  return function(json: any, parent: any): T {
+  return function (json: any, parent: any): T {
     const type = parent[typeField] || parent[name][typeField];
     return parseJSON<T>(typeMap[type], json);
   };
@@ -388,7 +388,7 @@ const objectProxyHandler = {
     emitChanges(target, [new Change(property, new Operation.Set(target, undefined, oldValue))]);
 
     return true;
-  }
+  },
 };
 
 function createObject<T extends object>(x: new () => T): T {
@@ -508,18 +508,21 @@ function mkCollection<T extends Item>(items: T[]): Collection<T> {
 
     splice.call(collection, start, deleteCount, ...items);
 
-    deletedItems.forEach(item => {
+    deletedItems.forEach((item) => {
       stopListening(collection, item);
       delete collection.idMap[item.id];
     });
 
-    items.forEach(item => {
+    items.forEach((item) => {
       if (Object(item) === item) {
         collection.idMap[item.id] = item;
 
-        listenTo(collection, item, changes => {
+        listenTo(collection, item, (changes) => {
           const id = itemId(collection, item);
-          emitChanges(collection, changes.map(change => embedChange(change, id)));
+          emitChanges(
+            collection,
+            changes.map((change) => embedChange(change, id)),
+          );
         });
       }
     });
@@ -593,16 +596,28 @@ export interface Splice {
 // happened at a particular path.
 
 export class Change<T> {
-  constructor(public path: string, public record: T) {}
+  constructor(
+    public path: string,
+    public record: T,
+  ) {}
 }
 
 export namespace Operation {
   export class Set {
-    constructor(public object: any, public value: any, public oldValue: any) {}
+    constructor(
+      public object: any,
+      public value: any,
+      public oldValue: any,
+    ) {}
   }
 
   export class Splice {
-    constructor(public object: any, public index: number, public remove: any[], public insert: any[]) {}
+    constructor(
+      public object: any,
+      public index: number,
+      public remove: any[],
+      public insert: any[],
+    ) {}
   }
 }
 
@@ -611,8 +626,11 @@ function embedChange<T>(change: Change<T>, key: string): Change<T> {
 }
 
 function forwardChanges(obj: any, prop: string, key: string): void {
-  listenTo(obj, prop, changes => {
-    emitChanges(obj, changes.map(change => embedChange(change, key)));
+  listenTo(obj, prop, (changes) => {
+    emitChanges(
+      obj,
+      changes.map((change) => embedChange(change, key)),
+    );
   });
 }
 
@@ -629,7 +647,7 @@ export function changeOperation(change: Change<any>): Operation {
     return {
       path: change.path,
       type: "set",
-      value: toJSON(record.value)
+      value: toJSON(record.value),
     };
   } else if (record instanceof Operation.Splice) {
     return {
@@ -637,7 +655,7 @@ export function changeOperation(change: Change<any>): Operation {
       type: "splice",
       index: record.index,
       remove: record.remove.length,
-      insert: toJSON(record.insert)
+      insert: toJSON(record.insert),
     };
   } else {
     throw new Error(`Unknown change record: ${record}`);

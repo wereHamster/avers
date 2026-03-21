@@ -16,7 +16,7 @@ const library = Avers.mk(Library, {});
 window.library = library;
 
 const changesElement = document.querySelector("#changes");
-Avers.attachChangeListener(library, changes => {
+Avers.attachChangeListener(library, (changes) => {
   changes.forEach(({ path, record }) => {
     const li = document.createElement("li");
     li.innerText = `${path} changed ${JSON.stringify(record)}`;
@@ -26,12 +26,12 @@ Avers.attachChangeListener(library, changes => {
 
 Avers.updateObject(library, {
   location: "Europe",
-  books: []
+  books: [],
 });
 
 const book = Avers.parseJSON(Book, {
   title: "The Little Prince",
-  author: { firstName: "Antoine", lastName: "Saint-Exupéry" }
+  author: { firstName: "Antoine", lastName: "Saint-Exupéry" },
 });
 window.book = book;
 
