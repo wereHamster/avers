@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 import * as Avers from "./index.js";
 
 class Sentinel {}
-const sentinel: any = new Sentinel();
+const sentinel = new Sentinel();
 
 const testNamespace = Symbol("testNamespace");
 
@@ -108,16 +108,11 @@ function now(): number {
 }
 
 function mkHandle(json: unknown): Avers.Handle {
-  const fetch = (): Promise<any> => {
-    return Promise.resolve({
-      status: 200,
-      json: () => {
-        return Promise.resolve(json);
-      },
-    });
+  const fetch = (): Promise<Response> => {
+    return Promise.resolve(Response.json(json, { status: 200 }));
   };
 
-  function createWebSocket(): any {
+  function createWebSocket(): WebSocket {
     return {
       addEventListener() {
         // EMPTY
@@ -125,7 +120,7 @@ function mkHandle(json: unknown): Avers.Handle {
       send() {
         // EMPTY
       },
-    };
+    } as unknown as WebSocket;
   }
 
   const infoTable = new Map<string, { new (): unknown }>();
@@ -314,7 +309,7 @@ describe("Avers.resolvePath", () => {
   });
   it("should ignore properties that are not registered", () => {
     const book = Avers.parseJSON(Book, jsonBook);
-    (book.author as any).something = "42";
+    (book.author as unknown as { something: string }).something = "42";
     assert.strictEqual(Avers.resolvePath(book, "author.something"), undefined);
   });
   it("should ignore array indices out of bounds", () => {
@@ -323,8 +318,7 @@ describe("Avers.resolvePath", () => {
   });
   it("should ignore properties on arrays", () => {
     const library = Avers.mk(Library, {});
-
-    (library.items as any).something = "42";
+    (library.items as unknown as { something: string }).something = "42";
     assert.strictEqual(Avers.resolvePath(library.items, "something"), undefined);
   });
 });
@@ -498,6 +492,7 @@ describe("Avers.lookupEditable", () => {
     await flushChanges();
 
     const obj = Avers.lookupEditable(h, "id").get(sentinel);
+    assert.ok(!(obj instanceof Sentinel));
     assert.ok(obj.content instanceof Library);
   });
   it("should return a copy when its content changes", () => {
