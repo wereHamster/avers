@@ -1,8 +1,8 @@
-import { parseJSON, migrateObject } from "../../core.js";
-import { type ObjId, type Handle, mkAction } from "../types.js";
-import { applyEditableChanges } from "../internal.js";
-import { modifyHandle } from "../internal/modifyHandle.js";
+import { migrateObject, parseJSON } from "../../core.js";
 import { initContent } from "../internal/initContent.js";
+import { modifyHandle } from "../internal/modifyHandle.js";
+import { applyEditableChanges } from "../internal.js";
+import { type Handle, mkAction, type ObjId } from "../types.js";
 import { mkEditable } from "./mkEditable.js";
 
 /**

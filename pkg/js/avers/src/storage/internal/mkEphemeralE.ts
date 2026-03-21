@@ -1,5 +1,5 @@
-import { type Handle, type EphemeralE, emptyEphemeralE } from "../types.js";
-import { lookupEphemeralE, insertEphemeralE } from "../internal.js";
+import { insertEphemeralE, lookupEphemeralE } from "../internal.js";
+import { type EphemeralE, emptyEphemeralE, type Handle } from "../types.js";
 
 export function mkEphemeralE<T>(h: Handle, ns: symbol, key: string): EphemeralE<T> {
   let e = lookupEphemeralE<T>(h, ns, key);

@@ -1,8 +1,8 @@
-import { type ObjId, type Handle, mkAction } from "../types.js";
-import { modifyHandle } from "../internal/modifyHandle.js";
+import { applyPatches } from "../internal/applyPatches.js";
 import { changeEditable } from "../internal/changeEditable.js";
 import { initContent } from "../internal/initContent.js";
-import { applyPatches } from "../internal/applyPatches.js";
+import { modifyHandle } from "../internal/modifyHandle.js";
+import { type Handle, mkAction, type ObjId } from "../types.js";
 
 function applyServerResponseF(h: Handle, { objId, body }: { objId: string; body: any }): void {
   changeEditable(h, objId, (obj) => {

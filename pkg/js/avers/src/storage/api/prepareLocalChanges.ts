@@ -1,6 +1,6 @@
-import { type ObjId, type Handle, mkAction } from "../types.js";
-import { modifyHandle } from "../internal/modifyHandle.js";
 import { changeEditable } from "../internal/changeEditable.js";
+import { modifyHandle } from "../internal/modifyHandle.js";
+import { type Handle, mkAction, type ObjId } from "../types.js";
 
 function prepareLocalChangesF(h: Handle, objId: ObjId) {
   changeEditable(h, objId, (obj) => {

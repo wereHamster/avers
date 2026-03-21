@@ -1,5 +1,5 @@
-import { type Handle, Static, Ephemeral, type Action, mkAction, type NetworkRequest, type EntityId } from "../types.js";
-import { entityLabel, withEditable, withStaticE, withEphemeralE } from "../internal.js";
+import { entityLabel, withEditable, withEphemeralE, withStaticE } from "../internal.js";
+import { type Action, type EntityId, Ephemeral, type Handle, mkAction, type NetworkRequest, Static } from "../types.js";
 import { modifyHandle } from "./modifyHandle.js";
 
 interface Payload {
