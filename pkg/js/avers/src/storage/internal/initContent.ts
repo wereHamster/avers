@@ -8,7 +8,7 @@ export function initContent(obj: Editable<unknown>): void {
   }
 
   if (obj.content) {
-    detachChangeListener(obj.content, obj.changeListener);
+    detachChangeListener(obj.content as any, obj.changeListener);
   }
 
   // All changes we want to apply on top of the 'shadowContent'.
@@ -18,5 +18,5 @@ export function initContent(obj: Editable<unknown>): void {
     return applyOperation(c, o.path, o);
   }, clone(obj.shadowContent));
 
-  attachChangeListener(obj.content, obj.changeListener);
+  attachChangeListener(obj.content as any, obj.changeListener);
 }

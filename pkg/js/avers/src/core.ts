@@ -15,16 +15,16 @@ const changeListenersSymbol = Symbol("aversChangeListeners");
  */
 const childListenersSymbol = Symbol("aversChildListeners");
 
-function emitChanges(self: any, changes: Change<any>[]): void {
+function emitChanges<T extends object>(self: Instance<T>, changes: Change<Operation.Set | Operation.Splice>[]): void {
   const listeners = self[changeListenersSymbol];
   if (listeners) {
-    listeners.forEach((fn: any) => {
+    listeners.forEach((fn: ChangeCallback) => {
       fn(changes);
     });
   }
 }
 
-function listenTo(self: any, obj: any, callback: ChangeCallback): void {
+function listenTo<T extends object>(self: Instance<T>, obj: any, callback: ChangeCallback): void {
   let listeners = self[childListenersSymbol];
   if (!listeners) {
     listeners = self[childListenersSymbol] = new Map();
@@ -34,7 +34,7 @@ function listenTo(self: any, obj: any, callback: ChangeCallback): void {
   attachChangeListener(obj, callback);
 }
 
-function stopListening(self: any, obj: any): void {
+function stopListening<T extends object>(self: Instance<T>, obj: any): void {
   const listeners = self[childListenersSymbol];
   if (listeners) {
     const fn = listeners.get(obj);
@@ -180,6 +180,11 @@ export function applyOperation<T>(root: T, path: string, op: Operation): T {
 }
 
 export type Model<T> = { prototype: T };
+
+export type Instance<T> = T & {
+  [changeListenersSymbol]?: globalThis.Set<ChangeCallback>;
+  [childListenersSymbol]?: Map<Instance<object>, ChangeCallback>;
+};
 
 function defineProperty<T, U extends object>(x: Model<U>, name: PropertyKey, desc: PropertyDescriptor<T>): void {
   const proto = x.prototype as U & { [aversPropertiesSymbol]?: AversProperties },
@@ -397,15 +402,15 @@ function createObject<T extends object>(x: new () => T): T {
   return new Proxy(new x(), objectProxyHandler);
 }
 
-export function parseJSON<T extends object>(x: new () => T, json: any): T {
+export function parseJSON<T extends object>(x: new () => T, json: any): Instance<T> {
   if (<any>x === String || <any>x === Number) {
     return new (<any>x)(json).valueOf();
   } else {
-    return withId(json, updateObject(createObject(x), json));
+    return withId(json, updateObject(createObject(x), json)) as Instance<T>;
   }
 }
 
-export function mk<T extends object>(x: new () => T, json: any): T {
+export function mk<T extends object>(x: new () => T, json: any): Instance<T> {
   return migrateObject(parseJSON(x, json));
 }
 
@@ -637,7 +642,7 @@ function forwardChanges(obj: any, prop: string, key: string): void {
 /**
  * Convert a 'Change' to an 'Operation' which is a pure JS object and can be directly converted to JSON and sent over network.
  */
-export function changeOperation(change: Change<any>): Operation {
+export function changeOperation(change: Change<Operation.Set | Operation.Splice>): Operation {
   const record = change.record;
 
   if (record instanceof Operation.Set) {
@@ -659,14 +664,14 @@ export function changeOperation(change: Change<any>): Operation {
   }
 }
 
-export type ChangeCallback = (changes: Change<any>[]) => void;
+export type ChangeCallback = (changes: Change<Operation.Set | Operation.Splice>[]) => void;
 
 /**
  * Attach a change callback to the object.
  * It will be called each time the object or any of its properties change.
  */
-export function attachChangeListener(obj: any, fn: ChangeCallback): void {
-  const listeners = obj[changeListenersSymbol] || new Set();
+export function attachChangeListener<T extends object>(obj: Instance<T>, fn: ChangeCallback): void {
+  const listeners = obj[changeListenersSymbol] || new globalThis.Set<ChangeCallback>();
   obj[changeListenersSymbol] = listeners;
 
   listeners.add(fn);
@@ -675,7 +680,7 @@ export function attachChangeListener(obj: any, fn: ChangeCallback): void {
 /**
  * Detach a given change listener callback from an object.
  */
-export function detachChangeListener(obj: any, fn: ChangeCallback): void {
+export function detachChangeListener<T extends object>(obj: Instance<T>, fn: ChangeCallback): void {
   const listeners = obj[changeListenersSymbol];
   if (listeners) {
     listeners.delete(fn);

@@ -1,4 +1,4 @@
-import { type Change, type ChangeCallback, changeOperation } from "../../core.js";
+import { type Change, type ChangeCallback, changeOperation, type Operation } from "../../core.js";
 import { type Editable, type Handle, newEditable, type ObjId } from "../types.js";
 
 import { captureChanges } from "./captureChanges.js";
@@ -24,7 +24,7 @@ export function mkEditable<T>(h: Handle, id: ObjId): Editable<T> {
 function mkChangeListener(h: Handle, objId: ObjId): ChangeCallback {
   const save = debounce(saveEditable, 1500);
 
-  return function onChange(changes: Change<unknown>[]): void {
+  return function onChange(changes: Change<Operation.Set | Operation.Splice>[]): void {
     captureChanges(h, objId, changes.map(changeOperation));
     save(h, objId);
   };
