@@ -1,6 +1,6 @@
-import { Handle, mkAction, Action } from "../types.js";
+import { type Handle, mkAction, type Action } from "../types.js";
 import { modifyHandle } from "../internal/modifyHandle.js";
-import { ObjectCollection } from "../collection.js";
+import type { ObjectCollection } from "../collection.js";
 
 const resetObjectCollectionF = (_h: Handle, c: ObjectCollection) => {
   c.fetchedAt = 0;

@@ -1,6 +1,6 @@
 import Computation from "computation";
 
-import { Handle } from "./types.js";
+import type { Handle } from "./types.js";
 import { endpointUrl } from "./internal.js";
 import { updateObjectCollection } from "./api.js";
 

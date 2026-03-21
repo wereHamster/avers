@@ -1,4 +1,4 @@
-import { Handle, StaticE, emptyStaticE } from "../types.js";
+import { type Handle, type StaticE, emptyStaticE } from "../types.js";
 import { lookupStaticE, insertStaticE } from "../internal.js";
 
 export function mkStaticE<T>(h: Handle, ns: symbol, key: string): StaticE<T> {

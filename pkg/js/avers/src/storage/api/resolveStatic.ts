@@ -1,4 +1,4 @@
-import { Handle, Static, mkAction } from "../types.js";
+import { type Handle, type Static, mkAction } from "../types.js";
 import { insertStaticE } from "../internal.js";
 import { modifyHandle } from "../internal/modifyHandle.js";
 

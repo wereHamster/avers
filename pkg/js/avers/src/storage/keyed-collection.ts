@@ -1,6 +1,6 @@
 import { ObjectCollection } from "./collection.js";
 import { resetObjectCollection } from "./api.js";
-import { Handle } from "./types.js";
+import type { Handle } from "./types.js";
 
 export class KeyedObjectCollection<T> {
   cache = new Map<string, ObjectCollection>();

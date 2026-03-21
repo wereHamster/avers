@@ -1,5 +1,5 @@
 import { applyOperation } from "../../core.js";
-import { Editable, Patch } from "../types.js";
+import type { Editable, Patch } from "../types.js";
 
 /**
  * The given patches MUST have consecutive revisionIds!

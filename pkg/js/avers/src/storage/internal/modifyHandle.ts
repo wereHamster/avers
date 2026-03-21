@@ -1,4 +1,4 @@
-import { Handle, Action } from "../types.js";
+import type { Handle, Action } from "../types.js";
 import { startNextGeneration } from "../api/startNextGeneration.js";
 
 export function modifyHandle<T>(h: Handle, { applyF, payload }: Action<T>): void {

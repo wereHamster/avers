@@ -1,5 +1,5 @@
 import { detachChangeListener, applyOperation, attachChangeListener, clone } from "../../core.js";
-import { Editable } from "../types.js";
+import type { Editable } from "../types.js";
 
 export function initContent(obj: Editable<unknown>): void {
   // XXX: When does this happen?

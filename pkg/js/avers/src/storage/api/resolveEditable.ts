@@ -1,5 +1,5 @@
 import { parseJSON, migrateObject } from "../../core.js";
-import { ObjId, Handle, mkAction } from "../types.js";
+import { type ObjId, type Handle, mkAction } from "../types.js";
 import { applyEditableChanges } from "../internal.js";
 import { modifyHandle } from "../internal/modifyHandle.js";
 import { initContent } from "../internal/initContent.js";

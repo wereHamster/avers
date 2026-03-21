@@ -1,4 +1,4 @@
-import { Handle, NetworkRequest, EntityId } from "../types.js";
+import { type Handle, NetworkRequest, type EntityId } from "../types.js";
 
 import { attachNetworkRequest } from "./attachNetworkRequest.js";
 import { reportNetworkFailure } from "./reportNetworkFailure.js";

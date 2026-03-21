@@ -1,5 +1,5 @@
-import { Change, ChangeCallback, changeOperation } from "../../core.js";
-import { ObjId, Handle, Editable, newEditable } from "../types.js";
+import { type Change, type ChangeCallback, changeOperation } from "../../core.js";
+import { type ObjId, type Handle, type Editable, newEditable } from "../types.js";
 
 import { captureChanges } from "./captureChanges.js";
 import { saveEditable } from "./saveEditable.js";

@@ -1,4 +1,4 @@
-import test, { ExecutionContext, Implementation } from "ava";
+import test, { type ExecutionContext, type Implementation } from "ava";
 import * as Avers from "./index.js";
 
 let group = "";
