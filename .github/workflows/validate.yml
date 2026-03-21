@@ -29,6 +29,6 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: biome lint .
+      - run: biome ci .
       - run: ./node_modules/.bin/tsc
-      - run: ./node_modules/.bin/ava
+      - run: node --test "dist/**/*.test.js"

@@ -26,27 +26,19 @@ Compiles `src/**/*.ts` → `dist/`. Always build before running tests (tests run
 ### Test (all tests)
 
 ```sh
-pnpm exec ava
+node --test dist/index.test.js
 ```
 
 ### Test (single file)
 
 ```sh
-pnpm exec ava dist/index.test.js
+node --test dist/index.test.js
 ```
 
 ### Test (single test by title pattern)
 
 ```sh
-pnpm exec ava --match "Avers.parseJSON: should create a new object from json"
-```
-
-Titles follow the pattern `"<group>: <name>"` as defined by the `describe`/`it` wrappers in `src/index.test.ts`.
-
-### Test (single test by file + line)
-
-```sh
-pnpm exec ava "dist/index.test.js:176"
+node --test --test-name-pattern="Avers.parseJSON" dist/index.test.js
 ```
 
 ### Lint
@@ -201,25 +193,24 @@ Key settings from `tsconfig.json`:
 
 ## Testing Patterns
 
-AVA 7 is the test framework. All tests live in `src/index.test.ts` (compiled to `dist/index.test.js`).
+The native Node.js test runner is used. All tests live in `src/index.test.ts` (can be run directly).
 
-The test file defines thin `describe`/`it` wrappers that compose titles:
+The test file uses standard `describe`/`it` blocks:
 
 ```typescript
 describe("Avers.parseJSON", () => {
-  it("should create a new object from json", t => { ... });
+  it("should create a new object from json", () => { ... });
 });
 // → test title: "Avers.parseJSON: should create a new object from json"
 ```
 
-Common AVA assertions used:
+Common assertions used (`import assert from "node:assert/strict"`):
 
-- `t.is(actual, expected)` — strict equality
-- `t.not(a, b)` — strict inequality
-- `t.true(expr)` — boolean assertion
-- `t.deepEqual(a, b)` — deep equality
-- `t.notThrows(fn)` — no exception thrown
-- `t.plan(n)` — expect exactly n assertions
+- `assert.strictEqual(actual, expected)` — strict equality
+- `assert.notStrictEqual(a, b)` — strict inequality
+- `assert.ok(expr)` — boolean assertion
+- `assert.deepEqual(a, b)` — deep equality
+- `assert.doesNotThrow(fn)` — no exception thrown
 
 New tests should follow the same `describe`/`it` pattern and be added to `src/index.test.ts`.
 
@@ -241,7 +232,9 @@ These rules are explicitly disabled; do not add them back without discussion:
 
 ---
 
-## Package Manager
+## Source Control
+
+The project uses a different SCM tool (not git). Do not use git commands like `git add`, `git commit`, `git push`, or `git status`. The user will handle committing and pushing changes.
 
 This project uses **pnpm**. Do not use `npm` or `yarn`.
 
