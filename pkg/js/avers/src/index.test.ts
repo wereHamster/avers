@@ -455,7 +455,7 @@ describe("Avers.mk", () => {
 
   it("should flush all changes", () => {
     let author = Avers.mk(Author, jsonAuthor),
-      allChanges: Avers.Change<Avers.Operation.Set | Avers.Operation.Splice>[] = [];
+      allChanges: Avers.Change<Avers.Operation.Set<unknown> | Avers.Operation.Splice<unknown>>[] = [];
 
     Avers.attachChangeListener(author, (changes) => {
       allChanges = allChanges.concat(changes);

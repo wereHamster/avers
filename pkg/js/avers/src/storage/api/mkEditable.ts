@@ -24,7 +24,7 @@ export function mkEditable<T>(h: Handle, id: ObjId): Editable<T> {
 function mkChangeListener(h: Handle, objId: ObjId): ChangeCallback {
   const save = debounce(saveEditable, 1500);
 
-  return function onChange(changes: Change<Operation.Set | Operation.Splice>[]): void {
+  return function onChange(changes: Change<Operation.Set<unknown> | Operation.Splice<unknown>>[]): void {
     captureChanges(h, objId, changes.map(changeOperation));
     save(h, objId);
   };
