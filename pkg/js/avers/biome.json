@@ -15,7 +15,6 @@
         "noExplicitAny": "off"
       },
       "complexity": {
-        "useArrowFunction": "off",
         "noArguments": "off"
       }
     }
