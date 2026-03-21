@@ -1,17 +1,28 @@
 {
   "files": {
-    "ignore": [".direnv", "dist", "docs", "node_modules"]
+    "includes": ["**", "!**/.direnv", "!**/dist", "!**/docs", "!**/node_modules"]
   },
 
   "formatter": {
+    "enabled": false,
     "indentStyle": "space",
     "lineWidth": 120
   },
 
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "off"
+      }
+    }
+  },
+
   "linter": {
     "rules": {
+      "a11y": {
+        "useHtmlLang": "off"
+      },
       "style": {
-        "noArguments": "off",
         "useEnumInitializers": "off",
         "useShorthandFunctionType": "off",
         "noParameterAssign": "off",
@@ -20,6 +31,7 @@
         "noUselessElse": "off"
       },
       "correctness": {
+        "noUnusedVariables": "off",
         "noSwitchDeclarations": "off"
       },
       "suspicious": {
@@ -30,7 +42,8 @@
       "complexity": {
         "noForEach": "off",
         "noBannedTypes": "off",
-        "useArrowFunction": "off"
+        "useArrowFunction": "off",
+        "noArguments": "off"
       }
     }
   }
