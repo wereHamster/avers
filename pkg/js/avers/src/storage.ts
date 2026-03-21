@@ -93,10 +93,13 @@ export function updateEditable<T>(h: Handle, id: string, f: (content: T) => void
   const obj = mkEditable<T>(h, id);
   const content = clone(obj.content);
 
-  let localChanges: Change<Operation.Set | Operation.Splice>[] = [];
-  attachChangeListener(content, function onChange(changes: Change<Operation.Set | Operation.Splice>[]): void {
-    localChanges = [...localChanges, ...changes];
-  });
+  let localChanges: Change<Operation.Set<unknown> | Operation.Splice<unknown>>[] = [];
+  attachChangeListener(
+    content,
+    function onChange(changes: Change<Operation.Set<unknown> | Operation.Splice<unknown>>[]): void {
+      localChanges = [...localChanges, ...changes];
+    },
+  );
 
   f(content);
 

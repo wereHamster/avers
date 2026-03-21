@@ -15,7 +15,10 @@ const changeListenersSymbol = Symbol("aversChangeListeners");
  */
 const childListenersSymbol = Symbol("aversChildListeners");
 
-function emitChanges<T extends object>(self: Instance<T>, changes: Change<Operation.Set | Operation.Splice>[]): void {
+function emitChanges<T extends object>(
+  self: Instance<T>,
+  changes: Change<Operation.Set<unknown> | Operation.Splice<unknown>>[],
+): void {
   const listeners = self[changeListenersSymbol];
   if (listeners) {
     listeners.forEach((fn: ChangeCallback) => {
@@ -595,7 +598,7 @@ export type Operation = Set | Splice;
 export interface Set {
   type: "set";
   path: string;
-  value: any;
+  value: unknown;
 }
 
 export interface Splice {
@@ -603,7 +606,7 @@ export interface Splice {
   path: string;
   index: number;
   remove: number;
-  insert: any[];
+  insert: unknown[];
 }
 
 /**
@@ -617,20 +620,20 @@ export class Change<T> {
 }
 
 export namespace Operation {
-  export class Set {
+  export class Set<V = unknown> {
     constructor(
-      public object: any,
-      public value: any,
-      public oldValue: any,
+      public object: Instance<object>,
+      public value: V,
+      public oldValue: V,
     ) {}
   }
 
-  export class Splice {
+  export class Splice<V = unknown> {
     constructor(
-      public object: any,
+      public object: Instance<object>,
       public index: number,
-      public remove: any[],
-      public insert: any[],
+      public remove: V[],
+      public insert: V[],
     ) {}
   }
 }
@@ -651,7 +654,7 @@ function forwardChanges(obj: Instance<object>, child: Instance<object>, key: str
 /**
  * Convert a 'Change' to an 'Operation' which is a pure JS object and can be directly converted to JSON and sent over network.
  */
-export function changeOperation(change: Change<Operation.Set | Operation.Splice>): Operation {
+export function changeOperation(change: Change<Operation.Set<unknown> | Operation.Splice<unknown>>): Operation {
   const record = change.record;
 
   if (record instanceof Operation.Set) {
@@ -673,7 +676,7 @@ export function changeOperation(change: Change<Operation.Set | Operation.Splice>
   }
 }
 
-export type ChangeCallback = (changes: Change<Operation.Set | Operation.Splice>[]) => void;
+export type ChangeCallback = (changes: Change<Operation.Set<unknown> | Operation.Splice<unknown>>[]) => void;
 
 /**
  * Attach a change callback to the object.
