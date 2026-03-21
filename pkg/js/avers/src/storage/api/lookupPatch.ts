@@ -5,12 +5,10 @@ import { ObjId, RevId, Handle, Static, Patch, parsePatch } from "../types.js";
 import { aversNamespace, endpointUrl } from "../internal.js";
 import { staticValue } from "./staticValue.js";
 
-// lookupPatch
-// -----------------------------------------------------------------------
-//
-// Get an patch by its identifier (objectId + revId). This computation is
-// pending until the patch has been fetched from the server.
-
+/**
+ * Get a patch by its identifier (objectId + revId).
+ * This computation is pending until the patch has been fetched from the server.
+ */
 export function lookupPatch(h: Handle, objectId: ObjId, revId: RevId): Computation<Patch> {
   return staticValue(h, mkPatch(h, objectId, revId));
 }

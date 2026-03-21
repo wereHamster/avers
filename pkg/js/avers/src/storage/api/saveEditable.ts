@@ -59,7 +59,9 @@ export async function saveEditable(h: Handle, objId: ObjId): Promise<void> {
   }
 }
 
-// Filter out subsequent operations which touch the same path.
+/**
+ * Filter out subsequent operations which touch the same path.
+ */
 function filterOps(ops: Operation[]): Operation[] {
   return ops.reduce((a: Operation[], op: Operation): Operation[] => {
     const lastOp = a[a.length - 1];

@@ -5,13 +5,10 @@ import { captureChanges } from "./captureChanges.js";
 import { saveEditable } from "./saveEditable.js";
 import { changeFeedSubscription } from "./changeFeedSubscription.js";
 
-// mkEditable
-// -----------------------------------------------------------------------
-//
-// Create a new Editable and load an object from the server into it. The
-// object is cached in the handle, so it is safe to call this function
-// repeatedly with the same id.
-
+/**
+ * Create a new Editable and load an object from the server into it.
+ * The object is cached in the handle, so it is safe to call this function repeatedly with the same id.
+ */
 export function mkEditable<T>(h: Handle, id: ObjId): Editable<T> {
   let obj = h.editableCache.get(id);
   if (!obj) {

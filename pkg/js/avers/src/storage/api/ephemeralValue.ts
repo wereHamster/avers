@@ -5,12 +5,10 @@ import { runNetworkRequest } from "../internal/runNetworkRequest.js";
 import { mkEphemeralE } from "../internal/mkEphemeralE.js";
 import { resolveEphemeral } from "./resolveEphemeral.js";
 
-// ephemeralValue
-// -----------------------------------------------------------------------
-//
-// Extract the value from the Static as a Computation. If the value is not
-// loaded yet, then a request will be sent to the server to fetch it.
-
+/**
+ * Extract the value from the Static as a Computation.
+ * If the value is not loaded yet, then a request will be sent to the server to fetch it.
+ */
 export function ephemeralValue<T>(h: Handle, e: Ephemeral<T>): Computation<T> {
   return new Computation(() => {
     const ent = mkEphemeralE<T>(h, e.ns, e.key);
@@ -19,11 +17,9 @@ export function ephemeralValue<T>(h: Handle, e: Ephemeral<T>): Computation<T> {
   });
 }
 
-// refreshEphemeral
-// -----------------------------------------------------------------------
-//
-// Internal function which is used to initiate the fetch if required.
-
+/**
+ * Internal function which is used to initiate the fetch if required.
+ */
 async function refreshEphemeral<T>(h: Handle, e: Ephemeral<T>, ent: EphemeralE<T>): Promise<void> {
   const now = h.config.now();
   if (

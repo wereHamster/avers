@@ -7,11 +7,9 @@ import { endpointUrl } from "./internal.js";
 import { runNetworkRequest } from "./internal/runNetworkRequest.js";
 import { resolveEditable, mkEditable } from "./api.js";
 
-// fetchObject
-// -----------------------------------------------------------------------
-//
-// Fetch the raw JSON of an object from the server.
-
+/**
+ * Fetch the raw JSON of an object from the server.
+ */
 export async function fetchObject(h: Handle, id: string): Promise<unknown> {
   const url = endpointUrl(h, `/objects/${id}`);
   const requestInit: RequestInit = {
@@ -61,13 +59,10 @@ export async function deleteObject(h: Handle, id: string): Promise<void> {
   startNextGeneration(h);
 }
 
-// fetchEditable
-// -----------------------------------------------------------------------
-//
-// Wait until an Editable is Loaded or Failed (the Promise is resolved or
-// rejected accordingly). This is useful in asynchronous code where you
-// can't use 'Computation' (lookupEditable).
-
+/**
+ * Wait until an Editable is Loaded or Failed (the Promise is resolved or rejected accordingly).
+ * This is useful in asynchronous code where you can't use 'Computation' (lookupEditable).
+ */
 export async function fetchEditable<T>(h: Handle, id: string): Promise<Editable<T>> {
   const obj = mkEditable<T>(h, id);
 
@@ -85,12 +80,9 @@ export async function fetchEditable<T>(h: Handle, id: string): Promise<Editable<
   }
 }
 
-// loadEditable
-// -----------------------------------------------------------------------
-//
-// Fetch an object from the server and initialize the Editable with the
-// response.
-
+/**
+ * Fetch an object from the server and initialize the Editable with the response.
+ */
 export async function loadEditable(h: Handle, id: string): Promise<void> {
   const e = mkEditable<unknown>(h, id);
   if (e.shadowContent === undefined && e.networkRequest === undefined) {
@@ -103,12 +95,10 @@ export async function loadEditable(h: Handle, id: string): Promise<void> {
   }
 }
 
-// lookupEditable
-// -----------------------------------------------------------------------
-//
-// Get an object by its id. This computation is pending until the object
-// has been fully loaded.
-
+/**
+ * Get an object by its id.
+ * This computation is pending until the object has been fully loaded.
+ */
 export function lookupEditable<T>(h: Handle, id: string): Computation<Editable<T>> {
   return new Computation(() => {
     const obj = mkEditable<T>(h, id);
@@ -123,12 +113,10 @@ export function lookupEditable<T>(h: Handle, id: string): Computation<Editable<T
   });
 }
 
-// lookupContent
-// -----------------------------------------------------------------------
-//
-// Often you don't need the whole Editable wrapper, but the content inside
-// it. This is a convenience function to get just that.
-
+/**
+ * Often you don't need the whole Editable wrapper, but the content inside it.
+ * This is a convenience function to get just that.
+ */
 export function lookupContent<T>(h: Handle, id: string): Computation<T> {
   return lookupEditable<T>(h, id).fmap((x) => x.content);
 }

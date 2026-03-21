@@ -1,11 +1,9 @@
 import { applyOperation } from "../../core.js";
 import { Editable, Patch } from "../types.js";
 
-// applyPatches
-// -----------------------------------------------------------------------------
-//
-// The given patches MUST have consecutive revisionIds!
-
+/**
+ * The given patches MUST have consecutive revisionIds!
+ */
 export function applyPatches(obj: Editable<unknown>, patches: Patch[]): void {
   if (obj.shadowContent === undefined) {
     // We simply ignore any attempt to apply patches to an Editable which
