@@ -179,23 +179,29 @@ export function applyOperation<T>(root: T, path: string, op: Operation): T {
   }
 }
 
-function defineProperty<T>(x: any, name: string, desc: PropertyDescriptor<T>): void {
-  const proto = x.prototype,
+export type Model<T> = { prototype: T };
+
+function defineProperty<T, U extends object>(x: Model<U>, name: PropertyKey, desc: PropertyDescriptor<T>): void {
+  const proto = x.prototype as U & { [aversPropertiesSymbol]?: AversProperties },
     aversProps = proto[aversPropertiesSymbol] || Object.create(null);
 
   aversProps[name] = desc;
   proto[aversPropertiesSymbol] = aversProps;
 }
 
-export function declareConstant(x: any): void {
-  const proto = x.prototype,
+export function declareConstant<T extends object>(x: Model<T>): void {
+  const proto = x.prototype as T & { [aversPropertiesSymbol]?: AversProperties },
     aversProps = proto[aversPropertiesSymbol] || Object.create(null);
 
   proto[aversPropertiesSymbol] = aversProps;
 }
 
-export function definePrimitive<T>(x: any, name: string, defaultValue: undefined | T) {
-  const desc: PrimitivePropertyDescriptor<T> = {
+export function definePrimitive<T extends object, K extends keyof T>(
+  x: Model<T>,
+  name: K,
+  defaultValue: undefined | T[K],
+) {
+  const desc: PrimitivePropertyDescriptor<T[K]> = {
     type: "PrimitivePropertyDescriptor",
     defaultValue,
   };
@@ -203,10 +209,10 @@ export function definePrimitive<T>(x: any, name: string, defaultValue: undefined
   defineProperty(x, name, desc);
 }
 
-export function defineObject<T extends object>(x: any, name: string, klass: any, def?: T) {
-  const desc: ObjectPropertyDescriptor<T> = {
+export function defineObject<T extends object, K extends keyof T>(x: Model<T>, name: K, klass: any, def?: T[K]) {
+  const desc: ObjectPropertyDescriptor<T[K]> = {
     type: "ObjectPropertyDescriptor",
-    parser: createObjectParser<T>(klass),
+    parser: createObjectParser<T[K] & object>(klass) as any,
     defaultValue: undefined,
   };
 
@@ -217,12 +223,12 @@ export function defineObject<T extends object>(x: any, name: string, klass: any,
   defineProperty(x, name, desc);
 }
 
-export function defineVariant<T extends object>(
-  x: any,
-  name: string,
+export function defineVariant<T extends object, K extends keyof T>(
+  x: Model<T>,
+  name: K,
   typeField: string,
   typeMap: { [name: string]: any },
-  def?: T,
+  def?: T[K],
 ): void {
   // Check that all constructors are valid Avers objects. This is an
   // invariant which we can't express in the type system, but want to
@@ -237,21 +243,21 @@ export function defineVariant<T extends object>(
     }
   }
 
-  const desc: VariantPropertyDescriptor<T> = {
+  const desc: VariantPropertyDescriptor<T[K]> = {
     type: "VariantPropertyDescriptor",
-    parser: createVariantParser<T>(name, typeField, typeMap),
+    parser: createVariantParser<T[K] & object>(name as string, typeField, typeMap) as any,
     typeField: typeField,
     typeMap: typeMap,
-    defaultValue: def === undefined ? undefined : clone(def),
+    defaultValue: (def === undefined ? undefined : clone(def)) as T[K],
   };
 
   defineProperty(x, name, desc);
 }
 
-export function defineCollection(x: any, name: string, klass: any) {
-  const desc: CollectionPropertyDescriptor<any> = {
+export function defineCollection<T extends object, K extends keyof T>(x: Model<T>, name: K, klass: any) {
+  const desc: CollectionPropertyDescriptor<T[K]> = {
     type: "CollectionPropertyDescriptor",
-    parser: createObjectParser(klass),
+    parser: createObjectParser<T[K] & object>(klass) as any,
   };
 
   defineProperty(x, name, desc);
