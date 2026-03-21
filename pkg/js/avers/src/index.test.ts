@@ -107,7 +107,7 @@ function now(): number {
   return Date.now();
 }
 
-function mkHandle(json: any): Avers.Handle {
+function mkHandle(json: unknown): Avers.Handle {
   const fetch = (): Promise<any> => {
     return Promise.resolve({
       status: 200,
@@ -128,7 +128,7 @@ function mkHandle(json: any): Avers.Handle {
     };
   }
 
-  const infoTable = new Map<string, { new (): any }>();
+  const infoTable = new Map<string, { new (): unknown }>();
   infoTable.set("library", Library);
   infoTable.set("book", Book);
 
@@ -156,7 +156,7 @@ const libraryObjectResponse = {
 //   content: jsonBook,
 // };
 
-function unresolvedPromiseF(): Promise<any> {
+function unresolvedPromiseF(): Promise<never> {
   return new Promise(() => {
     /* empty */
   });
@@ -172,8 +172,8 @@ describe("Avers.parseJSON", () => {
 
   it("should accept an empty JSON if the fields have a default", () => {
     const author = Avers.parseJSON(Author, {});
-    assert.strictEqual(author.firstName, undefined as any);
-    assert.strictEqual(author.lastName, undefined as any);
+    assert.strictEqual(author.firstName, undefined);
+    assert.strictEqual(author.lastName, undefined);
   });
 
   it("should instantiate plain classes in variant properties", () => {
@@ -193,7 +193,7 @@ describe("Avers.updateObject", () => {
 });
 
 describe("Avers.toJSON", () => {
-  function runTest(x: any, json: any): void {
+  function runTest(x: unknown, json: unknown): void {
     assert.deepEqual(JSON.parse(JSON.stringify(Avers.toJSON(x))), JSON.parse(JSON.stringify(json)));
     assert.doesNotThrow(() => {
       JSON.stringify(Avers.toJSON(x));
@@ -288,15 +288,15 @@ describe("Change event propagation", () => {
 describe("Avers.resolvePath", () => {
   it("should resolve in a simple object", () => {
     const book = Avers.parseJSON(Book, jsonBook);
-    assert.strictEqual("Game of Thrones", Avers.resolvePath(book, "title") as any);
+    assert.strictEqual("Game of Thrones", Avers.resolvePath(book, "title"));
   });
   it("should resolve an empty string to the object itself", () => {
     const book = Avers.parseJSON(Book, jsonBook);
-    assert.strictEqual("Game of Thrones", Avers.resolvePath(book.title, "") as any);
+    assert.strictEqual("Game of Thrones", Avers.resolvePath(book.title, ""));
   });
   it("should resolve nested objects", () => {
     const book = Avers.parseJSON(Book, jsonBook);
-    assert.strictEqual("Tomas", Avers.resolvePath(book, "author.firstName") as any);
+    assert.strictEqual("Tomas", Avers.resolvePath(book, "author.firstName"));
   });
   it("should resolve across arrays", () => {
     const item = Avers.parseJSON(Item, jsonBookItemWithId),
@@ -307,7 +307,7 @@ describe("Avers.resolvePath", () => {
     const id = Avers.itemId(library.items, item);
     const path = `items.${id}.content.author.firstName`;
 
-    assert.strictEqual("Tomas", Avers.resolvePath(library, path) as any);
+    assert.strictEqual("Tomas", Avers.resolvePath(library, path));
   });
   it("should return undefined if the path can not be resolved", () => {
     assert.strictEqual(Avers.resolvePath({}, "array.0.deep.key"), undefined);
@@ -338,7 +338,7 @@ describe("Avers.applyOperation", () => {
   }
 
   describe("set", () => {
-    function mkOp(path: string, value: any): Avers.Operation {
+    function mkOp(path: string, value: unknown): Avers.Operation {
       return { type: "set", path, value };
     }
 
@@ -354,7 +354,7 @@ describe("Avers.applyOperation", () => {
     // });
   });
   describe("splice", () => {
-    function mkOp(path: string, index: number, remove: number, insert: any[]): Avers.Operation {
+    function mkOp(path: string, index: number, remove: number, insert: unknown[]): Avers.Operation {
       return { type: "splice", path, index, remove, insert };
     }
 
@@ -379,7 +379,7 @@ describe("Avers.itemId", () => {
       library = Avers.mk(Library, {});
 
     library.items.push(item);
-    assert.strictEqual(Avers.itemId(library.items, item), undefined as any);
+    assert.strictEqual(Avers.itemId(library.items, item), undefined);
   });
   it("should return the item id when the item has one set", () => {
     const item = Avers.parseJSON(Item, jsonBookItemWithId),
@@ -475,7 +475,7 @@ describe("Avers.lookupItem", () => {
   it("should find non-existing in the collection", () => {
     const library = Avers.mk(Library, {});
     library.items.push(Avers.mk(Item, jsonBookItemWithId));
-    assert.strictEqual(Avers.lookupItem(library.items, "non-existing-id"), undefined as any);
+    assert.strictEqual(Avers.lookupItem(library.items, "non-existing-id"), undefined);
   });
 });
 
@@ -570,12 +570,12 @@ describe("Avers.ephemeralValue", () => {
   it("should return the value when the object is resolved", () => {
     const h = mkHandle({});
     Avers.resolveEphemeral(h, e, 42, h.config.now() + 99);
-    assert.strictEqual(42, Avers.ephemeralValue(h, e).get(sentinel) as any);
+    assert.strictEqual(42, Avers.ephemeralValue(h, e).get(sentinel));
   });
   it("should return the value even if it is stale", () => {
     const h = mkHandle({});
     Avers.resolveEphemeral(h, e, 42, h.config.now() - 99);
-    assert.strictEqual(42, Avers.ephemeralValue(h, e).get(sentinel) as any);
+    assert.strictEqual(42, Avers.ephemeralValue(h, e).get(sentinel));
   });
   it("should invoke the fetch function when the value is stale", () => {
     const h = mkHandle({}),
