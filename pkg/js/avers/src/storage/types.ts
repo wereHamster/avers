@@ -225,7 +225,7 @@ export const mkAction = <T>(label: string, payload: T, applyF: ActionF<T>): Acti
 export class NetworkRequest {
   constructor(
     public createdAt: number,
-    public promise: Promise<object>,
+    public promise: Promise<unknown>,
   ) {}
 }
 

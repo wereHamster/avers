@@ -5,7 +5,7 @@ import { applyChange } from "./applyChange.js";
  * Change the feed subscription.
  * Opens the websocket if not already open.
  */
-export function changeFeedSubscription(h: Handle, json: any): void {
+export function changeFeedSubscription(h: Handle, json: unknown): void {
   if (h.feedSocket === undefined) {
     h.feedSocket = h.config.createWebSocket("/feed");
 

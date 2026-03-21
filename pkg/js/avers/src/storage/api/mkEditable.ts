@@ -13,7 +13,7 @@ export function mkEditable<T>(h: Handle, id: ObjId): Editable<T> {
   let obj = h.editableCache.get(id);
   if (!obj) {
     obj = newEditable(id, mkChangeListener(h, id));
-    h.editableCache.set(id, Object.freeze(obj) as any);
+    h.editableCache.set(id, Object.freeze(obj));
 
     changeFeedSubscription(h, ["+", id]);
   }

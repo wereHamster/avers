@@ -9,7 +9,7 @@ interface Payload {
 }
 
 function reportNetworkFailureF(h: Handle, { entity, nr, err }: Payload) {
-  function f(e: { networkRequest: undefined | NetworkRequest; lastError: any }): void {
+  function f(e: { networkRequest: undefined | NetworkRequest; lastError: undefined | Error }): void {
     if (e.networkRequest === nr) {
       e.networkRequest = undefined;
       e.lastError = err;
