@@ -227,7 +227,7 @@ describe("Change event propagation", () => {
   // This timeout is very conservative;
   // this.timeout(500);
 
-  function waitForChange<T>(obj: T, expectedPath: string): Promise<void> {
+  function waitForChange<T extends object>(obj: T, expectedPath: string): Promise<void> {
     return new Promise((resolve) => {
       Avers.attachChangeListener(obj, function changeCallback(changes) {
         for (const change of changes) {
@@ -455,7 +455,7 @@ describe("Avers.mk", () => {
 
   it("should flush all changes", () => {
     let author = Avers.mk(Author, jsonAuthor),
-      allChanges: Avers.Change<any>[] = [];
+      allChanges: Avers.Change<Avers.Operation.Set | Avers.Operation.Splice>[] = [];
 
     Avers.attachChangeListener(author, (changes) => {
       allChanges = allChanges.concat(changes);
