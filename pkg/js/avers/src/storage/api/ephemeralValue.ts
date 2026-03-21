@@ -29,7 +29,7 @@ async function refreshEphemeral<T>(h: Handle, e: Ephemeral<T>, ent: EphemeralE<T
     try {
       const res = await runNetworkRequest(h, e, "fetchEphemeral", e.fetch());
       resolveEphemeral(h, e, res.value, res.expiresAt);
-    } catch (err) {
+    } catch {
       // Ignore errors. runNetworkRequest already sets 'lastError'.
     }
   }
