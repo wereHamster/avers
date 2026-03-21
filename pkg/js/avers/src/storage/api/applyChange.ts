@@ -1,8 +1,8 @@
-import { type Handle, mkAction, parsePatch } from "../types.js";
-import { modifyHandle } from "../internal/modifyHandle.js";
+import { applyPatches } from "../internal/applyPatches.js";
 import { changeEditable } from "../internal/changeEditable.js";
 import { initContent } from "../internal/initContent.js";
-import { applyPatches } from "../internal/applyPatches.js";
+import { modifyHandle } from "../internal/modifyHandle.js";
+import { type Handle, mkAction, parsePatch } from "../types.js";
 
 function applyChangeF(h: Handle, change: { type: string; content: any }): void {
   const { type, content } = change;

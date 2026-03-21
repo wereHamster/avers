@@ -1,8 +1,7 @@
 import Computation from "computation";
-
-import type { Handle, Static, StaticE } from "../types.js";
-import { runNetworkRequest } from "../internal/runNetworkRequest.js";
 import { mkStaticE } from "../internal/mkStaticE.js";
+import { runNetworkRequest } from "../internal/runNetworkRequest.js";
+import type { Handle, Static, StaticE } from "../types.js";
 import { resolveStatic } from "./resolveStatic.js";
 
 /**

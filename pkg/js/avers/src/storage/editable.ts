@@ -1,11 +1,11 @@
 import Computation from "computation";
 
 import { guardStatus } from "../shared.js";
-import type { ObjId, Handle, Editable } from "./types.js";
 import { startNextGeneration } from "./api/startNextGeneration.js";
-import { endpointUrl } from "./internal.js";
+import { mkEditable, resolveEditable } from "./api.js";
 import { runNetworkRequest } from "./internal/runNetworkRequest.js";
-import { resolveEditable, mkEditable } from "./api.js";
+import { endpointUrl } from "./internal.js";
+import type { Editable, Handle, ObjId } from "./types.js";
 
 /**
  * Fetch the raw JSON of an object from the server.

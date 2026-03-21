@@ -1,5 +1,5 @@
 import Computation from "computation";
-import type { Operation, ChangeCallback } from "../core.js";
+import type { ChangeCallback, Operation } from "../core.js";
 
 // ----------------------------------------------------------------------------
 // Helpful type synonyms

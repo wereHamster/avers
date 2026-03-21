@@ -1,11 +1,10 @@
 import type { Operation } from "../../core.js";
 import { guardStatus } from "../../shared.js";
-import type { ObjId, Handle } from "../types.js";
-import { endpointUrl } from "../internal.js";
 import { runNetworkRequest } from "../internal/runNetworkRequest.js";
-
-import { prepareLocalChanges } from "./prepareLocalChanges.js";
+import { endpointUrl } from "../internal.js";
+import type { Handle, ObjId } from "../types.js";
 import { applyServerResponse } from "./applyServerResponse.js";
+import { prepareLocalChanges } from "./prepareLocalChanges.js";
 import { restoreLocalChanges } from "./restoreLocalChanges.js";
 
 export async function saveEditable(h: Handle, objId: ObjId): Promise<void> {

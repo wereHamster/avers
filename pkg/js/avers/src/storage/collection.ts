@@ -1,8 +1,7 @@
 import Computation from "computation";
-
-import type { Handle } from "./types.js";
-import { endpointUrl } from "./internal.js";
 import { updateObjectCollection } from "./api.js";
+import { endpointUrl } from "./internal.js";
+import type { Handle } from "./types.js";
 
 const MAXAGE = 10 * 1000;
 

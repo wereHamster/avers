@@ -1,9 +1,9 @@
 import { type Change, type ChangeCallback, changeOperation } from "../../core.js";
-import { type ObjId, type Handle, type Editable, newEditable } from "../types.js";
+import { type Editable, type Handle, newEditable, type ObjId } from "../types.js";
 
 import { captureChanges } from "./captureChanges.js";
-import { saveEditable } from "./saveEditable.js";
 import { changeFeedSubscription } from "./changeFeedSubscription.js";
+import { saveEditable } from "./saveEditable.js";
 
 /**
  * Create a new Editable and load an object from the server into it.

@@ -1,6 +1,6 @@
-import { type Handle, type Ephemeral, mkAction } from "../types.js";
-import { insertEphemeralE } from "../internal.js";
 import { modifyHandle } from "../internal/modifyHandle.js";
+import { insertEphemeralE } from "../internal.js";
+import { type Ephemeral, type Handle, mkAction } from "../types.js";
 
 interface Payload<T> {
   e: Ephemeral<T>;

@@ -1,8 +1,8 @@
 import type Computation from "computation";
 
 import { guardStatus } from "../../shared.js";
-import { type ObjId, type RevId, type Handle, Static, type Patch, parsePatch } from "../types.js";
 import { aversNamespace, endpointUrl } from "../internal.js";
+import { type Handle, type ObjId, type Patch, parsePatch, type RevId, Static } from "../types.js";
 import { staticValue } from "./staticValue.js";
 
 /**
