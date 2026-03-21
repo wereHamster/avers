@@ -17,7 +17,7 @@ function resolveEditableF<T extends object>(h: Handle, { objId, json }: { objId:
   // ASSERT objId === json.id
 
   const obj = mkEditable<T>(h, objId);
-  applyEditableChanges(h, obj, obj => {
+  applyEditableChanges(h, obj, (obj) => {
     const ctor = h.config.infoTable.get(json.type);
     if (ctor === undefined) {
       throw new Error(`resolveEditable: unknown type ${obj.type}`);

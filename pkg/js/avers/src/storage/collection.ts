@@ -16,7 +16,10 @@ export class ObjectCollection {
     return this.objectIds;
   });
 
-  constructor(public h: Handle, public collectionName: string) {
+  constructor(
+    public h: Handle,
+    public collectionName: string,
+  ) {
     this.fetchedAt = 0;
     this.url = endpointUrl(h, `/collection/${collectionName}`);
     this.objectIds = Computation.Pending;
@@ -24,10 +27,11 @@ export class ObjectCollection {
 }
 
 function mergeIds(c: ObjectCollection, ids: string[]): void {
-  const objectIds = c.objectIds
+  const objectIds = c.objectIds;
   const isChanged =
     objectIds === Computation.Pending ||
-    (ids.length !== objectIds.length || ids.reduce<boolean>((a, id, index) => a || id !== objectIds[index], false));
+    ids.length !== objectIds.length ||
+    ids.reduce<boolean>((a, id, index) => a || id !== objectIds[index], false);
 
   if (isChanged) {
     updateObjectCollection(c.h, c, ids);
@@ -42,7 +46,7 @@ async function fetchObjectCollection(c: ObjectCollection): Promise<void> {
     try {
       const res = await c.h.config.fetch(c.url, {
         credentials: "include",
-        headers: { accept: "application/json" }
+        headers: { accept: "application/json" },
       });
       mergeIds(c, await res.json());
     } catch (err) {

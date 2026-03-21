@@ -36,7 +36,7 @@ function mkChangeListener(h: Handle, objId: ObjId): ChangeCallback {
 function debounce<T extends any[]>(func: (...args: T) => void, wait: any): (...args: T) => void {
   let timeout: void | number, args: any, timestamp: number;
 
-  const later = function() {
+  const later = function () {
     const last = Date.now() - timestamp;
 
     if (last < wait && last >= 0) {
@@ -48,7 +48,7 @@ function debounce<T extends any[]>(func: (...args: T) => void, wait: any): (...a
     }
   };
 
-  return <any>function() {
+  return <any>function () {
     args = arguments;
     timestamp = Date.now();
 

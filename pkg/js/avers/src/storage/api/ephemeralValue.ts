@@ -26,7 +26,11 @@ export function ephemeralValue<T>(h: Handle, e: Ephemeral<T>): Computation<T> {
 
 async function refreshEphemeral<T>(h: Handle, e: Ephemeral<T>, ent: EphemeralE<T>): Promise<void> {
   const now = h.config.now();
-  if ((ent.value === Computation.Pending || now > ent.expiresAt) && ent.networkRequest === undefined && ent.lastError === undefined) {
+  if (
+    (ent.value === Computation.Pending || now > ent.expiresAt) &&
+    ent.networkRequest === undefined &&
+    ent.lastError === undefined
+  ) {
     try {
       const res = await runNetworkRequest(h, e, "fetchEphemeral", e.fetch());
       resolveEphemeral(h, e, res.value, res.expiresAt);

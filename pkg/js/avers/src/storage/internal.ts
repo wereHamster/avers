@@ -89,7 +89,7 @@ function applyEphemeralChanges<T>(
   ns: symbol,
   key: string,
   s: EphemeralE<T>,
-  f: (s: EphemeralE<T>) => void
+  f: (s: EphemeralE<T>) => void,
 ): void {
   const copy = { ...s };
   f(copy);

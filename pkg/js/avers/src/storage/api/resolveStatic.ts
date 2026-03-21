@@ -6,7 +6,7 @@ function resolveStaticF<T>(h: Handle, { s, value }: { s: Static<T>; value: T }):
   insertStaticE(h, s.ns, s.key, {
     networkRequest: undefined,
     lastError: undefined,
-    value
+    value,
   });
 }
 

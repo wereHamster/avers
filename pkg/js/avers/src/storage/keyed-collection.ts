@@ -5,7 +5,10 @@ import { Handle } from "./types.js";
 export class KeyedObjectCollection<T> {
   cache = new Map<string, ObjectCollection>();
 
-  constructor(public h: Handle, public keyFn: (key: T) => string) {}
+  constructor(
+    public h: Handle,
+    public keyFn: (key: T) => string,
+  ) {}
 
   get(keyInput: T): ObjectCollection {
     const key = this.keyFn(keyInput);

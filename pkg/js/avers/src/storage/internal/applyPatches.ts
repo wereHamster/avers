@@ -19,7 +19,7 @@ export function applyPatches(obj: Editable<unknown>, patches: Patch[]): void {
     return;
   }
 
-  const applicablePatches = patches.filter(p => p.revisionId > obj.revisionId);
+  const applicablePatches = patches.filter((p) => p.revisionId > obj.revisionId);
   if (applicablePatches.length === 0 || applicablePatches[0].revisionId !== obj.revisionId + 1) {
     // The first patch is not one that can be applied directly on the
     // Editable. This means there is a gap between the first patche we have

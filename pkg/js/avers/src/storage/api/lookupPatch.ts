@@ -19,7 +19,7 @@ async function fetchPatch(h: Handle, objectId: ObjId, revId: RevId): Promise<Pat
   const url = endpointUrl(h, `/objects/${objectId}/patches/${revId}`);
   const requestInit: RequestInit = {
     credentials: "include",
-    headers: { accept: "application/json" }
+    headers: { accept: "application/json" },
   };
 
   const res = await h.config.fetch(url, requestInit);

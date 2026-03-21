@@ -9,7 +9,7 @@ function applyChangeF(h: Handle, change: { type: string; content: any }): void {
 
   if (type === "patch") {
     const patch = parsePatch(content);
-    changeEditable(h, patch.objectId, obj => {
+    changeEditable(h, patch.objectId, (obj) => {
       applyPatches(obj, [patch]);
       initContent(obj);
     });
