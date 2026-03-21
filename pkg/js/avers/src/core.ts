@@ -214,15 +214,20 @@ export function definePrimitive<T extends object, K extends keyof T>(
   defineProperty(x, name, desc);
 }
 
-export function defineObject<T extends object, K extends keyof T>(x: Model<T>, name: K, klass: any, def?: T[K]) {
+export function defineObject<T extends object, K extends keyof T, U extends T[K] & object>(
+  x: Model<T>,
+  name: K,
+  klass: Model<U>,
+  def?: T[K],
+) {
   const desc: ObjectPropertyDescriptor<T[K]> = {
     type: "ObjectPropertyDescriptor",
-    parser: createObjectParser<T[K] & object>(klass) as any,
+    parser: createObjectParser<U>(klass as new () => U) as any,
     defaultValue: undefined,
   };
 
   if (def) {
-    desc.defaultValue = <any>mk(klass, def);
+    desc.defaultValue = <any>mk(klass as any, def);
   }
 
   defineProperty(x, name, desc);
@@ -232,7 +237,7 @@ export function defineVariant<T extends object, K extends keyof T>(
   x: Model<T>,
   name: K,
   typeField: string,
-  typeMap: { [name: string]: any },
+  typeMap: Record<string, Model<T[K] & object>>,
   def?: T[K],
 ): void {
   // Check that all constructors are valid Avers objects. This is an
@@ -242,7 +247,7 @@ export function defineVariant<T extends object, K extends keyof T>(
   // This is something which can be removed from the production builds.
 
   for (const k in typeMap) {
-    const aversProps = typeMap[k].prototype[aversPropertiesSymbol];
+    const aversProps = (typeMap[k].prototype as any)[aversPropertiesSymbol];
     if (aversProps === undefined) {
       throw new Error(`Variant constructor of "${k}" is not an Avers object`);
     }
@@ -259,10 +264,14 @@ export function defineVariant<T extends object, K extends keyof T>(
   defineProperty(x, name, desc);
 }
 
-export function defineCollection<T extends object, K extends keyof T>(x: Model<T>, name: K, klass: any) {
+export function defineCollection<T extends object, K extends keyof T, U>(
+  x: Model<T>,
+  name: K,
+  klass: Model<U & object> | StringConstructor | NumberConstructor,
+) {
   const desc: CollectionPropertyDescriptor<T[K]> = {
     type: "CollectionPropertyDescriptor",
-    parser: createObjectParser<T[K] & object>(klass) as any,
+    parser: createObjectParser<U & object>(klass as any) as any,
   };
 
   defineProperty(x, name, desc);
