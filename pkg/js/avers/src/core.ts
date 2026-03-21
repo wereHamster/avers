@@ -266,7 +266,7 @@ function createVariantParser<T extends object>(
   typeField: string,
   typeMap: { [typeField: string]: any },
 ): (json: any, parent: any) => T {
-  return function (json: any, parent: any): T {
+  return (json: any, parent: any): T => {
     const type = parent[typeField] || parent[name][typeField];
     return parseJSON<T>(typeMap[type], json);
   };

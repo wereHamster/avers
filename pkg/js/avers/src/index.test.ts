@@ -157,33 +157,33 @@ const libraryObjectResponse = {
 // };
 
 function unresolvedPromiseF(): Promise<any> {
-  return new Promise(function () {
+  return new Promise(() => {
     /* empty */
   });
 }
 
-describe("Avers.parseJSON", function () {
-  it("should create a new object from json", function () {
+describe("Avers.parseJSON", () => {
+  it("should create a new object from json", () => {
     const book = Avers.parseJSON(Book, jsonBook);
     assert.strictEqual("Game of Thrones", book.title);
     assert.strictEqual("Tomas", book.author.firstName);
     assert.strictEqual("Carnecky", book.author.lastName);
   });
 
-  it("should accept an empty JSON if the fields have a default", function () {
+  it("should accept an empty JSON if the fields have a default", () => {
     const author = Avers.parseJSON(Author, {});
     assert.strictEqual(author.firstName, undefined as any);
     assert.strictEqual(author.lastName, undefined as any);
   });
 
-  it("should instantiate plain classes in variant properties", function () {
+  it("should instantiate plain classes in variant properties", () => {
     const item = Avers.parseJSON(Item, { type: "diary", content: {} });
     assert.ok(item.content instanceof Diary);
   });
 });
 
-describe("Avers.updateObject", function () {
-  it("Avers.updateObject should update an existing object", function () {
+describe("Avers.updateObject", () => {
+  it("Avers.updateObject should update an existing object", () => {
     const book = new Book();
     Avers.updateObject(book, jsonBook);
     assert.strictEqual("Game of Thrones", book.title);
@@ -192,38 +192,38 @@ describe("Avers.updateObject", function () {
   });
 });
 
-describe("Avers.toJSON", function () {
+describe("Avers.toJSON", () => {
   function runTest(x: any, json: any): void {
     assert.deepEqual(JSON.parse(JSON.stringify(Avers.toJSON(x))), JSON.parse(JSON.stringify(json)));
-    assert.doesNotThrow(function () {
+    assert.doesNotThrow(() => {
       JSON.stringify(Avers.toJSON(x));
     });
   }
 
-  it("should handle primitive types", function () {
+  it("should handle primitive types", () => {
     [null, 42, "string"].forEach((x) => {
       runTest(x, x);
     });
   });
-  it("should handle objects", function () {
+  it("should handle objects", () => {
     runTest(Avers.parseJSON(Book, jsonBook), jsonBook);
   });
-  it("should handle variants", function () {
+  it("should handle variants", () => {
     const json = { type: "book", content: jsonBook };
     runTest(Avers.parseJSON(Item, json), json);
   });
-  it("should handle variant properties with plain constructors", function () {
+  it("should handle variant properties with plain constructors", () => {
     const json = { type: "diary", content: {} };
     runTest(Avers.parseJSON(Item, json), json);
   });
-  it("should handle collections", function () {
+  it("should handle collections", () => {
     const library = Avers.mk(Library, {});
     library.items.push(Avers.parseJSON(Item, jsonBookItemWithId));
     runTest(library.items, [jsonBookItemWithId]);
   });
 });
 
-describe("Change event propagation", function () {
+describe("Change event propagation", () => {
   // This timeout is very conservative;
   // this.timeout(500);
 
@@ -240,7 +240,7 @@ describe("Change event propagation", function () {
     });
   }
 
-  it("should deliver changes of primitive values on the root object", async function () {
+  it("should deliver changes of primitive values on the root object", async () => {
     const book = Avers.parseJSON(Book, jsonBook);
 
     const p = waitForChange(book, "title");
@@ -248,7 +248,7 @@ describe("Change event propagation", function () {
     await p;
   });
 
-  it("should deliver changes of embedded objects", async function () {
+  it("should deliver changes of embedded objects", async () => {
     const book = Avers.parseJSON(Book, jsonBook);
 
     const p = waitForChange(book, "author.firstName");
@@ -256,7 +256,7 @@ describe("Change event propagation", function () {
     await p;
   });
 
-  it("should deliver changes inside variant properties", async function () {
+  it("should deliver changes inside variant properties", async () => {
     const item = Avers.mk(Item, jsonItem);
 
     const p = waitForChange(item, "content.author.firstName");
@@ -264,7 +264,7 @@ describe("Change event propagation", function () {
     await p;
   });
 
-  it("should deliver changes when adding elments to a collection", async function () {
+  it("should deliver changes when adding elments to a collection", async () => {
     const library = Avers.mk(Library, {});
 
     const p = waitForChange(library, "items");
@@ -272,7 +272,7 @@ describe("Change event propagation", function () {
     await p;
   });
 
-  it("should deliver multiple changes done during the same microtask", async function () {
+  it("should deliver multiple changes done during the same microtask", async () => {
     const book = Avers.parseJSON(Book, jsonBook);
 
     const p1 = waitForChange(book, "title");
@@ -285,20 +285,20 @@ describe("Change event propagation", function () {
   });
 });
 
-describe("Avers.resolvePath", function () {
-  it("should resolve in a simple object", function () {
+describe("Avers.resolvePath", () => {
+  it("should resolve in a simple object", () => {
     const book = Avers.parseJSON(Book, jsonBook);
     assert.strictEqual("Game of Thrones", Avers.resolvePath(book, "title") as any);
   });
-  it("should resolve an empty string to the object itself", function () {
+  it("should resolve an empty string to the object itself", () => {
     const book = Avers.parseJSON(Book, jsonBook);
     assert.strictEqual("Game of Thrones", Avers.resolvePath(book.title, "") as any);
   });
-  it("should resolve nested objects", function () {
+  it("should resolve nested objects", () => {
     const book = Avers.parseJSON(Book, jsonBook);
     assert.strictEqual("Tomas", Avers.resolvePath(book, "author.firstName") as any);
   });
-  it("should resolve across arrays", function () {
+  it("should resolve across arrays", () => {
     const item = Avers.parseJSON(Item, jsonBookItemWithId),
       library = Avers.mk(Library, {});
 
@@ -309,19 +309,19 @@ describe("Avers.resolvePath", function () {
 
     assert.strictEqual("Tomas", Avers.resolvePath(library, path) as any);
   });
-  it("should return undefined if the path can not be resolved", function () {
+  it("should return undefined if the path can not be resolved", () => {
     assert.strictEqual(Avers.resolvePath({}, "array.0.deep.key"), undefined);
   });
-  it("should ignore properties that are not registered", function () {
+  it("should ignore properties that are not registered", () => {
     const book = Avers.parseJSON(Book, jsonBook);
     (book.author as any).something = "42";
     assert.strictEqual(Avers.resolvePath(book, "author.something"), undefined);
   });
-  it("should ignore array indices out of bounds", function () {
+  it("should ignore array indices out of bounds", () => {
     const library = new Library();
     assert.strictEqual(Avers.resolvePath(library.items, "1"), undefined);
   });
-  it("should ignore properties on arrays", function () {
+  it("should ignore properties on arrays", () => {
     const library = Avers.mk(Library, {});
 
     (library.items as any).something = "42";
@@ -329,7 +329,7 @@ describe("Avers.resolvePath", function () {
   });
 });
 
-describe("Avers.applyOperation", function () {
+describe("Avers.applyOperation", () => {
   function run(op: Avers.Operation, f: (a: Book, b: Book) => void): void {
     const orig = Avers.mk(Book, jsonBook),
       copy = Avers.applyOperation(orig, op.path, op);
@@ -337,12 +337,12 @@ describe("Avers.applyOperation", function () {
     f(orig, copy);
   }
 
-  describe("set", function () {
+  describe("set", () => {
     function mkOp(path: string, value: any): Avers.Operation {
       return { type: "set", path, value };
     }
 
-    it("should return a copy of the object if some property was changed", function () {
+    it("should return a copy of the object if some property was changed", () => {
       run(mkOp("title", "A Song of Ice and Fire"), (orig, copy) => {
         assert.notStrictEqual(orig, copy);
       });
@@ -353,12 +353,12 @@ describe("Avers.applyOperation", function () {
     //   });
     // });
   });
-  describe("splice", function () {
+  describe("splice", () => {
     function mkOp(path: string, index: number, remove: number, insert: any[]): Avers.Operation {
       return { type: "splice", path, index, remove, insert };
     }
 
-    it("should return a copy of the object if some property was changed", function () {
+    it("should return a copy of the object if some property was changed", () => {
       const lib = Avers.mk(Library, {});
       const copy = Avers.applyOperation(lib, "items", mkOp("items", 0, 0, [jsonBookItemWithId]));
 
@@ -373,15 +373,15 @@ describe("Avers.applyOperation", function () {
   });
 });
 
-describe("Avers.itemId", function () {
-  it("should return undefined until changes have been delivered", function () {
+describe("Avers.itemId", () => {
+  it("should return undefined until changes have been delivered", () => {
     const item = Avers.parseJSON(Item, jsonItem),
       library = Avers.mk(Library, {});
 
     library.items.push(item);
     assert.strictEqual(Avers.itemId(library.items, item), undefined as any);
   });
-  it("should return the item id when the item has one set", function () {
+  it("should return the item id when the item has one set", () => {
     const item = Avers.parseJSON(Item, jsonBookItemWithId),
       library = Avers.mk(Library, {});
 
@@ -390,18 +390,18 @@ describe("Avers.itemId", function () {
   });
 });
 
-describe("Avers.clone", function () {
-  it("should clone primitive values", function () {
+describe("Avers.clone", () => {
+  it("should clone primitive values", () => {
     assert.strictEqual("str", Avers.clone("str"));
   });
-  it("should clone Avers objects", function () {
+  it("should clone Avers objects", () => {
     const book = Avers.parseJSON(Book, jsonBook);
     const clone = Avers.clone(book);
 
     assert.notStrictEqual(book, clone);
     assert.deepEqual(JSON.parse(JSON.stringify(Avers.toJSON(book))), JSON.parse(JSON.stringify(Avers.toJSON(clone))));
   });
-  it("should clone collections", function () {
+  it("should clone collections", () => {
     const item = Avers.parseJSON(Item, jsonItem),
       library = Avers.mk(Library, {});
 
@@ -414,46 +414,46 @@ describe("Avers.clone", function () {
   });
 });
 
-describe("Avers.migrateObject", function () {
-  it("should set primitive properties to their default value", function () {
+describe("Avers.migrateObject", () => {
+  it("should set primitive properties to their default value", () => {
     const author = Avers.parseJSON(Author, {});
     Avers.migrateObject(author);
     assert.strictEqual("John", author.firstName);
   });
-  it("should initialize objects with their default value", function () {
+  it("should initialize objects with their default value", () => {
     const book = Avers.parseJSON(Book, {});
     Avers.migrateObject(book);
     assert.ok(book.author instanceof Author);
   });
-  it("should not initialize object properties without a default value", function () {
+  it("should not initialize object properties without a default value", () => {
     const nt = Avers.parseJSON(NullableTest, {});
     Avers.migrateObject(nt);
     assert.ok(!nt.obj);
   });
-  it("should not initialize variant properties without a default value", function () {
+  it("should not initialize variant properties without a default value", () => {
     const nt = Avers.parseJSON(NullableTest, {});
     Avers.migrateObject(nt);
     assert.ok(!nt.variant);
   });
-  it("should initialize variant properties with a default value", function () {
+  it("should initialize variant properties with a default value", () => {
     const item = Avers.parseJSON(Item, {});
     Avers.migrateObject(item);
     assert.ok(item.content instanceof Book);
   });
-  it("should initialize collections to an empty array", function () {
+  it("should initialize collections to an empty array", () => {
     const library = Avers.parseJSON(Library, {});
     Avers.migrateObject(library);
     assert.ok(Array.isArray(library.items));
   });
 });
 
-describe("Avers.mk", function () {
-  it("should create and migrate the object", function () {
+describe("Avers.mk", () => {
+  it("should create and migrate the object", () => {
     const author = Avers.mk(Author, {});
     assert.strictEqual("John", author.firstName);
   });
 
-  it("should flush all changes", function () {
+  it("should flush all changes", () => {
     let author = Avers.mk(Author, jsonAuthor),
       allChanges: Avers.Change<any>[] = [];
 
@@ -466,32 +466,32 @@ describe("Avers.mk", function () {
   });
 });
 
-describe("Avers.lookupItem", function () {
-  it("should find the item in the collection", function () {
+describe("Avers.lookupItem", () => {
+  it("should find the item in the collection", () => {
     const library = Avers.mk(Library, {});
     library.items.push(Avers.mk(Item, jsonBookItemWithId));
     assert.ok(!!Avers.lookupItem(library.items, jsonBookWithId.id));
   });
-  it("should find non-existing in the collection", function () {
+  it("should find non-existing in the collection", () => {
     const library = Avers.mk(Library, {});
     library.items.push(Avers.mk(Item, jsonBookItemWithId));
     assert.strictEqual(Avers.lookupItem(library.items, "non-existing-id"), undefined as any);
   });
 });
 
-describe("Avers.attachGenerationListener", function () {
-  it("should invoke the listener when the data changes", function () {
+describe("Avers.attachGenerationListener", () => {
+  it("should invoke the listener when the data changes", () => {
     const h = mkHandle({});
     Avers.attachGenerationListener(h, () => {});
     Avers.startNextGeneration(h);
   });
 });
 
-describe("Avers.lookupEditable", function () {
-  it("should return a Computation in Pending status", function () {
+describe("Avers.lookupEditable", () => {
+  it("should return a Computation in Pending status", () => {
     assert.strictEqual(sentinel, Avers.lookupEditable(mkHandle(libraryObjectResponse), "id").get(sentinel));
   });
-  it("should resolve to the object after it is loaded", async function () {
+  it("should resolve to the object after it is loaded", async () => {
     const h = mkHandle(libraryObjectResponse);
 
     Avers.lookupEditable(h, "id").get(sentinel);
@@ -500,7 +500,7 @@ describe("Avers.lookupEditable", function () {
     const obj = Avers.lookupEditable(h, "id").get(sentinel);
     assert.ok(obj.content instanceof Library);
   });
-  it("should return a copy when its content changes", function () {
+  it("should return a copy when its content changes", () => {
     const h = mkHandle({});
 
     const obj = Avers.mkEditable(h, "id");
@@ -515,8 +515,8 @@ describe("Avers.lookupEditable", function () {
   });
 });
 
-describe("registering changes on an Editable", function () {
-  it("should make a copy of the content", function () {
+describe("registering changes on an Editable", () => {
+  it("should make a copy of the content", () => {
     const h = mkHandle({});
 
     Avers.resolveEditable(h, "id", libraryObjectResponse);
@@ -542,13 +542,13 @@ describe("registering changes on an Editable", function () {
   // });
 });
 
-describe("Avers.ObjectCollection", function () {
-  describe("ids", function () {
-    it("should return a pending Computation when not fetched yet", function () {
+describe("Avers.ObjectCollection", () => {
+  describe("ids", () => {
+    it("should return a pending Computation when not fetched yet", () => {
       const col = mkObjectCollection();
       assert.strictEqual(sentinel, col.ids.get(sentinel));
     });
-    it("should resolve to the object after it is loaded", async function () {
+    it("should resolve to the object after it is loaded", async () => {
       const col = mkObjectCollection();
       col.ids.get(sentinel);
       await flushChanges();
@@ -560,24 +560,24 @@ describe("Avers.ObjectCollection", function () {
   });
 });
 
-describe("Avers.ephemeralValue", function () {
+describe("Avers.ephemeralValue", () => {
   const e = new Avers.Ephemeral(testNamespace, "test", unresolvedPromiseF);
 
-  it("should return pending when the object is empty", function () {
+  it("should return pending when the object is empty", () => {
     const h = mkHandle({});
     assert.strictEqual(sentinel, Avers.ephemeralValue(h, e).get(sentinel));
   });
-  it("should return the value when the object is resolved", function () {
+  it("should return the value when the object is resolved", () => {
     const h = mkHandle({});
     Avers.resolveEphemeral(h, e, 42, h.config.now() + 99);
     assert.strictEqual(42, Avers.ephemeralValue(h, e).get(sentinel) as any);
   });
-  it("should return the value even if it is stale", function () {
+  it("should return the value even if it is stale", () => {
     const h = mkHandle({});
     Avers.resolveEphemeral(h, e, 42, h.config.now() - 99);
     assert.strictEqual(42, Avers.ephemeralValue(h, e).get(sentinel) as any);
   });
-  it("should invoke the fetch function when the value is stale", function () {
+  it("should invoke the fetch function when the value is stale", () => {
     const h = mkHandle({}),
       ne = new Avers.Ephemeral(testNamespace, "test", async () => {
         return { value: {}, expiresAt: 0 };
@@ -586,7 +586,7 @@ describe("Avers.ephemeralValue", function () {
     Avers.resolveEphemeral(h, ne, 42, h.config.now() - 99);
     Avers.ephemeralValue(h, ne).get(sentinel);
   });
-  it("should not invoke the fetch function when the value is fresh", function () {
+  it("should not invoke the fetch function when the value is fresh", () => {
     const h = mkHandle({}),
       ne = new Avers.Ephemeral(testNamespace, "test", () => {
         assert.fail("fetch of a fresh Ephemeral was invoked");
@@ -596,7 +596,7 @@ describe("Avers.ephemeralValue", function () {
     Avers.resolveEphemeral(h, ne, 42, h.config.now() + 99);
     Avers.ephemeralValue(h, ne).get(sentinel);
   });
-  it("should abort computation when request fails", async function () {
+  it("should abort computation when request fails", async () => {
     const h = mkHandle({}),
       ne = new Avers.Ephemeral(testNamespace, "test", async () => {
         throw new Error("…");
@@ -609,22 +609,22 @@ describe("Avers.ephemeralValue", function () {
   });
 });
 
-describe("Avers.staticValue", function () {
+describe("Avers.staticValue", () => {
   const s = new Avers.Static(testNamespace, "test", unresolvedPromiseF);
 
-  it("should return pending when the object is empty", function () {
+  it("should return pending when the object is empty", () => {
     const h = mkHandle({});
     assert.strictEqual(Avers.staticValue(h, s).get(sentinel), sentinel);
   });
-  it("should return the value when the object is resolved", function () {
+  it("should return the value when the object is resolved", () => {
     const h = mkHandle({});
     Avers.resolveStatic(h, s, 42);
     assert.strictEqual(Avers.staticValue(h, s).get(sentinel), 42);
   });
 });
 
-describe("Avers.networkRequests", function () {
-  it("should return network requests attached to all entities", function () {
+describe("Avers.networkRequests", () => {
+  it("should return network requests attached to all entities", () => {
     const h = mkHandle({});
 
     const ep = new Avers.Ephemeral(testNamespace, "test", unresolvedPromiseF);
