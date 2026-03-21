@@ -24,7 +24,7 @@ function emitChanges<T extends object>(self: Instance<T>, changes: Change<Operat
   }
 }
 
-function listenTo<T extends object>(self: Instance<T>, obj: any, callback: ChangeCallback): void {
+function listenTo<T extends object>(self: Instance<T>, obj: Instance<object>, callback: ChangeCallback): void {
   let listeners = self[childListenersSymbol];
   if (!listeners) {
     listeners = self[childListenersSymbol] = new Map();
@@ -34,7 +34,7 @@ function listenTo<T extends object>(self: Instance<T>, obj: any, callback: Chang
   attachChangeListener(obj, callback);
 }
 
-function stopListening<T extends object>(self: Instance<T>, obj: any): void {
+function stopListening<T extends object>(self: Instance<T>, obj: Instance<object>): void {
   const listeners = self[childListenersSymbol];
   if (listeners) {
     const fn = listeners.get(obj);
@@ -93,7 +93,7 @@ function aversProperties(obj: any): AversProperties {
   return Object.getPrototypeOf(obj)[aversPropertiesSymbol];
 }
 
-function withId<T>(json: any, obj: T): T {
+function withId<T extends object>(json: any, obj: Instance<T>): Instance<T> {
   if (json.id !== undefined) {
     (<any>obj).id = json.id;
   }
@@ -181,7 +181,7 @@ export function applyOperation<T>(root: T, path: string, op: Operation): T {
 
 export type Model<T> = { prototype: T };
 
-export type Instance<T> = T & {
+export type Instance<T extends object> = T & {
   [changeListenersSymbol]?: globalThis.Set<ChangeCallback>;
   [childListenersSymbol]?: Map<Instance<object>, ChangeCallback>;
 };
@@ -326,7 +326,7 @@ function parseValue(desc: PropertyDescriptor<any>, old: any, json: any, parent: 
   }
 }
 
-export function updateObject<T>(x: T, json: any): T {
+export function updateObject<T extends object>(x: Instance<T>, json: any): Instance<T> {
   const aversProps = aversProperties(x);
 
   for (const name in aversProps) {
@@ -407,7 +407,7 @@ const objectProxyHandler = {
   },
 };
 
-function createObject<T extends object>(x: new () => T): T {
+function createObject<T extends object>(x: new () => T): Instance<T> {
   return new Proxy(new x(), objectProxyHandler);
 }
 
@@ -415,7 +415,7 @@ export function parseJSON<T extends object>(x: new () => T, json: any): Instance
   if (<any>x === String || <any>x === Number) {
     return new (<any>x)(json).valueOf();
   } else {
-    return withId(json, updateObject(createObject(x), json)) as Instance<T>;
+    return withId(json, updateObject(createObject(x), json));
   }
 }
 
@@ -530,7 +530,7 @@ function mkCollection<T extends Item>(items: T[]): Collection<T> {
     splice.call(collection, start, deleteCount, ...items);
 
     deletedItems.forEach((item) => {
-      stopListening(collection, item);
+      stopListening(collection as unknown as Instance<object>, item as unknown as Instance<object>);
       delete collection.idMap[item.id];
     });
 
@@ -538,7 +538,7 @@ function mkCollection<T extends Item>(items: T[]): Collection<T> {
       if (Object(item) === item) {
         collection.idMap[item.id] = item;
 
-        listenTo(collection, item, (changes) => {
+        listenTo(collection as unknown as Instance<object>, item as unknown as Instance<object>, (changes) => {
           const id = itemId(collection, item);
           emitChanges(
             collection,
@@ -639,8 +639,8 @@ function embedChange<T>(change: Change<T>, key: string): Change<T> {
   return new Change(concatPath(key, change.path), change.record);
 }
 
-function forwardChanges(obj: any, prop: string, key: string): void {
-  listenTo(obj, prop, (changes) => {
+function forwardChanges(obj: Instance<object>, child: Instance<object>, key: string): void {
+  listenTo(obj, child, (changes) => {
     emitChanges(
       obj,
       changes.map((change) => embedChange(change, key)),
