@@ -437,15 +437,17 @@ function objectJSON(x: any): any {
     const desc = aversProps[name];
 
     switch (desc.type) {
-      case "PrimitivePropertyDescriptor":
+      case "PrimitivePropertyDescriptor": {
         json[name] = x[name];
         break;
+      }
 
-      case "ObjectPropertyDescriptor":
+      case "ObjectPropertyDescriptor": {
         json[name] = x[name] ? toJSON(x[name]) : null;
         break;
+      }
 
-      case "VariantPropertyDescriptor":
+      case "VariantPropertyDescriptor": {
         const value = x[name];
 
         if (value) {
@@ -453,10 +455,12 @@ function objectJSON(x: any): any {
           json[desc.typeField] = typeName(desc.typeMap, value.constructor);
         }
         break;
+      }
 
-      case "CollectionPropertyDescriptor":
+      case "CollectionPropertyDescriptor": {
         json[name] = toJSON(x[name]);
         break;
+      }
     }
   }
 
@@ -649,9 +653,7 @@ export function changeOperation(change: Change<any>): Operation {
   }
 }
 
-export interface ChangeCallback {
-  (changes: Change<any>[]): void;
-}
+export type ChangeCallback = (changes: Change<any>[]) => void;
 
 /**
  * Attach a change callback to the object.

@@ -53,7 +53,7 @@ export async function saveEditable(h: Handle, objId: ObjId): Promise<void> {
 
     // See if we have any more local changes which we need to save.
     await saveEditable(h, objId);
-  } catch (err) {
+  } catch {
     restoreLocalChanges(h, objId);
   }
 }

@@ -10,28 +10,11 @@
 
   "linter": {
     "rules": {
-      "a11y": {
-        "useHtmlLang": "off"
-      },
-      "style": {
-        "useEnumInitializers": "off",
-        "useShorthandFunctionType": "off",
-        "noParameterAssign": "off",
-        "useSingleVarDeclarator": "off",
-        "noUselessElse": "off"
-      },
-      "correctness": {
-        "noUnusedVariables": "off",
-        "noSwitchDeclarations": "off"
-      },
       "suspicious": {
-        "noConfusingVoidType": "off",
         "noShadowRestrictedNames": "off",
         "noExplicitAny": "off"
       },
       "complexity": {
-        "noForEach": "off",
-        "noBannedTypes": "off",
         "useArrowFunction": "off",
         "noArguments": "off"
       }

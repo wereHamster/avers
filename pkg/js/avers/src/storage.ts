@@ -30,7 +30,7 @@ import type { Editable, Handle, NetworkRequest } from "./storage/types.js";
  *
  * If you need to detach the listener later, hang on to the return value and pass that to 'detachGenerationListener'.
  */
-export function attachGenerationListener(h: Handle, f: () => void): Function {
+export function attachGenerationListener(h: Handle, f: () => void): () => void {
   const generationChangeCallback = f.bind(null);
   h.generationChangeCallbacks.add(generationChangeCallback);
   return generationChangeCallback;
@@ -40,7 +40,7 @@ export function attachGenerationListener(h: Handle, f: () => void): Function {
  * Detach a generation listener from the handle.
  * The listener is the value you get from 'attachGenerationListener'.
  */
-export function detachGenerationListener(h: Handle, listener: Function): void {
+export function detachGenerationListener(h: Handle, listener: () => void): void {
   h.generationChangeCallbacks.delete(listener);
 }
 

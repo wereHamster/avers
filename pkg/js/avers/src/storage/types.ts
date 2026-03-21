@@ -50,7 +50,7 @@ export class Handle {
   /**
    * List of callbacks which are invoked when the generation changes.
    */
-  generationChangeCallbacks: Set<Function> = new Set();
+  generationChangeCallbacks: Set<() => void> = new Set();
 
   editableCache = new Map<string, Editable<any>>();
   staticCache = new Map<symbol, Map<string, StaticE<any>>>();
@@ -225,7 +225,7 @@ export const mkAction = <T>(label: string, payload: T, applyF: ActionF<T>): Acti
 export class NetworkRequest {
   constructor(
     public createdAt: number,
-    public promise: Promise<{}>,
+    public promise: Promise<object>,
   ) {}
 }
 

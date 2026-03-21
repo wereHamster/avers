@@ -38,7 +38,7 @@ export async function createObject(h: Handle, type: string, content: unknown): P
   return json.id;
 }
 
-export async function createObjectId(h: Handle, objId: ObjId, type: string, content: unknown): Promise<{}> {
+export async function createObjectId(h: Handle, objId: ObjId, type: string, content: unknown): Promise<object> {
   const url = endpointUrl(h, `/objects/${objId}`);
   const requestInit: RequestInit = {
     credentials: "include",
@@ -74,7 +74,7 @@ export async function fetchEditable<T>(h: Handle, id: string): Promise<Editable<
     try {
       await (obj.networkRequest?.promise ?? loadEditable(h, id));
       return fetchEditable(h, id);
-    } catch (err) {
+    } catch {
       return fetchEditable(h, id);
     }
   }
@@ -89,7 +89,7 @@ export async function loadEditable(h: Handle, id: string): Promise<void> {
     try {
       const res = await runNetworkRequest(h, id, "fetchEditable", fetchObject(h, id));
       resolveEditable(h, id, res);
-    } catch (err) {
+    } catch {
       // Ignore errors. runNetworkRequest already sets 'lastError'.
     }
   }
