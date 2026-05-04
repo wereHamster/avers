@@ -10,7 +10,7 @@ importers:
     dependencies:
       computation:
         specifier: ^2.0.0
-        version: 2.1.3
+        version: 2.1.4
     devDependencies:
       '@types/node':
         specifier: ^24.12.0
@@ -24,8 +24,8 @@ packages:
   '@types/node@24.12.0':
     resolution: {integrity: sha512-GYDxsZi3ChgmckRT9HPU0WEhKLP08ev/Yfcq2AstjrDASOYCSXeyjDsHg4v5t4jOj7cyDX3vmprafKlWIG9MXQ==}
 
-  computation@2.1.3:
-    resolution: {integrity: sha512-oelwNUYbMSm8EsBzjc/R0yfpRMh8hR3bBnP8AXhulKW0iW3Qpgacfmhvi2tVyzcybRfPwM6+dGgsHyHoxxnZtQ==}
+  computation@2.1.4:
+    resolution: {integrity: sha512-0aauf9vwqmHGGpH4N9a1JuhOCafXzcD89J+3/ylyFl/vB+G5LapVY0zypRCGFAuHF/arNqdUUMA5w227fYbYvQ==}
 
   typescript@5.9.3:
     resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
@@ -41,7 +41,7 @@ snapshots:
     dependencies:
       undici-types: 7.16.0
 
-  computation@2.1.3: {}
+  computation@2.1.4: {}
 
   typescript@5.9.3: {}
 
