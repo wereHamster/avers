@@ -1,31 +1,29 @@
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
+    systems.url = "github:nix-systems/default";
   };
 
   outputs =
     {
       nixpkgs,
-      flake-utils,
+      systems,
       ...
     }:
-    flake-utils.lib.eachDefaultSystem (
-      system:
-      let
-        pkgs = import nixpkgs {
-          inherit system;
-        };
+    let
+      forAllSystems =
+        function: nixpkgs.lib.genAttrs (import systems) (system: function nixpkgs.legacyPackages.${system});
 
-      in
-      {
-        devShells.default = pkgs.mkShell {
-          buildInputs = [
+    in
+    {
+      devShells = forAllSystems (pkgs: {
+        default = pkgs.mkShell {
+          nativeBuildInputs = [
             pkgs.nodejs
             pkgs.pnpm
             pkgs.biome
           ];
         };
-      }
-    );
+      });
+    };
 }
